@@ -3,6 +3,13 @@ IF (PLUGINS_ENABLE_SCRIPTING)
   FILE( GLOB CPPS [^.]*.cpp )
   FILE( GLOB HPPS [^.]*.hpp [^.]*.h [^.]*.inl)
 
+  # GCC reports -Wmaybe-uninitialized from inside Boost Graph when these
+  # translation units instantiate adjacency_list copy paths.
+  set_source_files_properties(
+    FunctionGraph.cpp
+    FunctionGraphBuilder.cpp
+    PROPERTIES COMPILE_FLAGS "-Wno-maybe-uninitialized")
+
   GLOBAL_ADD_INCLUDE( rtt/scripting ${HPPS})
   # Due to generation of some .h files in build directories, we also need to include some build dirs in our include paths.
   INCLUDE_DIRECTORIES(BEFORE ${PROJ_SOURCE_DIR} ${PROJ_SOURCE_DIR}/rtt ${PROJ_SOURCE_DIR}/rtt/os ${PROJ_SOURCE_DIR}/rtt/os/${OROCOS_TARGET} )

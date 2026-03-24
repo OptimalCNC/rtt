@@ -308,10 +308,15 @@ namespace RTT {
         GraphVertexCopier gvc( fn->getGraph(), *graph, replacementdss );
         GraphEdgeCopier gec( fn->getGraph(), *graph, replacementdss );
 
-        // This gives  a compiler warning with GCC:
+        // GCC warns from inside Boost Graph's copy implementation here, not from RTT code.
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
         boost::copy_graph( fn->getGraph(), *graph, boost::vertex_copy( gvc ).edge_copy( gec ) );
-        // It's a bug in boost::copy_graph with 3 arguments. We'd have to implement the copy ourselves
-        // in order to get rid of this warning/bug.
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
         // cleanup newlist, the (var)DS's are stored in the assignCommand
         for (unsigned int i=0; i < newlist.size(); ++i)

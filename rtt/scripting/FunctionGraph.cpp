@@ -410,10 +410,17 @@ namespace RTT {
         if (retn)
             ret->setResult( retn->copy(replacementdss, false) );
 
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
         boost::copy_graph( program, ret->program,
                            boost::vertex_copy( GraphVertexCopier( program, ret->program, replacementdss ) ).
                            edge_copy( GraphEdgeCopier( program, ret->program, replacementdss ) ).
                            orig_to_copy( o2cmap ) );
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
         ret->startv = o2cmap[startv];
         ret->exitv = o2cmap[exitv];
@@ -463,4 +470,3 @@ namespace RTT {
     }
 
 }
-
