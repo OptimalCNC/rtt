@@ -363,8 +363,12 @@ namespace RTT
          * A function object for finding a Property by name and type.
          */
         template<class T>
-        struct FindPropType : public std::binary_function<const base::PropertyBase*,const std::string, bool>
+        struct FindPropType
         {
+            typedef const base::PropertyBase* first_argument_type;
+            typedef const std::string second_argument_type;
+            typedef bool result_type;
+
             bool operator()(const base::PropertyBase* b1, const std::string& b2) const { return b1->getName() == b2 && dynamic_cast<const Property<T>* >(b1) != 0; }
         };
 

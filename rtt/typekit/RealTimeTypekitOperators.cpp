@@ -62,8 +62,10 @@ namespace RTT
 #ifndef RTT_NO_STD_TYPES
     template<class T>
     struct get_capacity
-        : public std::unary_function<T, int>
     {
+        typedef T argument_type;
+        typedef int result_type;
+
         int operator()(T cont ) const
         {
             return cont.capacity();
@@ -72,8 +74,10 @@ namespace RTT
 
     template<class T>
     struct get_size
-        : public std::unary_function<T, int>
     {
+        typedef T argument_type;
+        typedef int result_type;
+
         int operator()(T cont ) const
         {
             return cont.size();
@@ -84,7 +88,11 @@ namespace RTT
     /** Strings concatenation
      */
     template <class T>
-    struct string_concatenation : public std::binary_function<const std::string&, T, std::string> {
+    struct string_concatenation {
+        typedef const std::string& first_argument_type;
+        typedef T second_argument_type;
+        typedef std::string result_type;
+
         std::string operator()(const std::string& s, T t) const {
             std::ostringstream oss(s, std::ios_base::ate);
             oss << std::boolalpha << t;
@@ -93,7 +101,11 @@ namespace RTT
     };
 #ifdef OS_RT_MALLOC
     template <class T>
-    struct rt_string_concatenation : public std::binary_function<const rt_string&, T, rt_string> {
+    struct rt_string_concatenation {
+        typedef const rt_string& first_argument_type;
+        typedef T second_argument_type;
+        typedef rt_string result_type;
+
         rt_string operator()(const rt_string& s, T t) const {
             rt_ostringstream oss(s, std::ios_base::ate);
             oss << std::boolalpha << t;

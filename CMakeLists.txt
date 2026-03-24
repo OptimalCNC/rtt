@@ -1,17 +1,12 @@
 #
 # Test CMake version
 #
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 # for CMake 2.6 corrected behaviour (see "cmake --help-policy CMP0003")
 IF(POLICY CMP0003)
   CMAKE_POLICY(SET CMP0003 NEW)
 ENDIF(POLICY CMP0003)
-
-# Suppress cmake policy warning in included rtt_macros.cmake file in CMake >= 3.0.2 (see "cmake --help-policy CMP0026")
-if(POLICY CMP0026)
-  cmake_policy(SET CMP0026 OLD)
-endif()
 
 ###################################################
 #                                                 #

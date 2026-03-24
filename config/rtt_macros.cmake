@@ -77,26 +77,19 @@ macro(ADD_RTT_TYPEKIT name version)
           LIBRARY DESTINATION lib/orocos${OROCOS_SUFFIX}/types
           RUNTIME DESTINATION lib/orocos${OROCOS_SUFFIX}/types)
 
-  get_target_property(TYPEKITLIB_DIR ${name}-${OROCOS_TARGET}_plugin LOCATION)
-  get_target_property(DEBUG_TYPEKITLIB_DIR ${name}-${OROCOS_TARGET}_plugin DEBUG_LOCATION)
-
   # Only copy if it was built:
   if (WIN32)
       # In win32, we don't know which one will be built, so we prefix it with 'if exist', which is not portable.
       # Only the first comment is displayed, so its a non-filename specific comment.
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/types"
-          COMMAND if exist ${TYPEKITLIB_DIR} ${CMAKE_COMMAND} -E copy "${TYPEKITLIB_DIR}" "${PROJ_BINARY_DIR}/rtt/types"
+          COMMAND if exist "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/types"
           COMMENT "Copying ${name}-${OROCOS_TARGET}_plugin to ${PROJ_BINARY_DIR}/rtt/types" VERBATIM)
-      add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/types"
-          COMMAND if exist ${DEBUG_TYPEKITLIB_DIR} ${CMAKE_COMMAND} -E copy "${DEBUG_TYPEKITLIB_DIR}" "${PROJ_BINARY_DIR}/rtt/types"
-          VERBATIM)
   else()
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/types"
-          COMMAND ${CMAKE_COMMAND} -E copy "${TYPEKITLIB_DIR}" "${PROJ_BINARY_DIR}/rtt/types"
-          COMMENT "Copying ${TYPEKITLIB_DIR} to ${PROJ_BINARY_DIR}/rtt/types" VERBATIM)
+          COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/types"
+          COMMENT "Copying $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> to ${PROJ_BINARY_DIR}/rtt/types" VERBATIM)
   endif()
   
 endmacro(ADD_RTT_TYPEKIT name)
@@ -150,25 +143,17 @@ macro(ADD_RTT_PLUGIN name version)
           LIBRARY DESTINATION lib/orocos${OROCOS_SUFFIX}/plugins
           RUNTIME DESTINATION lib/orocos${OROCOS_SUFFIX}/plugins)
 
-  get_target_property(PLUGINLIB_DIR ${name}-${OROCOS_TARGET}_plugin LOCATION)
-  get_target_property(DEBUG_PLUGINLIB_DIR ${name}-${OROCOS_TARGET}_plugin DEBUG_LOCATION)
-
   if (WIN32)
       # In win32, we don't know which one will be built, so we prefix it with 'if exist', which is not portable.
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/plugins"
-          COMMAND if exist ${PLUGINLIB_DIR} ${CMAKE_COMMAND} -E copy "${PLUGINLIB_DIR}" "${PROJ_BINARY_DIR}/rtt/plugins"
+          COMMAND if exist "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/plugins"
           COMMENT "Copying ${name}-${OROCOS_TARGET}_plugin to ${PROJ_BINARY_DIR}/rtt/plugins" VERBATIM)
-      add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/plugins"
-          COMMAND if exist ${DEBUG_PLUGINLIB_DIR} ${CMAKE_COMMAND} -E copy "${DEBUG_PLUGINLIB_DIR}" "${PROJ_BINARY_DIR}/rtt/plugins"
-          VERBATIM)
   else()
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/plugins"
-          COMMAND ${CMAKE_COMMAND} -E copy "${PLUGINLIB_DIR}" "${PROJ_BINARY_DIR}/rtt/plugins"
-          COMMENT "Copying ${PLUGINLIB_DIR} to ${PROJ_BINARY_DIR}/rtt/plugins" VERBATIM)
+          COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/plugins"
+          COMMENT "Copying $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> to ${PROJ_BINARY_DIR}/rtt/plugins" VERBATIM)
   endif()
   
 endmacro(ADD_RTT_PLUGIN name)
-

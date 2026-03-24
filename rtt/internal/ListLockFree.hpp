@@ -324,7 +324,6 @@ namespace RTT
                     oro_atomic_dec(&nextbuf->count);
                 }
                 orig = lockAndGetActive(bufptr);
-                orig->data.size();
                 nextbuf = findEmptyBuf(bufptr); // find unused Item in bufs
                 nextbuf->data.clear();
             } while ( os::CAS(&active, orig, nextbuf ) == false );

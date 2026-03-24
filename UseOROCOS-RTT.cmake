@@ -10,7 +10,7 @@
 #
 ########################################################################################################################
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 if(OROCOS-RTT_FOUND AND NOT USE_OROCOS_RTT)
   include(FindPkgConfig)

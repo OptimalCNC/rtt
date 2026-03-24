@@ -203,15 +203,20 @@ namespace RTT
      *
      * A function object for finding a Property by name.
      */
-    struct FindProp : public std::binary_function<const base::PropertyBase*,const std::string, bool>
+    struct FindProp
     {
+        typedef const base::PropertyBase* first_argument_type;
+        typedef const std::string second_argument_type;
+        typedef bool result_type;
+
         bool operator()(const base::PropertyBase* b1, const std::string& b2) const { return b1->getName() == b2; }
     };
     /** @endcond */
 
     PropertyBase* PropertyBag::find(const std::string& name) const
     {
-        const_iterator i( std::find_if(mproperties.begin(), mproperties.end(), std::bind2nd(FindProp(), name ) ) );
+        const_iterator i(std::find_if(mproperties.begin(), mproperties.end(),
+            [&name](const base::PropertyBase* property) { return FindProp()(property, name); }));
         if ( i != mproperties.end() )
             return ( *i );
         return 0;
@@ -219,7 +224,8 @@ namespace RTT
 
     base::PropertyBase* PropertyBag::getProperty(const std::string& name) const
     {
-        const_iterator i( std::find_if(mproperties.begin(), mproperties.end(), std::bind2nd(FindProp(), name ) ) );
+        const_iterator i(std::find_if(mproperties.begin(), mproperties.end(),
+            [&name](const base::PropertyBase* property) { return FindProp()(property, name); }));
         if ( i != mproperties.end() )
             return *i;
         return 0;

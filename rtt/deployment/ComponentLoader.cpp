@@ -399,11 +399,11 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
     }
 
     // check for absolute path:
-    if ( arg.is_complete() ) {
+    if ( arg.is_absolute() ) {
         // plain import
         bool ret = import(package);
         // if not yet given, test for target subdir:
-        if ( arg.parent_path().leaf() != OROCOS_TARGET_NAME )
+        if ( arg.parent_path().filename() != OROCOS_TARGET_NAME )
             ret = import( (arg / OROCOS_TARGET_NAME).string() ) || ret;
         // if something found, return true:
         if (ret)
@@ -448,7 +448,7 @@ bool ComponentLoader::importInstalledPackage(std::string const& package, std::st
         path_found = true;
         // search in dir + dir/TARGET
         paths += p.string() + default_delimiter + (p / OROCOS_TARGET_NAME).string() + default_delimiter;
-        if ( p.is_complete() ) {
+        if ( p.is_absolute() ) {
             // 2.2.x: path may be absolute or relative to search path.
             //log(Warning) << "You supplied an absolute directory to the import directive. Use 'path' to set absolute directories and 'import' only for packages (sub directories)."<<endlog();
             //log(Warning) << "Please modify your XML file or script. I'm importing it now for the sake of backwards compatibility."<<endlog();
@@ -519,7 +519,7 @@ bool ComponentLoader::loadLibrary( std::string const& name )
 #endif
         return true;
     // bail out if absolute path
-    if ( arg.is_complete() )
+    if ( arg.is_absolute() )
         return false;
 
     // search for relative match

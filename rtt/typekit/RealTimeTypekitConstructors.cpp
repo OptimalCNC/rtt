@@ -59,9 +59,10 @@ namespace RTT
 #ifndef ORO_EMBEDDED
         // CONSTRUCTORS
         struct array_ctor
-            : public std::unary_function<int, const std::vector<double>&>
         {
             typedef const std::vector<double>& (Signature)( int );
+            typedef int argument_type;
+            typedef const std::vector<double>& result_type;
             mutable boost::shared_ptr< std::vector<double> > ptr;
             array_ctor()
                 : ptr( new std::vector<double>() ) {}
@@ -116,9 +117,11 @@ namespace RTT
         };
 
         struct array_ctor2
-            : public std::binary_function<int, double, const std::vector<double>&>
         {
             typedef const std::vector<double>& (Signature)( int, double );
+            typedef int first_argument_type;
+            typedef double second_argument_type;
+            typedef const std::vector<double>& result_type;
             mutable boost::shared_ptr< std::vector<double> > ptr;
             array_ctor2()
                 : ptr( new std::vector<double>() ) {}
@@ -171,9 +174,10 @@ namespace RTT
         int bool_to_int(bool b) { return int(b); }
 
         struct string_ctor
-            : public std::unary_function<int, std::string>
         {
             typedef std::string (Signature)( int );
+            typedef int argument_type;
+            typedef std::string result_type;
             std::string operator()( int size ) const
             {
                 return std::string( size, std::string::value_type() );
@@ -182,9 +186,10 @@ namespace RTT
 
 #ifdef OS_RT_MALLOC
         struct rt_string_ctor_int
-            : public std::unary_function<int, RTT::rt_string>
         {
             typedef rt_string (Signature)( int );
+            typedef int argument_type;
+            typedef rt_string result_type;
             rt_string operator()( int size ) const
             {
                 return rt_string( size, rt_string::value_type() );
@@ -192,9 +197,10 @@ namespace RTT
         };
 
         struct rt_string_ctor_string
-            : public std::unary_function<const std::string&, RTT::rt_string>
         {
             typedef rt_string (Signature)( std::string const& );
+            typedef const std::string& argument_type;
+            typedef rt_string result_type;
             rt_string operator()( std::string const& arg ) const
             {
                 return rt_string( arg.c_str() );
@@ -202,9 +208,10 @@ namespace RTT
         };
 
         struct string_ctor_rt_string
-            : public std::unary_function<const rt_string&, std::string>
         {
             typedef std::string (Signature)( rt_string const& );
+            typedef const rt_string& argument_type;
+            typedef std::string result_type;
             std::string operator()( rt_string const& arg ) const
             {
                 return std::string( arg.c_str() );

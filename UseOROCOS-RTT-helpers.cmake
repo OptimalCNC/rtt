@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 #
 # Parses arguments or options
@@ -468,4 +468,3 @@ macro(orocos_set_install_rpath target)
     endif()
   endif()
 endmacro(orocos_set_install_rpath)
-

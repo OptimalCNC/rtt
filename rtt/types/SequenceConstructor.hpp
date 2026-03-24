@@ -51,9 +51,11 @@ namespace RTT
          * Sequence constructor which takes the number of elements in the sequence
          */
         template<class T>
-        struct sequence_ctor: public std::unary_function<int, const T& >
+        struct sequence_ctor
         {
             typedef const T& ( Signature)(int);
+            typedef int argument_type;
+            typedef const T& result_type;
             mutable boost::shared_ptr<T> ptr;
             sequence_ctor() :
                 ptr(new T())
@@ -125,10 +127,12 @@ namespace RTT
          * Usage: sequence_ctor2<std::vector<Foo> >()
          */
         template<class T>
-        struct sequence_ctor2: public std::binary_function<int, typename T::value_type,
-                const T&>
+        struct sequence_ctor2
         {
             typedef const T& ( Signature)(int, typename T::value_type);
+            typedef int first_argument_type;
+            typedef typename T::value_type second_argument_type;
+            typedef const T& result_type;
             mutable boost::shared_ptr<T> ptr;
             sequence_ctor2() :
                 ptr(new T() )

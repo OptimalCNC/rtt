@@ -91,8 +91,10 @@ namespace RTT { namespace internal {
 
     template<typename T>
     struct select1st
-      : public std::unary_function<T, typename T::first_type>
     {
+        typedef T argument_type;
+        typedef typename T::first_type result_type;
+
         typename T::first_type operator()( const T& p ) {
             return p.first;
         }
@@ -100,8 +102,10 @@ namespace RTT { namespace internal {
 
     template<typename T>
     struct select2nd
-      : public std::unary_function<T, typename T::second_type>
     {
+        typedef T argument_type;
+        typedef typename T::second_type result_type;
+
         typename T::second_type operator()( const T& p ) {
             return p.second;
         }
@@ -166,32 +170,44 @@ namespace std
     // STL specialisations for const references : Add others if necessary.
     template <class _Tp>
     struct equal_to< const _Tp& >
-        : public binary_function<const _Tp&, const _Tp& ,bool>
     {
+        typedef const _Tp& first_argument_type;
+        typedef const _Tp& second_argument_type;
+        typedef bool result_type;
+
         bool operator()(const _Tp& __x, const _Tp& __y) const { return __x == __y; }
     };
 
     /// One of the @link s20_3_3_comparisons comparison functors@endlink.
     template <class _Tp>
     struct not_equal_to<const _Tp&>
-        : public binary_function<const _Tp&, const _Tp&, bool>
     {
+        typedef const _Tp& first_argument_type;
+        typedef const _Tp& second_argument_type;
+        typedef bool result_type;
+
         bool operator()(const _Tp& __x, const _Tp& __y) const { return __x != __y; }
     };
 
     /// One of the @link s20_3_3_comparisons comparison functors@endlink.
     template <class _Tp>
     struct greater<const _Tp&>
-        : public binary_function<const _Tp&,const _Tp&,bool>
     {
+        typedef const _Tp& first_argument_type;
+        typedef const _Tp& second_argument_type;
+        typedef bool result_type;
+
         bool operator()(const _Tp& __x, const _Tp& __y) const { return __x > __y; }
     };
 
     /// One of the @link s20_3_3_comparisons comparison functors@endlink.
     template <class _Tp>
     struct less<const _Tp&>
-        : public binary_function<const _Tp&,const _Tp&,bool>
     {
+        typedef const _Tp& first_argument_type;
+        typedef const _Tp& second_argument_type;
+        typedef bool result_type;
+
         bool operator()(const _Tp& __x, const _Tp& __y) const { return __x < __y; }
     };
 
@@ -212,8 +228,10 @@ namespace RTT
 
   template<typename T>
   struct identity
-    : public std::unary_function<T, T>
   {
+    typedef T argument_type;
+    typedef T result_type;
+
     const T& operator()( const T& t ) const
       {
         return t;
