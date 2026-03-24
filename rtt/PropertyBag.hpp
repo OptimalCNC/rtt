@@ -242,7 +242,13 @@ namespace RTT
         template<class T>
         Property<T>* getPropertyType(const std::string& name) const
         {
-            const_iterator i( std::find_if(mproperties.begin(), mproperties.end(), std::bind2nd(FindPropType<T>(), name ) ) );
+            const_iterator i(
+                std::find_if(
+                    mproperties.begin(),
+                    mproperties.end(),
+                    [&](const base::PropertyBase* property) {
+                        return FindPropType<T>()(property, name);
+                    }));
             if ( i != mproperties.end() )
                 return dynamic_cast<Property<T>* >(*i);
             return 0;

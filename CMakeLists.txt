@@ -117,6 +117,10 @@ INCLUDE(config/rtt_macros.cmake)
 #                                                         #
 ###########################################################
 
+# Older Boost consumers in RTT still expect global bind placeholders.
+# Define this package-wide so indirect <boost/bind.hpp> includes stay quiet.
+add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
+
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
 ADD_SUBDIRECTORY(rtt)
 ADD_SUBDIRECTORY(doc)

@@ -268,6 +268,10 @@ namespace RTT
          * Returns the object that manages which methods this Task
          * requires to be implemented by another task.
          */
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++20-compat"
+#endif
         ServiceRequester::shared_ptr requires() { return tcrequests; }
 
         /**
@@ -277,6 +281,9 @@ namespace RTT
         ServiceRequester::shared_ptr requires(const std::string& service_name) {
             return tcrequests->requires(service_name);
         }
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 
         /**
          * Connects all requires/provides services of this component to these of a peer.

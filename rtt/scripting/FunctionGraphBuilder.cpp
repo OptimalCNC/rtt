@@ -349,12 +349,18 @@ namespace RTT {
 
         Vertex funcStart=*
                          find_if(v1, v2,
-                                 bind2nd( finder<boost::property_map<Graph, vertex_exec_t>::type>() ,
-                                          std::make_pair( vmap, int(VertexNode::func_start_node)) ) );
+                                 [&](const Vertex& vertex) {
+                                     return finder<boost::property_map<Graph, vertex_exec_t>::type>()(
+                                         vertex,
+                                         std::make_pair(vmap, int(VertexNode::func_start_node)));
+                                 });
         Vertex funcExit=*
                         find_if(v1, v2,
-                                bind2nd( finder<boost::property_map<Graph, vertex_exec_t>::type>() ,
-                                         std::make_pair( vmap, int(VertexNode::func_exit_node)) ) );
+                                [&](const Vertex& vertex) {
+                                    return finder<boost::property_map<Graph, vertex_exec_t>::type>()(
+                                        vertex,
+                                        std::make_pair(vmap, int(VertexNode::func_exit_node)));
+                                });
 
         // reset their special meanings.
         vmap[funcStart] = VertexNode::normal_node;
@@ -504,4 +510,3 @@ namespace RTT {
 #endif
 
 }
-
