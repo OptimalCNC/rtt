@@ -374,14 +374,15 @@ static __inline__ void MAPPING_INSERT(size_t _r, int *_fl, int *_sl)
 
 static __inline__ bhdr_t *FIND_SUITABLE_BLOCK(tlsf_t * _tlsf, int *_fl, int *_sl)
 {
-    u32_t _tmp = _tlsf->sl_bitmap[*_fl] & (~0 << *_sl);
+    const u32_t all_bits = ~((u32_t)0);
+    u32_t _tmp = _tlsf->sl_bitmap[*_fl] & (all_bits << *_sl);
     bhdr_t *_b = NULL;
 
     if (_tmp) {
         *_sl = ls_bit(_tmp);
         _b = _tlsf->matrix[*_fl][*_sl];
     } else {
-        *_fl = ls_bit(_tlsf->fl_bitmap & (~0 << (*_fl + 1)));
+        *_fl = ls_bit(_tlsf->fl_bitmap & (all_bits << (*_fl + 1)));
         if (*_fl > 0) {         /* likely */
             *_sl = ls_bit(_tlsf->sl_bitmap[*_fl]);
             _b = _tlsf->matrix[*_fl][*_sl];
@@ -889,10 +890,12 @@ void free_ex(void *ptr, void *mem_pool)
     }
     b = (bhdr_t *) ((char *) ptr - BHDR_OVERHEAD);
 
-    if( (b->size & BLOCK_STATE) != USED_BLOCK )
+    if( (b->size & BLOCK_STATE) != USED_BLOCK ) {
         corrupt( "free_ex(): Freeing unused block\n" );
-        if( (b->size & BLOCK_STATE) != (~(intptr_t)b->prev_hdr & BLOCK_STATE) )
-            corrupt("free_ex(): Mismatched flags\n");
+    }
+    if( (b->size & BLOCK_STATE) != (~(intptr_t)b->prev_hdr & BLOCK_STATE) ) {
+        corrupt("free_ex(): Mismatched flags\n");
+    }
 
     b->size |= FREE_BLOCK;
 
