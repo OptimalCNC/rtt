@@ -13,9 +13,24 @@
 
 include(FindPackageHandleStandardArgs)
 
-# Find headers and libraries
-find_path(LOG4CPP_INCLUDE_DIR NAMES log4cpp/Category.hh PATH_SUFFIXES orocos)
-find_library(LOG4CPP_LIBRARY NAMES orocos-log4cpp)
+# Find headers and libraries. Respect LOG4CPP_ROOT when provided so staged
+# builds do not fall through to an installed prefix.
+if(LOG4CPP_ROOT)
+  find_path(LOG4CPP_INCLUDE_DIR NAMES log4cpp/Category.hh
+    HINTS "${LOG4CPP_ROOT}/include"
+    PATH_SUFFIXES orocos
+    NO_DEFAULT_PATH)
+  find_library(LOG4CPP_LIBRARY NAMES orocos-log4cpp
+    HINTS "${LOG4CPP_ROOT}/lib"
+    NO_DEFAULT_PATH)
+endif()
+
+if(NOT LOG4CPP_INCLUDE_DIR)
+  find_path(LOG4CPP_INCLUDE_DIR NAMES log4cpp/Category.hh PATH_SUFFIXES orocos)
+endif()
+if(NOT LOG4CPP_LIBRARY)
+  find_library(LOG4CPP_LIBRARY NAMES orocos-log4cpp)
+endif()
 
 # Set LOG4CPP_FOUND honoring the QUIET and REQUIRED arguments.
 # RTT calls find_package(Log4cpp), so suppress the legacy module name mismatch.
