@@ -55,6 +55,36 @@
 namespace RTT
 { namespace extras {
 
+    namespace detail {
+        template <class T>
+        struct MultiVectorMultiply
+        {
+            static T value(const T& lhs, const T& rhs)
+            {
+                return lhs * rhs;
+            }
+
+            static void assign(T& lhs, const T& rhs)
+            {
+                lhs *= rhs;
+            }
+        };
+
+        template <>
+        struct MultiVectorMultiply<bool>
+        {
+            static bool value(const bool lhs, const bool rhs)
+            {
+                return lhs && rhs;
+            }
+
+            static void assign(bool& lhs, const bool rhs)
+            {
+                lhs = lhs && rhs;
+            }
+        };
+    }
+
 
     /**
      * @brief A static allocated Vector.
@@ -164,7 +194,7 @@ namespace RTT
         MultiVector& operator *= ( const MultiVector& d )
         {
             for ( unsigned int i = 0; i < S; ++i )
-                data[ i ] *= d.data[ i ];
+                detail::MultiVectorMultiply<T>::assign(data[ i ], d.data[ i ]);
 
             return *this;
         }
@@ -178,7 +208,7 @@ namespace RTT
         MultiVector& operator *= ( const T d )
         {
             for ( unsigned int i = 0; i < S; ++i )
-                data[ i ] *= d;
+                detail::MultiVectorMultiply<T>::assign(data[ i ], d);
 
             return *this;
         }
@@ -236,7 +266,7 @@ namespace RTT
             MultiVector tmp;
 
             for ( unsigned int i = 0; i < S; ++i )
-                tmp[ i ] = data[ i ] * d.data[ i ];
+                tmp[ i ] = detail::MultiVectorMultiply<T>::value(data[ i ], d.data[ i ]);
 
             return tmp;
         }
@@ -262,7 +292,7 @@ namespace RTT
             MultiVector tmp;
 
             for ( unsigned int i = 0; i < S; ++i )
-                tmp[ i ] = d * data[ i ];
+                tmp[ i ] = detail::MultiVectorMultiply<T>::value(d, data[ i ]);
 
             return tmp;
         }
