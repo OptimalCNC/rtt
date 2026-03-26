@@ -89,6 +89,9 @@ macro(ADD_RTT_TYPEKIT name version)
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/types"
           COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/types"
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                  "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>"
+                  "${PROJ_BINARY_DIR}/rtt/types/$<TARGET_LINKER_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
           COMMENT "Copying $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> to ${PROJ_BINARY_DIR}/rtt/types" VERBATIM)
   endif()
   
@@ -153,6 +156,9 @@ macro(ADD_RTT_PLUGIN name version)
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/plugins"
           COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/plugins"
+          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                  "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>"
+                  "${PROJ_BINARY_DIR}/rtt/plugins/$<TARGET_LINKER_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
           COMMENT "Copying $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> to ${PROJ_BINARY_DIR}/rtt/plugins" VERBATIM)
   endif()
   
