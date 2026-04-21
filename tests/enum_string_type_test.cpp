@@ -21,11 +21,15 @@
 #include <rtt-fwd.hpp>
 #include <internal/DataSources.hpp>
 #include <os/fosi.h>
+#include <sstream>
 
 #include "datasource_fixture.hpp"
 #include "marsh/PropertyBagIntrospector.hpp"
 #include "types/EnumTypeInfo.hpp"
+#include "typekit/StdStringTypeInfo.hpp"
+#include "types/TemplateTypeInfo.hpp"
 #include "marsh/PropertyLoader.hpp"
+#include "plugin/PluginLoader.hpp"
 #include "TaskContext.hpp"
 
 typedef enum
@@ -57,6 +61,15 @@ public:
 
     EnumTypeTest()
     {
+        if (!Types()->type("int")) {
+            plugin::PluginLoader::Instance()->loadTypekits("../rtt:../../rtt");
+        }
+        if (!Types()->type("int")) {
+            Types()->addType(new types::TemplateTypeInfo<int>("int"));
+        }
+        if (!Types()->type("string")) {
+            Types()->addType(new types::StdStringTypeInfo("string"));
+        }
 
         a = new ValueDataSource<TheEnum>( A );
         b = new ValueDataSource<TheEnum>( B );
@@ -112,6 +125,27 @@ BOOST_AUTO_TEST_CASE( testEnumStringConversion )
     BOOST_CHECK_EQUAL(dstring->get(), "B" );
 }
 
+BOOST_AUTO_TEST_CASE( testEnumStreamDisplaysSymbolicName )
+{
+    ti = Types()->type("TheEnum");
+    BOOST_REQUIRE( ti );
+    BOOST_CHECK( ti->isStreamable() );
+
+    std::stringstream ss;
+    ti->write(ss, a);
+    BOOST_CHECK_EQUAL(ss.str(), "A");
+}
+
+BOOST_AUTO_TEST_CASE( testEnumStreamReadsSymbolicName )
+{
+    ti = Types()->type("TheEnum");
+    BOOST_REQUIRE( ti );
+
+    std::stringstream ss("B");
+    ti->read(ss, b);
+    BOOST_CHECK_EQUAL(b->get(), B);
+}
+
 // Tests enum to file and back
 BOOST_AUTO_TEST_CASE( testEnumSaveStringProperties )
 {
@@ -136,4 +170,3 @@ BOOST_AUTO_TEST_CASE( testEnumSaveStringProperties )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
