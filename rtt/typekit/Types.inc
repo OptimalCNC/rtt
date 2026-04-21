@@ -71,7 +71,9 @@
     }
 
 RTT_EXPORT_TEMPLATE_TYPE(double)
+RTT_EXPORT_TEMPLATE_TYPE(short)
 RTT_EXPORT_TEMPLATE_TYPE(int)
+RTT_EXPORT_TEMPLATE_TYPE(unsigned short)
 RTT_EXPORT_TEMPLATE_TYPE(unsigned int)
 RTT_EXPORT_TEMPLATE_TYPE(long long)
 RTT_EXPORT_TEMPLATE_TYPE(unsigned long long)
@@ -81,5 +83,4 @@ RTT_EXPORT_TEMPLATE_TYPE(char)
 #include <rtt/rt_string.hpp>
 
 RTT_EXPORT_TEMPLATE_TYPE(RTT::rt_string)
-
 

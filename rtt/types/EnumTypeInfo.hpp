@@ -1,6 +1,5 @@
 /***************************************************************************
   tag: The SourceWorks  Tue Sep 7 00:55:18 CEST 2010  EnumTypeInfo.hpp
-
                         EnumTypeInfo.hpp -  description
                            -------------------
     begin                : Tue September 07 2010
@@ -35,6 +34,11 @@
  *                                                                         *
  ***************************************************************************/
 
+#ifndef ORO_ENUM_TYPEINFO_HPP
+#define ORO_ENUM_TYPEINFO_HPP
+
+#include <map>
+#include <sstream>
 
 #include "../rtt-config.h"
 #include "Types.hpp"
@@ -75,11 +79,16 @@ namespace RTT
             }
 
             bool installTypeInfoObject(TypeInfo* ti) {
+                boost::shared_ptr< EnumTypeInfo<T> > mthis =
+                    boost::dynamic_pointer_cast< EnumTypeInfo<T> >( this->getSharedPtr() );
+                assert(mthis);
+
                 if (!Types()->type("int")) {
                     log(Error) << "Failed to register enum <-> int conversion because type int is not known in type system."<<endlog();
                     return false;
                 } else {
                     TemplateTypeInfo<T,false>::installTypeInfoObject(ti);
+                    ti->setStreamFactory(mthis);
                     Types()->type("int")->addConstructor(newConstructor(
                             &EnumTypeInfo<T>::enum_to_int, true));
                 }
@@ -87,6 +96,59 @@ namespace RTT
 
                 // Don't delete us, we're memory-managed.
                 return false;
+            }
+
+            virtual std::ostream& write(std::ostream& os, base::DataSourceBase::shared_ptr in) const {
+                typename internal::DataSource<T>::shared_ptr ds =
+                        internal::DataSource<T>::narrow( in.get() );
+                if (!ds) {
+                    return os;
+                }
+
+                typename MapType::const_iterator it = to_string.find(ds->get());
+                if (it != to_string.end()) {
+                    os << it->second;
+                } else {
+                    os << enum_to_int(ds->get());
+                }
+                return os;
+            }
+
+            virtual std::istream& read(std::istream& is, base::DataSourceBase::shared_ptr out) const {
+                typename internal::AssignableDataSource<T>::shared_ptr ds =
+                        internal::AssignableDataSource<T>::narrow( out.get() );
+                if (!ds) {
+                    return is;
+                }
+
+                std::string token;
+                if (!(is >> token)) {
+                    return is;
+                }
+
+                for (typename MapType::const_iterator it = to_string.begin(); it != to_string.end(); ++it) {
+                    if (it->second == token) {
+                        ds->set(it->first);
+                        ds->updated();
+                        return is;
+                    }
+                }
+
+                std::istringstream parser(token);
+                int value = 0;
+                char trailing = 0;
+                if ((parser >> value) && !(parser >> trailing)) {
+                    ds->set(int_to_enum(value));
+                    ds->updated();
+                    return is;
+                }
+
+                is.setstate(std::ios::failbit);
+                return is;
+            }
+
+            virtual bool isStreamable() const {
+                return true;
             }
 
             /**
@@ -107,7 +169,7 @@ namespace RTT
                 if (ds)
                 {
                     typename internal::AssignableDataSource<T>::shared_ptr menum =
-                            internal::AssignableDataSource<T>::narrow( source.get() );
+                            internal::AssignableDataSource<T>::narrow( result.get() );
                     assert(menum);
                     menum->set( (T)ds->get() );
                     return true;
@@ -146,7 +208,7 @@ namespace RTT
                     // if not available, just convert to int.
                     if ( to_string.count( ds->get() ) == 0 ) {
                         //log(Warning) << "No enum-to-string mapping defined for enum " << this->getTypeName() <<". Converting to int."<<endlog();
-                        return new internal::ValueDataSource<int>( ds->get() );
+                        return new internal::ValueDataSource<int>( enum_to_int(ds->get()) );
                     }
                     internal::ValueDataSource<std::string>::shared_ptr vds =  new internal::ValueDataSource<std::string>( to_string.find(ds->get())->second );
                     return vds;
@@ -157,3 +219,5 @@ namespace RTT
         };
     }
 }
+
+#endif

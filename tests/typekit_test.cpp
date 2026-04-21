@@ -32,9 +32,16 @@
 #include <types/OperatorTypes.hpp>
 
 #include <types/SequenceTypeInfo.hpp>
+#include <typekit/RealTimeTypekit.hpp>
 
 struct TypekitFixture
 {
+    TypekitFixture()
+    {
+        if (!Types()->type("int")) {
+            RTT::types::RealTimeTypekitPlugin().loadTypes();
+        }
+    }
 };
 
 // Registers the fixture into the 'registry'
@@ -67,6 +74,21 @@ BOOST_AUTO_TEST_CASE( testComposeDecompose )
             BOOST_CHECK_MESSAGE( ti->composeType( ti->decomposeType(input->getDataSource()), output->getDataSource()), "Decomposition/Composition of " + *it + " failed!" );
         }
     }
+}
+
+BOOST_AUTO_TEST_CASE( testBuiltinShortTypesAreRegistered )
+{
+    RTT::types::TypeInfo* short_type = Types()->type("short");
+    RTT::types::TypeInfo* ushort_type = Types()->type("ushort");
+
+    BOOST_REQUIRE_MESSAGE(short_type, "RTT built-in typekit must register short");
+    BOOST_REQUIRE_MESSAGE(ushort_type, "RTT built-in typekit must register ushort");
+
+    Property<short> short_property("short_value", "", static_cast<short>(-3));
+    Property<unsigned short> ushort_property("ushort_value", "", static_cast<unsigned short>(7));
+
+    BOOST_CHECK_EQUAL(short_type->decomposeType(short_property.getDataSource())->getTypeName(), "short");
+    BOOST_CHECK_EQUAL(ushort_type->decomposeType(ushort_property.getDataSource())->getTypeName(), "ushort");
 }
 
 BOOST_AUTO_TEST_SUITE_END()

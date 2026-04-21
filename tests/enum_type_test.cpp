@@ -25,7 +25,9 @@
 #include "datasource_fixture.hpp"
 #include "marsh/PropertyBagIntrospector.hpp"
 #include "types/EnumTypeInfo.hpp"
+#include "types/TemplateTypeInfo.hpp"
 #include "marsh/PropertyLoader.hpp"
+#include "plugin/PluginLoader.hpp"
 #include "TaskContext.hpp"
 
 typedef enum
@@ -46,6 +48,12 @@ public:
 
     EnumTypeTest()
     {
+        if (!Types()->type("int")) {
+            plugin::PluginLoader::Instance()->loadTypekits("../rtt:../../rtt");
+        }
+        if (!Types()->type("int")) {
+            Types()->addType(new types::TemplateTypeInfo<int>("int"));
+        }
 
         a = new ValueDataSource<TheEnum>( A );
         b = new ValueDataSource<TheEnum>( B );
@@ -120,4 +128,3 @@ BOOST_AUTO_TEST_CASE( testEnumSaveIntProperties )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
