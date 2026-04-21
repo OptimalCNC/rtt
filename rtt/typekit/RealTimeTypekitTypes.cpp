@@ -62,6 +62,8 @@ namespace RTT
         TypeInfoRepository::shared_ptr ti = TypeInfoRepository::Instance();
 
         // The standard C types + std::string are defined here,
+        ti->addType( new StdTypeInfo<short>("short") );
+        ti->addType( new StdTypeInfo<unsigned short>("ushort") );
         ti->addType( new StdTypeInfo<int>("int") );
         ti->addType( new StdTypeInfo<unsigned int>("uint") );
         ti->addType( new StdTypeInfo<long long>("llong") );
@@ -78,4 +80,3 @@ namespace RTT
         return true;
     }
 }
-
