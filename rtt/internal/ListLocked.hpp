@@ -41,7 +41,7 @@
 #define ORO_LIST_LOCKED_HPP
 
 #include <boost/intrusive/list.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/bind/protect.hpp>
 #include <stack>
 #include <vector>
@@ -55,6 +55,7 @@
 
 namespace RTT
 { namespace internal {
+    using boost::placeholders::_1;
 
     /**
      * A \a simple lock-based list implementation to \a append or \a erase
