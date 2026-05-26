@@ -159,6 +159,16 @@ namespace RTT
                 }
             }
         }
+        for (Requests::iterator it = mrequests.begin(); it != mrequests.end(); ++it) {
+            if ( !it->second->ready() ) {
+                if ( sp->hasService( it->first ) ) {
+                    it->second->connectTo( sp->getService( it->first ) );
+                } else {
+                    log(Debug) << "Service " << sp->getName() << " has no child Service "
+                               << it->first << " for ServiceRequester " << mrname << endlog();
+                }
+            }
+        }
         if (ready()) {
             if (!mprovider)
                 mprovider = sp;
@@ -174,6 +184,9 @@ namespace RTT
         for_each(mmethods.begin(), mmethods.end(),
                  boost::bind(&OperationCallerBaseInvoker::disconnect, boost::bind(&OperationCallers::value_type::second, _1) )
                  );
+        for_each(mrequests.begin(), mrequests.end(),
+                 boost::bind(&ServiceRequester::disconnect, boost::bind(&Requests::value_type::second, _1) )
+                 );
     }
 
     bool ServiceRequester::ready() const
@@ -181,6 +194,11 @@ namespace RTT
         for (OperationCallers::const_iterator it = mmethods.begin(); it != mmethods.end(); ++it)
             if ( !it->second->ready() ) {
                 log(Debug) << "ServiceRequester: "<< it->first << " not set up." <<endlog();
+                return false;
+            }
+        for (Requests::const_iterator it = mrequests.begin(); it != mrequests.end(); ++it)
+            if ( !it->second->ready() ) {
+                log(Debug) << "ServiceRequester: child requester "<< it->first << " not set up." <<endlog();
                 return false;
             }
         return true;
