@@ -27,11 +27,40 @@
 #include <extras/TimerThread.hpp>
 #include <extras/SimulationThread.hpp>
 #include <os/MainThread.hpp>
+#include <os/ThreadInterface.hpp>
 #include <Logger.hpp>
 #include <rtt-config.h>
 
 using namespace std;
 using namespace RTT;
+
+namespace {
+    bool threadHasScheduler(os::ThreadInterface* thread, int scheduler, int priority)
+    {
+        return thread &&
+            thread->getScheduler() == scheduler &&
+            thread->getPriority() == priority;
+    }
+
+    bool skipIfSchedulerUnavailable(
+        const char* test_name,
+        os::ThreadInterface* thread,
+        int scheduler,
+        int priority)
+    {
+        if (threadHasScheduler(thread, scheduler, priority))
+            return false;
+
+        BOOST_TEST_MESSAGE(
+            "Skipping " << test_name
+            << " because the requested scheduler/priority "
+            << scheduler << "/" << priority
+            << " was not applied by this process; actual scheduler/priority is "
+            << (thread ? thread->getScheduler() : -1) << "/"
+            << (thread ? thread->getPriority() : -1) << ".");
+        return true;
+    }
+}
 
 struct A {};
 
@@ -191,6 +220,8 @@ BOOST_AUTO_TEST_CASE( testPeriodicActivity )
     // Adapt priority levels to OS.
     int bprio = 15, rtsched = ORO_SCHED_RT;
     os::CheckPriority( rtsched, bprio );
+    if (skipIfSchedulerUnavailable("testPeriodicActivity", mtask.thread(), rtsched, bprio))
+        return;
 
     BOOST_CHECK_EQUAL( bprio, mtask.thread()->getPriority() );
     BOOST_CHECK_EQUAL( rtsched, mtask.thread()->getScheduler() );
@@ -260,6 +291,8 @@ BOOST_AUTO_TEST_CASE( testActivityNonPeriodic )
     // Adapt priority levels to OS.
     int bprio = 15, rtsched = ORO_SCHED_RT;
     os::CheckPriority( rtsched, bprio );
+    if (skipIfSchedulerUnavailable("testActivityNonPeriodic", mtask.thread(), rtsched, bprio))
+        return;
 
     BOOST_CHECK( mtask.isActive() == false );
     BOOST_CHECK( mtask.isRunning() == false );
@@ -306,6 +339,8 @@ BOOST_AUTO_TEST_CASE( testActivityPeriodic )
     // Adapt priority levels to OS.
     int bprio = 15, rtsched = ORO_SCHED_RT;
     os::CheckPriority( rtsched, bprio );
+    if (skipIfSchedulerUnavailable("testActivityPeriodic", mtask.thread(), rtsched, bprio))
+        return;
 
     BOOST_CHECK_EQUAL( bprio, mtask.thread()->getPriority() );
     BOOST_CHECK_EQUAL( rtsched, mtask.thread()->getScheduler() );
@@ -513,6 +548,12 @@ BOOST_AUTO_TEST_CASE( testScheduler )
     bprio = 15;
     if ( os::CheckPriority( rtsched, bprio ) ) {
         TimerThreadPtr tt2 = TimerThread::Instance(rtsched, bprio, 0.0123);
+        if (!threadHasScheduler(tt2.get(), rtsched, bprio)) {
+            BOOST_TEST_MESSAGE(
+                "Skipping RT scheduler part of testScheduler because the "
+                "requested scheduler/priority was not applied by this process.");
+            return;
+        }
         BOOST_CHECK( tt2 != 0 );
         BOOST_CHECK( tt2 != tt );
         usleep(100000);
@@ -547,6 +588,9 @@ BOOST_AUTO_TEST_CASE( testThreadConfig )
     int rtsched = ORO_SCHED_RT;
     int bprio = 15;
     TimerThreadPtr tt = TimerThread::Instance(bprio, 0.0123);
+    os::CheckPriority( rtsched, bprio );
+    if (skipIfSchedulerUnavailable("testThreadConfig", tt.get(), rtsched, bprio))
+        return;
 
     // Test creation of new thread, check functions when not running.
     BOOST_CHECK( tt->isRunning() == false );
@@ -559,15 +603,25 @@ BOOST_AUTO_TEST_CASE( testThreadConfig )
         BOOST_CHECK_EQUAL( bprio, tt->getPriority());
 
         // different priority, different thread.
-        TimerThreadPtr tt2 = TimerThread::Instance(bprio - 1, 0.0123);
-        BOOST_CHECK( tt2 != 0 );
-        BOOST_CHECK( tt2 != tt );
+        int lower_prio = bprio - 1;
+        int lower_sched = rtsched;
+        if (os::CheckPriority( lower_sched, lower_prio ) == false ||
+            lower_sched != rtsched ||
+            lower_prio == bprio) {
+            BOOST_TEST_MESSAGE(
+                "Skipping different-priority part of testThreadConfig because "
+                "this process cannot provide a distinct lower RT priority.");
+        } else {
+            TimerThreadPtr tt2 = TimerThread::Instance(lower_prio, 0.0123);
+            BOOST_CHECK( tt2 != 0 );
+            BOOST_CHECK( tt2 != tt );
 
-        // different period, different thread.
-        TimerThreadPtr tt3 = TimerThread::Instance(bprio, 0.123);
-        BOOST_CHECK( tt3 != 0 );
-        BOOST_CHECK( tt3 != tt );
-        BOOST_CHECK( tt3 != tt2 );
+            // different period, different thread.
+            TimerThreadPtr tt3 = TimerThread::Instance(bprio, 0.123);
+            BOOST_CHECK( tt3 != 0 );
+            BOOST_CHECK( tt3 != tt );
+            BOOST_CHECK( tt3 != tt2 );
+        }
     }
 
     tt = TimerThread::Instance(bprio, 0.0123);
@@ -637,6 +691,14 @@ BOOST_AUTO_TEST_CASE( testExceptionRecovery )
 {
     Logger::LogLevel ll = Logger::log().getLogLevel();
     Logger::log().setLogLevel( Logger::Never );
+    int rtsched = ORO_SCHED_RT;
+    int bprio = 3;
+    os::CheckPriority( rtsched, bprio );
+    if (skipIfSchedulerUnavailable("testExceptionRecovery", t_task_np->thread(), rtsched, bprio)) {
+        Logger::log().setLogLevel( ll );
+        return;
+    }
+
     BOOST_CHECK(t_task_np->start());
     BOOST_CHECK(t_task_np_bad->start()); // must stop t_task_np too.
     BOOST_CHECK(t_task_p->start());
@@ -705,4 +767,3 @@ BOOST_AUTO_TEST_CASE( testExceptionRecovery )
 #endif
 
 BOOST_AUTO_TEST_SUITE_END()
-
