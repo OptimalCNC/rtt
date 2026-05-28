@@ -70,9 +70,9 @@ namespace RTT
 
     IllegalServer::IllegalServer(const std::string& r) : reason(r) {}
 
-    IllegalServer::~IllegalServer() throw() {}
+    IllegalServer::~IllegalServer() noexcept {}
 
-    const char* IllegalServer::what() const throw() { return reason.c_str(); }
+    const char* IllegalServer::what() const noexcept { return reason.c_str(); }
 
 
     std::map<TaskContextProxy*, corba::CTaskContext_ptr> TaskContextProxy::proxies;
@@ -959,4 +959,3 @@ namespace RTT
         return proxy_poa.in();
     }
 }}
-

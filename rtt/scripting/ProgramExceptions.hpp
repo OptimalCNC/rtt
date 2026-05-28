@@ -59,8 +59,8 @@ namespace RTT
             : merror( error )
         {
         }
-        ~program_load_exception() throw() {}
-        const char* what() const throw()
+        ~program_load_exception() noexcept {}
+        const char* what() const noexcept
         {
             return merror.c_str();
         }
@@ -79,8 +79,8 @@ namespace RTT
             : merror( error )
         {
         }
-        ~program_unload_exception() throw() {}
-        const char* what() const throw()
+        ~program_unload_exception() noexcept {}
+        const char* what() const noexcept
         {
             return merror.c_str();
         }

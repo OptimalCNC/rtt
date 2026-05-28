@@ -61,8 +61,8 @@ namespace RTT
      */
     struct RTT_API bad_assignment : public std::exception
     {
-        virtual ~bad_assignment() throw();
-        virtual const char* what() const throw();
+        virtual ~bad_assignment() noexcept;
+        virtual const char* what() const noexcept;
     };
 #endif
 
@@ -247,4 +247,3 @@ RTT_EXT_IMPL template class RTT_API RTT::internal::DataSource< std::string >;
 RTT_EXT_IMPL template class RTT_API RTT::internal::AssignableDataSource< std::string >;
 
 #endif
-
