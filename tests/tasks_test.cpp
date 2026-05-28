@@ -191,6 +191,29 @@ struct TestRunnableInterface
     }
 };
 
+struct TestActivityWithoutRunner
+    : public Activity
+{
+    TestActivityWithoutRunner()
+        : Activity(15), finalized(false)
+    {
+    }
+
+    void simulateRunningLoop()
+    {
+        active = true;
+        running = true;
+        inloop = true;
+    }
+
+    void finalize()
+    {
+        finalized = true;
+    }
+
+    bool finalized;
+};
+
 struct TestAllocate
     : public RunnableInterface
 {
@@ -518,6 +541,16 @@ BOOST_AUTO_TEST_CASE( testActivityNP )
     }
 }
 
+BOOST_AUTO_TEST_CASE( testActivityBreakLoopWithoutRunner )
+{
+    TestActivityWithoutRunner t_task_nonper;
+
+    t_task_nonper.simulateRunningLoop();
+    BOOST_CHECK( t_task_nonper.stop() );
+    BOOST_CHECK( t_task_nonper.finalized );
+    BOOST_CHECK( !t_task_nonper.isRunning() );
+}
+
 BOOST_AUTO_TEST_CASE( testActivityBreakLoop )
 {
     scoped_ptr<TestRunnableInterface> t_run_int_nonper
@@ -712,4 +745,3 @@ void ActivitiesTest::testRemoveAllocate()
 
     BOOST_CHECK( t_act->run( 0 ) );
 }
-
