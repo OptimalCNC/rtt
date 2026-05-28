@@ -56,10 +56,10 @@ namespace RTT
         : public std::exception
   {
       name_not_found_exception( const std::string& n="name" );
-      ~name_not_found_exception() throw();
+      ~name_not_found_exception() noexcept;
       std::string name;
       std::string whatstr;
-      virtual const char* what() const throw();
+      virtual const char* what() const noexcept;
   };
 
         /**
@@ -70,9 +70,9 @@ namespace RTT
             : public std::exception
       {
           invalid_handle_exception();
-          ~invalid_handle_exception() throw();
+          ~invalid_handle_exception() noexcept;
           std::string whatstr;
-          virtual const char* what() const throw();
+          virtual const char* what() const noexcept;
       };
 
     /**
@@ -86,8 +86,8 @@ namespace RTT
       int received;
       std::string whatstr;
       wrong_number_of_args_exception( int w, int r );
-      ~wrong_number_of_args_exception() throw();
-      virtual const char* what() const throw();
+      ~wrong_number_of_args_exception() noexcept;
+      virtual const char* what() const noexcept;
   };
 
     /**
@@ -104,8 +104,8 @@ namespace RTT
       std::string received_;
       std::string whatstr;
       wrong_types_of_args_exception( int w, const std::string& expected, const std::string& received );
-      ~wrong_types_of_args_exception() throw();
-      virtual const char* what() const throw();
+      ~wrong_types_of_args_exception() noexcept;
+      virtual const char* what() const noexcept;
   };
 
       /**
@@ -117,8 +117,8 @@ namespace RTT
     {
         std::string whatstr;
         no_asynchronous_operation_exception( const std::string& what );
-        ~no_asynchronous_operation_exception() throw();
-        virtual const char* what() const throw();
+        ~no_asynchronous_operation_exception() noexcept;
+        virtual const char* what() const noexcept;
     };
 
     /**
@@ -136,8 +136,8 @@ namespace RTT
       std::string received_;
       std::string whatstr;
       non_lvalue_args_exception( int w, const std::string& received );
-      ~non_lvalue_args_exception() throw();
-      virtual const char* what() const throw();
+      ~non_lvalue_args_exception() noexcept;
+      virtual const char* what() const noexcept;
   };
 }
 

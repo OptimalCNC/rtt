@@ -47,9 +47,9 @@ namespace RTT {
         whatstr = name + " not found in this factory.";
     }
 
-    name_not_found_exception::~name_not_found_exception() throw() {}
+    name_not_found_exception::~name_not_found_exception() noexcept {}
 
-    const char* name_not_found_exception::what() const throw() {
+    const char* name_not_found_exception::what() const noexcept {
         return whatstr.c_str();
     }
 
@@ -58,9 +58,9 @@ namespace RTT {
     {
     }
 
-    invalid_handle_exception::~invalid_handle_exception() throw() {}
+    invalid_handle_exception::~invalid_handle_exception() noexcept {}
 
-    const char* invalid_handle_exception::what() const throw() {
+    const char* invalid_handle_exception::what() const noexcept {
         return whatstr.c_str();
     }
 
@@ -69,9 +69,9 @@ namespace RTT {
     {
     }
 
-    no_asynchronous_operation_exception::~no_asynchronous_operation_exception() throw() {}
+    no_asynchronous_operation_exception::~no_asynchronous_operation_exception() noexcept {}
 
-    const char* no_asynchronous_operation_exception::what() const throw() {
+    const char* no_asynchronous_operation_exception::what() const noexcept {
         return whatstr.c_str();
     }
 
@@ -86,9 +86,9 @@ namespace RTT {
         whatstr = a.str();
       }
 
-    wrong_number_of_args_exception::~wrong_number_of_args_exception() throw() {}
+    wrong_number_of_args_exception::~wrong_number_of_args_exception() noexcept {}
 
-    const char* wrong_number_of_args_exception::what() const throw() {
+    const char* wrong_number_of_args_exception::what() const noexcept {
         return whatstr.c_str();
     }
 
@@ -103,10 +103,10 @@ namespace RTT {
         whatstr = a.str();
       }
 
-    wrong_types_of_args_exception::~wrong_types_of_args_exception() throw() {}
+    wrong_types_of_args_exception::~wrong_types_of_args_exception() noexcept {}
 
 
-    const char* wrong_types_of_args_exception::what() const throw() {
+    const char* wrong_types_of_args_exception::what() const noexcept {
         return whatstr.c_str();
     }
 
@@ -119,9 +119,9 @@ namespace RTT {
         whatstr = a.str();
       }
 
-    non_lvalue_args_exception::~non_lvalue_args_exception() throw() {}
+    non_lvalue_args_exception::~non_lvalue_args_exception() noexcept {}
 
-    const char* non_lvalue_args_exception::what() const throw() {
+    const char* non_lvalue_args_exception::what() const noexcept {
         return whatstr.c_str();
     }
 

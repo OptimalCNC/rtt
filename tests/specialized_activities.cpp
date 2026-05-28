@@ -61,11 +61,7 @@ BOOST_FIXTURE_TEST_SUITE(SecializedActivitiesSuite,SpecializedActivities)
 
 BOOST_AUTO_TEST_CASE( testFileDescriptorActivity )
 {
-#if __cplusplus > 199711L
     unique_ptr<TestFDActivity>
-#else
-    auto_ptr<TestFDActivity>
-#endif
             activity(new TestFDActivity);
     static const int USLEEP = 250000;
 
@@ -169,4 +165,3 @@ BOOST_AUTO_TEST_CASE( testFileDescriptorActivity )
 
 
 BOOST_AUTO_TEST_SUITE_END()
-

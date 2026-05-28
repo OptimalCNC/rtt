@@ -63,14 +63,13 @@ namespace RTT
     PeerParser peerparser;
     PropertyParser propparser;
 
-    // a auto_ptr used only to make sure we don't forget to delete
+    // A unique owner is used only to make sure we don't forget to delete
     // the TaskVariableBase it holds..  Here we store a pointer to
     // the TaskVariableBase for a temporary variable we've just
     // parsed.  If we parse a non-temporary, then we don't need to
     // delete it, as it remains in the values map, however a
     // constant only gets stored temporarily in ret, so this
     // variable makes sure it gets deleted.
-    //std::auto_ptr<base::AttributeBase> deleter;
     // the internal::DataSource we've just parsed..  we only store it and
     // assume that the ProgramParser will do something useful with
     // it.  We don't ever own it, and don't delete it, or set it to
