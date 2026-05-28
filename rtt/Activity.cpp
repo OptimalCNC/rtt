@@ -263,7 +263,7 @@ namespace RTT
     bool Activity::breakLoop() {
         if ( runner )
             return runner->breakLoop();
-        return false;
+        return true;
     }
 
     void Activity::finalize() {
