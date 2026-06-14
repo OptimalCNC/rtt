@@ -43,6 +43,7 @@
 #include <vector>
 #include <boost/shared_ptr.hpp>
 #include <rtt/Component.hpp>
+#include "../rtt-config.h"
 
 namespace RTT {
         /**
@@ -57,7 +58,7 @@ namespace RTT {
          *
          * If neither is specified, it looks for Components in the current directory (".").
          */
-        class ComponentLoader
+        class RTT_API ComponentLoader
         {
             /**
              * Keep a list of all loaded libraries such that double

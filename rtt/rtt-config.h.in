@@ -124,7 +124,7 @@
 #   define RTT_API    __declspec(dllexport)
 #   define RTT_EXPORT __declspec(dllexport)
 #   define RTT_HIDE   
-#   define RTT_EXT_IMPL extern
+#   define RTT_EXT_IMPL
 #  else
 #   define RTT_API	 __declspec(dllimport)
 #   define RTT_EXPORT __declspec(dllexport)

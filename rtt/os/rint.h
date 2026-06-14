@@ -44,7 +44,7 @@
 *										*
 ****************************************/
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _MSC_VER < 1800
 #include "../rtt-config.h"
 RTT_API double rint( double value );
 #endif

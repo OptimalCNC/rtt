@@ -59,8 +59,10 @@ template class RTT_EXPORT RTT::internal::ValueDataSource< std::vector<double> >;
 template class RTT_EXPORT RTT::internal::ConstantDataSource< std::vector<double> >;
 template class RTT_EXPORT RTT::internal::ReferenceDataSource< std::vector<double> >;
 
+#ifndef _MSC_VER
 template class RTT_EXPORT RTT::OutputPort< std::vector<double> >;
 template class RTT_EXPORT RTT::InputPort< std::vector<double> >;
+#endif
 template class RTT_EXPORT RTT::Property< std::vector<double> >;
 template class RTT_EXPORT RTT::Attribute< std::vector<double> >;
 
@@ -70,8 +72,10 @@ template class RTT_EXPORT RTT::internal::ValueDataSource< RTT::ConnPolicy >;
 template class RTT_EXPORT RTT::internal::ConstantDataSource< RTT::ConnPolicy >;
 template class RTT_EXPORT RTT::internal::ReferenceDataSource< RTT::ConnPolicy >;
 
+#ifndef _MSC_VER
 template class RTT_EXPORT RTT::OutputPort< RTT::ConnPolicy >;
 template class RTT_EXPORT RTT::InputPort< RTT::ConnPolicy >;
+#endif
 template class RTT_EXPORT RTT::Property< RTT::ConnPolicy >;
 template class RTT_EXPORT RTT::Attribute< RTT::ConnPolicy >;
 
@@ -81,8 +85,10 @@ template class RTT_EXPORT RTT::internal::ValueDataSource< RTT::FlowStatus >;
 template class RTT_EXPORT RTT::internal::ConstantDataSource< RTT::FlowStatus >;
 template class RTT_EXPORT RTT::internal::ReferenceDataSource< RTT::FlowStatus >;
 
+#ifndef _MSC_VER
 template class RTT_EXPORT RTT::OutputPort< RTT::FlowStatus >;
 template class RTT_EXPORT RTT::InputPort< RTT::FlowStatus >;
+#endif
 template class RTT_EXPORT RTT::Property< RTT::FlowStatus >;
 template class RTT_EXPORT RTT::Attribute< RTT::FlowStatus >;
 
@@ -92,8 +98,10 @@ template class RTT_EXPORT RTT::internal::ValueDataSource< RTT::WriteStatus >;
 template class RTT_EXPORT RTT::internal::ConstantDataSource< RTT::WriteStatus >;
 template class RTT_EXPORT RTT::internal::ReferenceDataSource< RTT::WriteStatus >;
 
+#ifndef _MSC_VER
 template class RTT_EXPORT RTT::OutputPort< RTT::WriteStatus >;
 template class RTT_EXPORT RTT::InputPort< RTT::WriteStatus >;
+#endif
 template class RTT_EXPORT RTT::Property< RTT::WriteStatus >;
 template class RTT_EXPORT RTT::Attribute< RTT::WriteStatus >;
 
@@ -102,8 +110,10 @@ template class RTT_EXPORT RTT::internal::ValueDataSource< RTT::SendStatus >;
 template class RTT_EXPORT RTT::internal::ConstantDataSource< RTT::SendStatus >;
 template class RTT_EXPORT RTT::internal::ReferenceDataSource< RTT::SendStatus >;
 
+#ifndef _MSC_VER
 template class RTT_EXPORT RTT::OutputPort< RTT::SendStatus >;
 template class RTT_EXPORT RTT::InputPort< RTT::SendStatus >;
+#endif
 template class RTT_EXPORT RTT::Property< RTT::SendStatus >;
 template class RTT_EXPORT RTT::Attribute< RTT::SendStatus >;
 

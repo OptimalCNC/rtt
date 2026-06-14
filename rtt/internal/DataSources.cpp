@@ -45,7 +45,7 @@ namespace RTT {
      * Specialisation for std::string to keep capacity when set( ... ) is called.
      */
     template<>
-    void ValueDataSource<std::string>::set( AssignableDataSource<std::string>::param_t t )
+    RTT_API void ValueDataSource<std::string>::set( AssignableDataSource<std::string>::param_t t )
     {
         mdata = t.c_str();
     }
@@ -54,7 +54,7 @@ namespace RTT {
      * Specialisation for std::string to keep capacity when clone() is called.
      */
     template<>
-    ValueDataSource<std::string>::ValueDataSource( std::string t )
+    RTT_API ValueDataSource<std::string>::ValueDataSource( std::string t )
         : mdata( t.c_str() )
     {
     }
@@ -64,13 +64,13 @@ namespace RTT {
 /*
  * Explicit template instantiation for core data source types
  */
-template class RTT::internal::DataSource< bool >;
-template class RTT::internal::AssignableDataSource< bool >;
-template class RTT::internal::ValueDataSource< bool >;
-template class RTT::internal::ConstantDataSource< bool >;
-template class RTT::internal::ReferenceDataSource< bool >;
-template class RTT::internal::DataSource< std::string >;
-template class RTT::internal::AssignableDataSource< std::string >;
-template class RTT::internal::ValueDataSource< std::string >;
-template class RTT::internal::ConstantDataSource< std::string >;
-template class RTT::internal::ReferenceDataSource< std::string >;
+template class RTT_API RTT::internal::DataSource< bool >;
+template class RTT_API RTT::internal::AssignableDataSource< bool >;
+template class RTT_API RTT::internal::ValueDataSource< bool >;
+template class RTT_API RTT::internal::ConstantDataSource< bool >;
+template class RTT_API RTT::internal::ReferenceDataSource< bool >;
+template class RTT_API RTT::internal::DataSource< std::string >;
+template class RTT_API RTT::internal::AssignableDataSource< std::string >;
+template class RTT_API RTT::internal::ValueDataSource< std::string >;
+template class RTT_API RTT::internal::ConstantDataSource< std::string >;
+template class RTT_API RTT::internal::ReferenceDataSource< std::string >;

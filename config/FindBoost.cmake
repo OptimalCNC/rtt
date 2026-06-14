@@ -679,6 +679,16 @@ ELSE (_boost_IN_CACHE)
       else()
         set (_boost_COMPILER "-il")
       endif()
+    elseif (MSVC_TOOLSET_VERSION)
+      SET (_boost_COMPILER "-vc${MSVC_TOOLSET_VERSION}")
+    elseif (NOT MSVC_VERSION LESS 1930)
+      SET (_boost_COMPILER "-vc143")
+    elseif (NOT MSVC_VERSION LESS 1920)
+      SET (_boost_COMPILER "-vc142")
+    elseif (NOT MSVC_VERSION LESS 1910)
+      SET (_boost_COMPILER "-vc141")
+    elseif (NOT MSVC_VERSION LESS 1900)
+      SET (_boost_COMPILER "-vc140")
     elseif (MSVC90)
       SET (_boost_COMPILER "-vc90")
     elseif (MSVC10)
@@ -746,6 +756,19 @@ ELSE (_boost_IN_CACHE)
   if(Boost_DEBUG)
     message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE} ] "
       "_boost_MULTITHREADED = ${_boost_MULTITHREADED}")
+  endif()
+
+  SET(_boost_ARCHITECTURE_TAG "")
+  IF(WIN32 AND MSVC)
+    IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+      SET(_boost_ARCHITECTURE_TAG "-x64")
+    ELSEIF(CMAKE_SIZEOF_VOID_P EQUAL 4)
+      SET(_boost_ARCHITECTURE_TAG "-x32")
+    ENDIF()
+  ENDIF()
+  if(Boost_DEBUG)
+    message(STATUS "[ ${CMAKE_CURRENT_LIST_FILE}:${CMAKE_CURRENT_LIST_LINE} ] "
+      "_boost_ARCHITECTURE_TAG = ${_boost_ARCHITECTURE_TAG}")
   endif()
 
   SET( _boost_STATIC_TAG "")
@@ -819,9 +842,13 @@ ELSE (_boost_IN_CACHE)
 	# Search first in the user specified locations 
     FIND_LIBRARY(Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE
         NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}
@@ -830,9 +857,13 @@ ELSE (_boost_IN_CACHE)
 	)
 	FIND_LIBRARY(Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG
         NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+               ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}
                ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_boost_ABI_TAG}
@@ -844,9 +875,13 @@ ELSE (_boost_IN_CACHE)
 	if(NOT Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE)
 		FIND_LIBRARY(Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE
 			NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}
@@ -857,9 +892,13 @@ ELSE (_boost_IN_CACHE)
 	if(NOT Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG)
 		FIND_LIBRARY(Boost_${UPPERCOMPONENT}_LIBRARY_DEBUG
 			NAMES  ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}-${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_COMPILER}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}-${Boost_LIB_VERSION}
+				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}${_boost_ARCHITECTURE_TAG}-${Boost_LIB_VERSION}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}-${_boost_ABI_TAG}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}${_boost_MULTITHREADED}${_boost_STATIC_TAG}${_boost_ABI_TAG}
 				   ${Boost_LIB_PREFIX}boost_${COMPONENT}-${_boost_ABI_TAG}

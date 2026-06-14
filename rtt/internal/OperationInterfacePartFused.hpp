@@ -51,6 +51,9 @@
 #ifndef BOOST_FUSION_UNFUSED_MAX_ARITY
 #define BOOST_FUSION_UNFUSED_MAX_ARITY 7
 #endif
+#ifndef BOOST_FUNCTIONAL_FORWARD_ADAPTER_MAX_ARITY
+#define BOOST_FUNCTIONAL_FORWARD_ADAPTER_MAX_ARITY 7
+#endif
 #include <boost/functional/forward_adapter.hpp>
 #include <boost/fusion/functional/generation/make_unfused.hpp>
 #else
@@ -215,14 +218,14 @@ namespace RTT
                 if ( args.size() != OperationInterfacePartFused<Signature>::arity() ) throw wrong_number_of_args_exception(OperationInterfacePartFused<Signature>::arity(), args.size() );
                 // note: in boost 1.41.0+ the function make_unfused() is available.
 #if BOOST_VERSION >= 104100
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L || (defined(_MSVC_LANG) && _MSVC_LANG > 199711L)
                 auto invoke_fused = boost::bind(&FusedMSignal<Signature>::invoke,
                                         boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(args.begin()), subscriber),
                                         _1
                                     );
                 typedef typename boost::fusion::result_of::make_unfused< decltype(invoke_fused) >::type unfused_type;
                 return this->op->signals(boost::forward_adapter<unfused_type>(boost::fusion::make_unfused(invoke_fused)));
-#else // __cplusplus > 199711L
+#else // __cplusplus > 199711L || (defined(_MSVC_LANG) && _MSVC_LANG > 199711L)
                 return this->op->signals(
                             boost::fusion::make_unfused(boost::bind(&FusedMSignal<Signature>::invoke,
                                                                     boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(args.begin()), subscriber),
@@ -230,7 +233,7 @@ namespace RTT
                                                                     )
                                                         )
                             );
-#endif // __cplusplus > 199711L
+#endif // __cplusplus > 199711L || (defined(_MSVC_LANG) && _MSVC_LANG > 199711L)
 #else // BOOST_VERSION >= 104100
                 return this->op->signals(
                             boost::fusion::make_unfused_generic(boost::bind(&FusedMSignal<Signature>::invoke,
@@ -437,26 +440,26 @@ namespace RTT
                     a2.insert(a2.end(), args.begin(), args.end());
                     // note: in boost 1.41.0+ the function make_unfused() is available.
 #if BOOST_VERSION >= 104100
-#if __cplusplus > 199711L
+#if __cplusplus > 199711L || (defined(_MSVC_LANG) && _MSVC_LANG > 199711L)
                     auto invoke_fused = boost::bind(&FusedMSignal<Signature>::invoke,
-                                            boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(args.begin()), subscriber),
+                                            boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(a2.begin()), subscriber),
                                             _1
                                         );
                     typedef typename boost::fusion::result_of::make_unfused< decltype(invoke_fused) >::type unfused_type;
                     return this->op->signals(boost::forward_adapter<unfused_type>(boost::fusion::make_unfused(invoke_fused)));
-#else // __cplusplus > 199711L
+#else // __cplusplus > 199711L || (defined(_MSVC_LANG) && _MSVC_LANG > 199711L)
                     return this->op->signals(
                                 boost::fusion::make_unfused(boost::bind(&FusedMSignal<Signature>::invoke,
-                                                                        boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(args.begin()), subscriber),
+                                                                        boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(a2.begin()), subscriber),
                                                                         _1
                                                                         )
                                                             )
                                 );
-#endif // __cplusplus > 199711L
+#endif // __cplusplus > 199711L || (defined(_MSVC_LANG) && _MSVC_LANG > 199711L)
 #else // BOOST_VERSION >= 104100
                     return this->op->signals(
                                 boost::fusion::make_unfused_generic(boost::bind(&FusedMSignal<Signature>::invoke,
-                                                                        boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(args.begin()), subscriber),
+                                                                        boost::make_shared<FusedMSignal<Signature> >(func, SequenceFactory::assignable(a2.begin()), subscriber),
                                                                         _1
                                                                         )
                                                             )

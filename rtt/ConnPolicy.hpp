@@ -260,7 +260,7 @@ namespace RTT {
         ConnPolicy(const ConnPolicyDefault &);
     };
 
-    std::ostream &operator<<(std::ostream &os, const ConnPolicy &cp);
+    RTT_API std::ostream &operator<<(std::ostream &os, const ConnPolicy &cp);
 }
 
 #endif
