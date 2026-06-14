@@ -94,7 +94,6 @@ namespace RTT
                 // ie, we could only read out id as a string and then call the getMember below.
                 // type_discovery requires the name right now and does not allow to delay the name, unless we discover the whole type,
                 // keep all datasources and then use getMember using some functor data source.... Not going to do that !
-                assert(false && "You're doing something new and exotic. Contact the Orocos-dev mailing list.");
                 return base::DataSourceBase::shared_ptr();
             }
 
