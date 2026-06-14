@@ -46,9 +46,11 @@
 #include "../FlowStatus.hpp"
 #include "../os/MutexLock.hpp"
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 namespace RTT { namespace base {
+    using boost::placeholders::_1;
+    using boost::placeholders::_2;
 
 
     /** A typed version of ChannelElementBase. It defines generic methods that are
@@ -345,4 +347,3 @@ namespace RTT { namespace base {
 }}
 
 #endif
-

@@ -448,12 +448,12 @@ namespace RTT
             {
             }
 
-            const std::string what() const throw()
+            const std::string what() const noexcept
             {
                 return "Use of undefined value: \"" + mname + "\".";
             }
 
-            parse_exception_undefined_value* copy() const throw()
+            parse_exception_undefined_value* copy() const noexcept
             {
                 return new parse_exception_undefined_value( *this );
             }
