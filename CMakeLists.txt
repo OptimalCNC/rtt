@@ -137,7 +137,12 @@ ADD_SUBDIRECTORY(tests)
 #############################
 
 ADD_CUSTOM_TARGET(docs echo "Documentation built.")
-ADD_DEPENDENCIES(docs dochtml docpdf)
+IF(TARGET dochtml)
+  ADD_DEPENDENCIES(docs dochtml)
+ENDIF(TARGET dochtml)
+IF(TARGET docpdf)
+  ADD_DEPENDENCIES(docs docpdf)
+ENDIF(TARGET docpdf)
 
 IF (DOXYGEN_EXECUTABLE)
   ADD_CUSTOM_TARGET(docapi ${DOXYGEN_EXECUTABLE} "Doxyfile")

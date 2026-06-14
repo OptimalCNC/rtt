@@ -45,13 +45,17 @@
 #include "../Property.hpp"
 
   namespace RTT {
+#ifndef _MSC_VER
     template class RTT_EXPORT OutputPort< bool >; 
     template class RTT_EXPORT InputPort< bool >; 
+#endif
     template class RTT_EXPORT Property< bool >; 
     template class RTT_EXPORT Attribute< bool >; 
 
+#ifndef _MSC_VER
     template class RTT_EXPORT OutputPort< std::string >;
     template class RTT_EXPORT InputPort< std::string >;
+#endif
     template class RTT_EXPORT Property< std::string >;
     template class RTT_EXPORT Attribute< std::string >;
   }
@@ -64,23 +68,41 @@
     template class RTT_EXPORT ConstantDataSource< TYPE >; \
     template class RTT_EXPORT ReferenceDataSource< TYPE >; \
     } \
-    template class RTT_EXPORT OutputPort< TYPE >; \
-    template class RTT_EXPORT InputPort< TYPE >; \
     template class RTT_EXPORT Property< TYPE >; \
     template class RTT_EXPORT Attribute< TYPE >; \
     }
 
+#ifdef _MSC_VER
+#define RTT_EXPORT_TEMPLATE_PORT_TYPE( TYPE )
+#else
+#define RTT_EXPORT_TEMPLATE_PORT_TYPE( TYPE ) \
+  namespace RTT { \
+    template class RTT_EXPORT OutputPort< TYPE >; \
+    template class RTT_EXPORT InputPort< TYPE >; \
+    }
+#endif
+
 RTT_EXPORT_TEMPLATE_TYPE(double)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(double)
 RTT_EXPORT_TEMPLATE_TYPE(short)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(short)
 RTT_EXPORT_TEMPLATE_TYPE(int)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(int)
 RTT_EXPORT_TEMPLATE_TYPE(unsigned short)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(unsigned short)
 RTT_EXPORT_TEMPLATE_TYPE(unsigned int)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(unsigned int)
 RTT_EXPORT_TEMPLATE_TYPE(long long)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(long long)
 RTT_EXPORT_TEMPLATE_TYPE(unsigned long long)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(unsigned long long)
 RTT_EXPORT_TEMPLATE_TYPE(float)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(float)
 RTT_EXPORT_TEMPLATE_TYPE(char)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(char)
 
 #include <rtt/rt_string.hpp>
 
 RTT_EXPORT_TEMPLATE_TYPE(RTT::rt_string)
+RTT_EXPORT_TEMPLATE_PORT_TYPE(RTT::rt_string)
 

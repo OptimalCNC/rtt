@@ -46,7 +46,7 @@
 #include "os/rint.h"
 #include <cmath>
 
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && _MSC_VER < 1800
 double rint( double value )
   {
 	return floor( value + 0.5 );

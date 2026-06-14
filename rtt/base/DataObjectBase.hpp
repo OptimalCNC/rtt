@@ -29,6 +29,7 @@
 #ifndef CORELIB_DATAOBJECTBASE_HPP
 #define CORELIB_DATAOBJECTBASE_HPP
 
+#include "../rtt-config.h"
 #include "../rtt-fwd.hpp"
 
 namespace RTT
@@ -46,7 +47,7 @@ namespace RTT
          * A helper class to pass optional arguments to the constructor of \ref DataObjectLockFree<T>
          * in order to avoid ambiguity.
          */
-        class Options {
+        class RTT_API Options {
         private:
             unsigned int max_threads_;
             bool multiple_writers_;

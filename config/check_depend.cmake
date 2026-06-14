@@ -54,15 +54,22 @@ OPTION(ORO_NO_EMIT_CORBA_IOR "Do not emit CORBA IORs if name service not used" O
 
 # Look for boost We look up all components in one place because this macro does
 # not support multiple invocations in some CMake versions.
-find_package(Boost 1.38 COMPONENTS filesystem system unit_test_framework thread serialization)
+set(OROCOS_REQUIRED_BOOST_COMPONENTS filesystem unit_test_framework thread serialization)
+if(NOT WIN32)
+  list(APPEND OROCOS_REQUIRED_BOOST_COMPONENTS system)
+endif()
+find_package(Boost 1.38 COMPONENTS ${OROCOS_REQUIRED_BOOST_COMPONENTS})
 
 # Look for boost
 if ( PLUGINS_ENABLE )
-  if (NOT Boost_FILESYSTEM_FOUND OR NOT Boost_SYSTEM_FOUND)
-    message(SEND_ERROR "Plugins require Boost Filesystem and System libraries, but they were not found.")
+  if (NOT Boost_FILESYSTEM_FOUND)
+    message(SEND_ERROR "Plugins require Boost Filesystem libraries, but they were not found.")
   endif()
   list(APPEND OROCOS-RTT_INCLUDE_DIRS ${Boost_FILESYSTEM_INCLUDE_DIRS} ${Boost_SYSTEM_INCLUDE_DIRS} ${Boost_SERIALIZATION_INCLUDE_DIRS})
-  list(APPEND OROCOS-RTT_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SYSTEM_LIBRARIES} ${Boost_SERIALIZATION_LIBRARIES}) 
+  list(APPEND OROCOS-RTT_LIBRARIES ${Boost_FILESYSTEM_LIBRARIES} ${Boost_SERIALIZATION_LIBRARIES})
+  if(NOT WIN32)
+    list(APPEND OROCOS-RTT_LIBRARIES ${Boost_SYSTEM_LIBRARIES})
+  endif()
 endif()
 
 if(Boost_INCLUDE_DIR)
@@ -95,7 +102,7 @@ IF (NOT OROBLD_FORCE_TINY_DEMARSHALLER)
 ENDIF (NOT OROBLD_FORCE_TINY_DEMARSHALLER)
 
 # Look for Boost Uuid or libuuid
-find_path(Boost_UUID_INCLUDE_DIR boost/uuid/uuid.hpp PATHS ${Boost_INCLUDE_DIRS})
+find_path(Boost_UUID_INCLUDE_DIR boost/uuid/uuid.hpp PATHS ${Boost_INCLUDE_DIRS} ${Boost_INCLUDE_DIR})
 if(Boost_UUID_INCLUDE_DIR)
   message(STATUS "Found Boost Uuid in ${Boost_UUID_INCLUDE_DIR}.")
   set(ORO_HAVE_BOOST_UUID TRUE)

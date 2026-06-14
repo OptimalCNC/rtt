@@ -5,10 +5,12 @@ IF (PLUGINS_ENABLE_SCRIPTING)
 
   # GCC reports -Wmaybe-uninitialized from inside Boost Graph when these
   # translation units instantiate adjacency_list copy paths.
-  set_source_files_properties(
-    FunctionGraph.cpp
-    FunctionGraphBuilder.cpp
-    PROPERTIES COMPILE_FLAGS "-Wno-maybe-uninitialized")
+  if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    set_source_files_properties(
+      FunctionGraph.cpp
+      FunctionGraphBuilder.cpp
+      PROPERTIES COMPILE_FLAGS "-Wno-maybe-uninitialized")
+  endif()
 
   GLOBAL_ADD_INCLUDE( rtt/scripting ${HPPS})
   # Due to generation of some .h files in build directories, we also need to include some build dirs in our include paths.

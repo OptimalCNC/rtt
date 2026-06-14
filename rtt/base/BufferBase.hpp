@@ -56,7 +56,7 @@ namespace RTT
         typedef int size_type;
         typedef boost::shared_ptr< BufferBase > shared_ptr;
 
-        class Options {
+        class RTT_API Options {
         private:
             bool circular_;
             int max_threads_;

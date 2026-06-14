@@ -13,19 +13,27 @@
 macro( SELECT_ONE_LIBRARY NAME RETURN)
 
   set(${RETURN} "")
+  if (DEFINED CACHE{${NAME}} AND "${${NAME}}" MATCHES ".*-NOTFOUND$")
+    get_property(_select_one_cached_library CACHE ${NAME} PROPERTY VALUE)
+    if (_select_one_cached_library AND NOT "${_select_one_cached_library}" MATCHES ".*-NOTFOUND$")
+      set(${NAME} "${_select_one_cached_library}")
+    endif()
+  endif()
 
   STRING(TOUPPER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_UPPER)
   SET(NAME_U "${NAME}_${CMAKE_BUILD_TYPE_UPPER}")
-  if (DEFINED ${NAME_U})
+  if (DEFINED ${NAME_U} AND NOT "${${NAME_U}}" MATCHES ".*-NOTFOUND$")
 
 	set(${RETURN} ${${NAME_U}})
 
-  else (DEFINED ${NAME_U})
+  else()
 
 	LIST(LENGTH ${NAME} COUNT)
 	if (1 EQUAL COUNT)
 
-	  set(${RETURN} ${${NAME}})
+	  if (NOT "${${NAME}}" MATCHES ".*-NOTFOUND$")
+		set(${RETURN} ${${NAME}})
+	  endif()
 
 	else (1 EQUAL COUNT)
 
@@ -34,17 +42,17 @@ macro( SELECT_ONE_LIBRARY NAME RETURN)
 
 	  # these two if's have to be done separately for some reason ... :-(
 	  if (CMAKE_BUILD_TYPE_UPPER MATCHES "RELWITHDEBINFO|RELEASE|MINSIZEREL")
-		if (DEFINED ${NAME}_RELEASE)
+		if (DEFINED ${NAME}_RELEASE AND NOT "${${NAME}_RELEASE}" MATCHES ".*-NOTFOUND$")
 		  MESSAGE(STATUS "Defaulting to release library for ${CMAKE_BUILD_TYPE_UPPER}")
 		  set(${RETURN} ${${NAME}_RELEASE})
 		endif ()
 	  endif ()
 
-	endif (1 EQUAL COUNT)
+	endif()
 
-  endif (DEFINED ${NAME_U})
+  endif()
 
-  if ("" STREQUAL ${RETURN})
+  if ("${${RETURN}}" STREQUAL "")
 	MESSAGE(FATAL_ERROR "Found multiple ${NAME} libraries, but not one specific to, or related to, the current build type '${CMAKE_BUILD_TYPE_UPPER}'.")
   endif()
 

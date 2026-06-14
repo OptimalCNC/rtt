@@ -79,8 +79,8 @@ namespace RTT {
         Shared,
     } BufferPolicy;
 
-    std::ostream &operator<<(std::ostream &os, const BufferPolicy &bp);
-    std::istream &operator>>(std::istream &is, BufferPolicy &bp);
+    RTT_API std::ostream &operator<<(std::ostream &os, const BufferPolicy &bp);
+    RTT_API std::istream &operator>>(std::istream &is, BufferPolicy &bp);
 }
 
 #endif

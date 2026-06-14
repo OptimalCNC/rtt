@@ -870,11 +870,11 @@ namespace RTT
  * Extern template declarations for core data source types
  * (instantiated in DataSources.cpp)
  */
-RTT_EXT_IMPL template class RTT::internal::ValueDataSource< bool >;
-RTT_EXT_IMPL template class RTT::internal::ConstantDataSource< bool >;
-RTT_EXT_IMPL template class RTT::internal::ReferenceDataSource< bool >;
-RTT_EXT_IMPL template class RTT::internal::ValueDataSource< std::string >;
-RTT_EXT_IMPL template class RTT::internal::ConstantDataSource< std::string >;
-RTT_EXT_IMPL template class RTT::internal::ReferenceDataSource< std::string >;
+RTT_EXT_IMPL template class RTT_API RTT::internal::ValueDataSource< bool >;
+RTT_EXT_IMPL template class RTT_API RTT::internal::ConstantDataSource< bool >;
+RTT_EXT_IMPL template class RTT_API RTT::internal::ReferenceDataSource< bool >;
+RTT_EXT_IMPL template class RTT_API RTT::internal::ValueDataSource< std::string >;
+RTT_EXT_IMPL template class RTT_API RTT::internal::ConstantDataSource< std::string >;
+RTT_EXT_IMPL template class RTT_API RTT::internal::ReferenceDataSource< std::string >;
 
 #endif
