@@ -41,13 +41,23 @@
 
 #include <boost/function.hpp>
 #include <boost/type_traits/function_traits.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/mem_fn.hpp>
 
 namespace RTT
 {
     namespace internal
     {
+        using boost::placeholders::_1;
+        using boost::placeholders::_2;
+        using boost::placeholders::_3;
+        using boost::placeholders::_4;
+        using boost::placeholders::_5;
+        using boost::placeholders::_6;
+        using boost::placeholders::_7;
+        using boost::placeholders::_8;
+        using boost::placeholders::_9;
+
         template<int, class F>
         struct OperationCallerBinderImpl;
 

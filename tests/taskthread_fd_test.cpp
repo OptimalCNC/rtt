@@ -24,6 +24,7 @@
 #include <TaskContext.hpp>
 #include <extras/FileDescriptorActivity.hpp>
 #include <os/MainThread.hpp>
+#include <os/ThreadInterface.hpp>
 #include <Logger.hpp>
 #include <rtt-config.h>
 
@@ -38,6 +39,29 @@ using namespace std;
 
 
 using namespace RTT;
+
+namespace {
+    bool skipIfSchedulerUnavailable(
+        const char* test_name,
+        os::ThreadInterface* thread,
+        int scheduler,
+        int priority)
+    {
+        if (thread &&
+            thread->getScheduler() == scheduler &&
+            thread->getPriority() == priority)
+            return false;
+
+        BOOST_TEST_MESSAGE(
+            "Skipping " << test_name
+            << " because the requested scheduler/priority "
+            << scheduler << "/" << priority
+            << " was not applied by this process; actual scheduler/priority is "
+            << (thread ? thread->getScheduler() : -1) << "/"
+            << (thread ? thread->getPriority() : -1) << ".");
+        return true;
+    }
+}
 
 
 struct TestFileDescriptor
@@ -141,6 +165,8 @@ BOOST_AUTO_TEST_CASE(testFileDescriptor )
     // Adapt priority levels to OS.
     int bprio = 15, rtsched = ORO_SCHED_RT;
     os::CheckPriority( rtsched, bprio );
+    if (skipIfSchedulerUnavailable("testFileDescriptor", mtask.thread(), rtsched, bprio))
+        return;
 
     BOOST_CHECK_EQUAL( bprio, mtask.thread()->getPriority() );
     BOOST_CHECK_EQUAL( rtsched, mtask.thread()->getScheduler() );
@@ -293,4 +319,3 @@ BOOST_AUTO_TEST_CASE(testFileDescriptor_Timeout )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

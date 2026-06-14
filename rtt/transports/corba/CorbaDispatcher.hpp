@@ -48,9 +48,12 @@
 #include "DataFlowI.h"
 #include "../../DataFlowInterface.hpp"
 #include "../../TaskContext.hpp"
+#include <boost/bind/bind.hpp>
 
 namespace RTT {
     namespace corba {
+        using boost::placeholders::_1;
+
         /**
          * This object sends over data flow messages
          * from local buffers to a remote channel element.

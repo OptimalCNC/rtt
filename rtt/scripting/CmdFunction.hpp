@@ -48,7 +48,7 @@
 #include "../internal/DataSource.hpp"
 #include "../ExecutionEngine.hpp"
 #include <boost/shared_ptr.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <iostream>
 

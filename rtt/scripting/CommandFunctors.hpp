@@ -39,7 +39,7 @@
 #ifndef ORO_COMMANDFUNCTORS_HPP
 #define ORO_COMMANDFUNCTORS_HPP
 
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/type_traits/function_traits.hpp>
 

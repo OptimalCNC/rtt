@@ -41,7 +41,7 @@
 
 #include <boost/function.hpp>
 #include <boost/type_traits/function_traits.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/fusion/include/vector.hpp>
 #include <boost/fusion/include/filter_if.hpp>
 #include "NA.hpp"

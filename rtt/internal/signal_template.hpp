@@ -43,7 +43,7 @@
 #include "NA.hpp"
 
 #ifdef ORO_SIGNAL_USE_LIST_LOCK_FREE
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #else
 #include "../os/MutexLock.hpp"
 #endif
@@ -57,6 +57,7 @@
 namespace RTT {
 
     namespace internal {
+        using boost::placeholders::_1;
 
         template<class SlotFunction>
         class OROCOS_SIGNAL_CONNECTION_N : public ConnectionBase
@@ -183,4 +184,3 @@ namespace RTT {
 
 #undef OROCOS_SIGNAL_N
 #undef OROCOS_SIGNAL_CONNECTION_N
-

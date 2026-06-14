@@ -41,6 +41,7 @@
 
 
 #include <boost/shared_ptr.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/function_types/result_type.hpp>
 #include <boost/function_types/parameter_types.hpp>
 // Fusion behaviour changed at Boost 1.42
@@ -79,6 +80,7 @@
 namespace RTT
 {
     namespace internal {
+        using boost::placeholders::_1;
 
         class RTT_API OperationInterfacePartHelper {
         public:

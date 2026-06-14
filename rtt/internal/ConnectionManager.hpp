@@ -56,7 +56,7 @@
 #include "../base/ChannelElementBase.hpp"
 #include <boost/tuple/tuple.hpp>
 #include <boost/function.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <rtt/os/Mutex.hpp>

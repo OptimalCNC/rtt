@@ -40,7 +40,7 @@
 #define ORO_TASK_DATASOURCE_STORAGE_HPP
 
 #include <boost/function.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/mem_fn.hpp>
 #include <boost/function_types/function_type.hpp>
 #include <boost/function_types/function_arity.hpp>
