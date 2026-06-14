@@ -63,6 +63,12 @@ BOOST_AUTO_TEST_CASE( testATypeStruct )
     BOOST_REQUIRE_EQUAL( names.size(), 5);
     BOOST_REQUIRE( atype->getMember("a") );
 
+    // Dynamic [] lookup is not supported for structs, but it must not abort.
+    DataSourceBase::shared_ptr index = new ConstantDataSource<int>(0);
+    DataSourceBase::shared_ptr member = new ConstantDataSource<string>("a");
+    BOOST_CHECK( !Types()->type("AType")->getMemberFactory()->getMember(atype, index) );
+    BOOST_CHECK( !Types()->type("AType")->getMemberFactory()->getMember(atype, member) );
+
     // Check individual part lookup by name:
     AssignableDataSource<int>::shared_ptr a = AssignableDataSource<int>::narrow( atype->getMember("a").get() );
     AssignableDataSource<double>::shared_ptr b = AssignableDataSource<double>::narrow( atype->getMember("b").get() );
@@ -149,4 +155,3 @@ BOOST_AUTO_TEST_CASE( testCTypeStruct )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

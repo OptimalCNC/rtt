@@ -401,6 +401,26 @@ BOOST_AUTO_TEST_CASE( testDotsAndIndexes )
     executePrograms(prog);
 }
 
+BOOST_AUTO_TEST_CASE( testStructRejectsDynamicIndex )
+{
+    Types()->addType( new StructTypeInfo<AType,false>("astruct"));
+    string prog = string("program x {\n") +
+        "var astruct aVar\n" +
+        "do test.assert( aVar[0] == 0 )\n" +
+        "}";
+
+    Parser::ParsedPrograms pg_list;
+    try {
+        pg_list = parser.parseProgram( prog, tc );
+    }
+    catch( const file_parse_exception& exc )
+    {
+        BOOST_CHECK( exc.what().find("Illegal use of []") != string::npos );
+        return;
+    }
+    BOOST_CHECK_MESSAGE( false, "Expected dynamic struct index to fail parsing." );
+}
+
 /**
  * Tests converting double to float to int in several
  * directions.
