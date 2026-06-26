@@ -282,6 +282,28 @@ BOOST_AUTO_TEST_CASE( testPeriodicActivity )
     BOOST_CHECK( mtask.thread()->isRunning() == true);
 }
 
+BOOST_AUTO_TEST_CASE( testPeriodicActivitySharedExplicitCpuAffinity )
+{
+    unsigned cpu_affinity = 0x1;
+
+    PeriodicActivity first(ORO_SCHED_RT, 15, 0.01, cpu_affinity);
+    int priority = 15;
+    int scheduler = ORO_SCHED_RT;
+    os::CheckPriority(scheduler, priority);
+    if (skipIfSchedulerUnavailable(
+            "testPeriodicActivitySharedExplicitCpuAffinity",
+            first.thread(),
+            scheduler,
+            priority))
+        return;
+
+    BOOST_CHECK_EQUAL(cpu_affinity, first.thread()->getCpuAffinity());
+
+    PeriodicActivity second(ORO_SCHED_RT, 15, 0.01, cpu_affinity);
+    BOOST_CHECK_EQUAL(cpu_affinity, second.thread()->getCpuAffinity());
+    BOOST_CHECK(first.thread() == second.thread());
+}
+
 BOOST_AUTO_TEST_CASE( testActivityNonPeriodic )
 {
     // Test non-periodic task sequencing...

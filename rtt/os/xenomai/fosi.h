@@ -108,6 +108,7 @@ extern "C" {
         RTOS_XENO_TASK xenotask;
         RTOS_XENO_TASK* xenoptr;
         int sched_type;
+        unsigned cpu_affinity;
     } RTOS_TASK;
 
     static const TICK_TIME InfiniteTicks = LONG_LONG_MAX;

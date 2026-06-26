@@ -94,6 +94,7 @@ namespace RTT
 
             const char* mt_name = "MainThread";
             main->sched_type = SCHED_XENOMAI_SOFT; // default for MainThread
+            main->cpu_affinity = ~0;
             main->name = strncpy( (char*)malloc( (strlen(mt_name)+1)*sizeof(char) ), mt_name, strlen(mt_name)+1 );
 
             int ret = -1;
@@ -212,6 +213,7 @@ namespace RTT
                 name = "XenoThread";
             task->name = strncpy( (char*)malloc( (strlen(name)+1)*sizeof(char) ), name, strlen(name)+1 );
             task->sched_type = sched_type; // User requested scheduler.
+            task->cpu_affinity = cpu_affinity ? cpu_affinity : ~0;
             int rv;
 
             unsigned int aff = 0;
@@ -424,7 +426,7 @@ namespace RTT
 
         INTERNAL_QUAL unsigned rtos_task_get_cpu_affinity(const RTOS_TASK *task)
         {
-            return ~0;
+            return task->cpu_affinity;
         }
 
         INTERNAL_QUAL const char* rtos_task_get_name(const RTOS_TASK* mytask) {
