@@ -70,7 +70,8 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/internal/LocalOperationCaller.hpp",
         "rtt/internal/OperationCallerC.cpp",
         "rtt/internal/SendHandleC.cpp",
-        "rtt/internal/SharedConnection.cpp"
+        "rtt/internal/SharedConnection.cpp",
+        "rtt/ServiceRequester.cpp"
     };
 
     std::vector<std::string> violations;

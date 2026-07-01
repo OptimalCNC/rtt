@@ -64,7 +64,9 @@ namespace RTT
     {
         if (mmethods.find(isb.getName()) != mmethods.end())
         {
-            log(Error) << "OperationCaller with name '" + isb.getName() + "' already present." << endlog();
+            Logger::log().logf(Logger::Error, "ServiceRequester",
+                               "OperationCaller with name '%s' already present.",
+                               isb.getName().c_str());
             return false;
         }
         mmethods.insert(make_pair(isb.getName(), &isb));
@@ -104,9 +106,12 @@ namespace RTT
         try {
             return shared_from_this();
         } catch( boost::bad_weak_ptr& /*bw*/ ) {
-            log(Error) <<"When using boost < 1.40.0 : You are not allowed to call requires() on a ServiceRequester that does not yet belong to a TaskContext or another ServiceRequester." << endlog();
-            log(Error) <<"Try to avoid using requires() in this case: omit it or use the service requester directly." <<endlog();
-            log(Error) <<"OR: upgrade to boost 1.40.0, then this error will go away." <<endlog();
+            Logger::log().logf(Logger::Error, "ServiceRequester",
+                               "When using boost < 1.40.0 : You are not allowed to call requires() on a ServiceRequester that does not yet belong to a TaskContext or another ServiceRequester.");
+            Logger::log().logf(Logger::Error, "ServiceRequester",
+                               "Try to avoid using requires() in this case: omit it or use the service requester directly.");
+            Logger::log().logf(Logger::Error, "ServiceRequester",
+                               "OR: upgrade to boost 1.40.0, then this error will go away.");
             throw std::runtime_error("Illegal use of requires()");
         }
     }
@@ -125,7 +130,9 @@ namespace RTT
 
     bool ServiceRequester::addServiceRequester(ServiceRequester::shared_ptr obj) {
         if ( mrequests.find( obj->getRequestName() ) != mrequests.end() ) {
-            log(Error) << "Could not add ServiceRequester " << obj->getRequestName() <<": name already in use." <<endlog();
+            Logger::log().logf(Logger::Error, "ServiceRequester",
+                               "Could not add ServiceRequester %s: name already in use.",
+                               obj->getRequestName().c_str());
             return false;
         }
 
@@ -144,17 +151,25 @@ namespace RTT
                 if (sp->hasOperation( it->first )) {
                     it->second->setImplementation( sp->getLocalOperation( it->first ), mrowner ? mrowner->engine() : 0 );
                     if ( it->second->ready() ) {
-                        log(Debug) << "Successfully set up OperationCaller " << it->first <<endlog();
+                        Logger::log().logf(Logger::Debug, "ServiceRequester",
+                                           "Successfully set up OperationCaller %s",
+                                           it->first.c_str());
                         if (!mrowner)
-                            log(Debug) << "OperationCaller "<< it->first << " has no caller set: using GlobalEngine."<<endlog();
+                            Logger::log().logf(Logger::Debug, "ServiceRequester",
+                                               "OperationCaller %s has no caller set: using GlobalEngine.",
+                                               it->first.c_str());
                     }
                 }
                 if (sp->hasMember( it->first )) {
                     it->second->setImplementationPart( sp->getOperation( it->first ), mrowner ? mrowner->engine() : 0 );
                     if ( it->second->ready() ) {
-                        log(Debug) << "Successfully set up OperationCaller " << it->first <<endlog();
+                        Logger::log().logf(Logger::Debug, "ServiceRequester",
+                                           "Successfully set up OperationCaller %s",
+                                           it->first.c_str());
                         if (!mrowner)
-                            log(Debug) << "OperationCaller "<< it->first << " has no caller set: using GlobalEngine."<<endlog();
+                            Logger::log().logf(Logger::Debug, "ServiceRequester",
+                                               "OperationCaller %s has no caller set: using GlobalEngine.",
+                                               it->first.c_str());
                     }
                 }
             }
@@ -164,15 +179,18 @@ namespace RTT
                 if ( sp->hasService( it->first ) ) {
                     it->second->connectTo( sp->getService( it->first ) );
                 } else {
-                    log(Debug) << "Service " << sp->getName() << " has no child Service "
-                               << it->first << " for ServiceRequester " << mrname << endlog();
+                    Logger::log().logf(Logger::Debug, "ServiceRequester",
+                                       "Service %s has no child Service %s for ServiceRequester %s",
+                                       sp->getName().c_str(), it->first.c_str(), mrname.c_str());
                 }
             }
         }
         if (ready()) {
             if (!mprovider)
                 mprovider = sp;
-            log(Info) << "Found complete interface of requested service '" << mrname <<"'"<< endlog();
+            Logger::log().logf(Logger::Info, "ServiceRequester",
+                               "Found complete interface of requested service '%s'",
+                               mrname.c_str());
             return true;
         }
 
@@ -193,12 +211,16 @@ namespace RTT
     {
         for (OperationCallers::const_iterator it = mmethods.begin(); it != mmethods.end(); ++it)
             if ( !it->second->ready() ) {
-                log(Debug) << "ServiceRequester: "<< it->first << " not set up." <<endlog();
+                Logger::log().logf(Logger::Debug, "ServiceRequester",
+                                   "ServiceRequester: %s not set up.",
+                                   it->first.c_str());
                 return false;
             }
         for (Requests::const_iterator it = mrequests.begin(); it != mrequests.end(); ++it)
             if ( !it->second->ready() ) {
-                log(Debug) << "ServiceRequester: child requester "<< it->first << " not set up." <<endlog();
+                Logger::log().logf(Logger::Debug, "ServiceRequester",
+                                   "ServiceRequester: child requester %s not set up.",
+                                   it->first.c_str());
                 return false;
             }
         return true;
