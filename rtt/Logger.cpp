@@ -243,36 +243,36 @@ namespace RTT
         void logit(std::ostream& (*pf)(std::ostream&))
         {
             // only on Logger::nl or Logger::endl, a time+log-line is written.
-            os::MutexLock lock( inpguard );
-            std:: string res = showTime() +" " + showLevel(inloglevel) + showModule() + " ";
+            LogLevel level;
+            char module[48];
+            std::string message;
+            bool should_log;
+            {
+                os::MutexLock lock( inpguard );
+                level = inloglevel;
+                copyBounded(module, sizeof(module), moduleptr.c_str());
+                should_log = maylogStdOut() || maylogFile();
 
-            // do not log if not wanted.
-            if ( maylogStdOut() ) {
-#ifndef OROSEM_PRINTF_LOGGING
-                *stdoutput << res << logline.str() << pf;
-#else
-                printf("%s%s\n", res.c_str(), logline.str().c_str() );
+#if defined(OROSEM_FILE_LOGGING) || defined(OROSEM_REMOTE_LOGGING)
+                if ( maylogFile() )
+                    message = fileline.str();
 #endif
-                logline.str("");   // clear stringstream.
-            }
+                if ( message.empty() && maylogStdOut() )
+                    message = logline.str();
 
-            if ( maylogFile() ) {
-#ifdef OROSEM_FILE_LOGGING
-#if     defined(OROSEM_LOG4CPP_LOGGING)
-                category.log(level2Priority(inloglevel), fileline.str());
-#elif   !defined(OROSEM_PRINTF_LOGGING)
-                logfile << res << fileline.str() << pf;
-#else
-                fprintf( logfile, "%s%s\n", res.c_str(), fileline.str().c_str() );
-#endif
-#ifdef OROSEM_REMOTE_LOGGING
-                remotestring.Push(res+fileline.str());  // TODO, handle failure.
-#endif
+                logline.str("");
+                logline.clear();
 #if defined(OROSEM_FILE_LOGGING) || defined(OROSEM_REMOTE_LOGGING)
                 fileline.str("");
-#endif
+                fileline.clear();
 #endif
             }
+
+            if (!should_log)
+                return;
+
+            enqueueRtLine(level, module, message.c_str());
+            drainRtLog(pf);
         }
 
         void queueHistory(const std::string& line)
@@ -285,9 +285,20 @@ namespace RTT
 #endif
         }
 
-        int drainRtLog()
+        void enqueueRtLine(LogLevel level, const char* module, const char* message)
         {
-            int processed = rtlogger.PrintAndClearLogQueue([this](
+            RtLogData data;
+            data.level = level;
+            copyBounded(data.module, sizeof(data.module), module);
+
+            rtlog::Status status = rtlogger.Log(std::move(data), "%s", message ? message : "");
+            if (status == rtlog::Status::Error_QueueFull)
+                droppedLogMessages.fetch_add(1, std::memory_order_relaxed);
+        }
+
+        int drainRtLog(std::ostream& (*pf)(std::ostream&) = Logger::endl)
+        {
+            int processed = rtlogger.PrintAndClearLogQueue([this, pf](
                 const RtLogData& data, std::size_t sequence, const char* format, ...) {
                 if (sequence > nextRtLogSequence)
                     droppedLogMessages.fetch_add(sequence - nextRtLogSequence, std::memory_order_relaxed);
@@ -306,19 +317,19 @@ namespace RTT
                          << TimeService::Instance()->secondsSince(timestamp);
                 line << " " << showLevelText(data.level) << "[" << data.module << "] "
                      << message;
-                writeLine(data.level, line.str());
+                writeLine(data.level, line.str(), pf);
             });
             return processed;
         }
 
-        void writeLine(LogLevel level, const std::string& line)
+        void writeLine(LogLevel level, const std::string& line, std::ostream& (*pf)(std::ostream&))
         {
             if (!started)
                 return;
 
             if (level <= outloglevel && outloglevel != Never && level != Never && mlogStdOut) {
 #ifndef OROSEM_PRINTF_LOGGING
-                *stdoutput << line << std::endl;
+                *stdoutput << line << pf;
 #else
                 printf("%s\n", line.c_str());
 #endif
@@ -329,7 +340,7 @@ namespace RTT
 #if     defined(OROSEM_LOG4CPP_LOGGING)
                 category.log(level2Priority(level), line);
 #elif   !defined(OROSEM_PRINTF_LOGGING)
-                logfile << line << std::endl;
+                logfile << line << pf;
 #else
                 fprintf(logfile, "%s\n", line.c_str());
 #endif
