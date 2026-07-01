@@ -118,7 +118,6 @@ namespace RTT
         AssignableDataSource<bool>::shared_ptr blocking;
 
         void checkAndCreate() {
-            Logger::In in("SendHandleC");
             if ( mofp ) {
                 size_t sz = mofp->collectArity();
                 if ( sz == args.size() ) {
@@ -128,7 +127,9 @@ namespace RTT
                     s = boost::dynamic_pointer_cast<DataSource<SendStatus> >( mofp->produceCollect(args, blocking ) );
                     args.clear();
                     if ( !s ) {
-                        log(Error) << "Failed to produce collector for "<< mname << " with " << sz << " arguments." << endlog();
+                        Logger::log().logf(Logger::Error, "SendHandleC",
+                                           "Failed to produce collector for %s with %zu arguments.",
+                                           mname.c_str(), sz);
                         return;
                     }
                 }
@@ -207,7 +208,8 @@ namespace RTT
         if (d)
             d->newarg( a );
         else {
-            Logger::log() <<Logger::Warning << "Extra argument discarded for SendHandleC."<<Logger::endl;
+            Logger::log().logf(Logger::Warning, "SendHandleC",
+                               "Extra argument discarded for SendHandleC.");
         }
         if ( d && d->s ) {
             e->s = d->s;
@@ -227,12 +229,16 @@ namespace RTT
             return e->s->value();
         }
         else {
-            Logger::log() <<Logger::Error << "collect() called on incomplete SendHandleC."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "SendHandleC",
+                               "collect() called on incomplete SendHandleC.");
             if (d) {
                 size_t sz;
                 sz = d->mofp->collectArity();
-                Logger::log() <<Logger::Error << "Wrong number of arguments provided for method '"+d->mname+"'"<<Logger::nl;
-                Logger::log() <<Logger::Error << "Expected "<< sz << ", got: " << d->args.size() <<Logger::endl;
+                Logger::log().logf(Logger::Error, "SendHandleC",
+                                   "Wrong number of arguments provided for method '%s'",
+                                   d->mname.c_str());
+                Logger::log().logf(Logger::Error, "SendHandleC",
+                                   "Expected %zu, got: %zu", sz, d->args.size());
             }
         }
         return SendFailure;
@@ -247,12 +253,16 @@ namespace RTT
             return e->s->value();
         }
         else {
-            Logger::log() <<Logger::Error << "collectIfDone() called on incomplete SendHandleC."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "SendHandleC",
+                               "collectIfDone() called on incomplete SendHandleC.");
             if (d) {
                 size_t sz;
                 sz = d->mofp->collectArity();
-                Logger::log() <<Logger::Error << "Wrong number of arguments provided for method '"+d->mname+"'"<<Logger::nl;
-                Logger::log() <<Logger::Error << "Expected "<< sz << ", got: " << d->args.size() <<Logger::endl;
+                Logger::log().logf(Logger::Error, "SendHandleC",
+                                   "Wrong number of arguments provided for method '%s'",
+                                   d->mname.c_str());
+                Logger::log().logf(Logger::Error, "SendHandleC",
+                                   "Expected %zu, got: %zu", sz, d->args.size());
             }
         }
         return SendFailure;

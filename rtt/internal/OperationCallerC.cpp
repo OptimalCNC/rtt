@@ -79,8 +79,9 @@ namespace RTT
                         try {
                             m = new DataSourceCommand( rta->updateAction( m.get() ) );
                         } catch( bad_assignment& /*ba*/ ) {
-                            Logger::In in("OperationCallerC");
-                            log(Error) << "Error in OperationCallerC::ret : can not convert return value of type "<< m->getType() << " to given type "<< rta->getType()<<endlog();
+                            Logger::log().logf(Logger::Error, "OperationCallerC",
+                                               "Error in OperationCallerC::ret : can not convert return value of type %s to given type %s",
+                                               m->getType().c_str(), rta->getType().c_str());
                         }
 
                 }
@@ -136,7 +137,9 @@ namespace RTT
             d = 0;
         } else {
             if (mr == 0)
-                log(Error) <<"Can not construct OperationCallerC for '"<<name<<"' from null OperationInterfacePart."<<endlog();
+                Logger::log().logf(Logger::Error, "OperationCallerC",
+                                   "Can not construct OperationCallerC for '%s' from null OperationInterfacePart.",
+                                   name.c_str());
         }
     }
 
@@ -178,7 +181,8 @@ namespace RTT
         if (d)
             d->newarg( a );
         else {
-            Logger::log() <<Logger::Warning << "Extra argument discarded for OperationCallerC."<<Logger::endl;
+            Logger::log().logf(Logger::Warning, "OperationCallerC",
+                               "Extra argument discarded for OperationCallerC.");
         }
         if ( d && d->m ) {
             this->m = d->m;
@@ -198,10 +202,13 @@ namespace RTT
                 try {
                     m = new DataSourceCommand(r->getDataSource()->updateAction( m.get() ) );
                 } catch( bad_assignment& /*ba*/ ) {
-                    log(Error) << "Error in OperationCallerC::ret : can not convert return value of type "<< m->getType() << " to given type "<< r->getDataSource()->getType()<<endlog();
+                    Logger::log().logf(Logger::Error, "OperationCallerC",
+                                       "Error in OperationCallerC::ret : can not convert return value of type %s to given type %s",
+                                       m->getType().c_str(), r->getDataSource()->getType().c_str());
                 }
             } else
-                log(Error) <<"Can not add return argument to invalid OperationCallerC."<<endlog();
+                Logger::log().logf(Logger::Error, "OperationCallerC",
+                                   "Can not add return argument to invalid OperationCallerC.");
         }
         return *this;
     }
@@ -215,7 +222,8 @@ namespace RTT
             if (m)
                 m = new DataSourceCommand(r->updateAction( m.get() ) );
             else
-                log(Error) <<"Can not add return argument to invalid OperationCallerC."<<endlog();
+                Logger::log().logf(Logger::Error, "OperationCallerC",
+                                   "Can not add return argument to invalid OperationCallerC.");
         }
         return *this;
     }
@@ -225,12 +233,16 @@ namespace RTT
             m->reset();
             return m->evaluate();
         } else {
-            Logger::log() <<Logger::Error << "call() called on incomplete OperationCallerC."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "OperationCallerC",
+                               "call() called on incomplete OperationCallerC.");
             if (d) {
                 size_t sz;
                 sz = d->ofp->arity();
-                Logger::log() <<Logger::Error << "Wrong number of arguments provided for method '"+d->mname+"'"<<Logger::nl;
-                Logger::log() <<Logger::Error << "Expected "<< sz << ", got: " << d->args.size() <<Logger::endl;
+                Logger::log().logf(Logger::Error, "OperationCallerC",
+                                   "Wrong number of arguments provided for method '%s'",
+                                   d->mname.c_str());
+                Logger::log().logf(Logger::Error, "OperationCallerC",
+                                   "Expected %zu, got: %zu", sz, d->args.size());
             }
         }
         return false;
@@ -251,7 +263,9 @@ namespace RTT
         try {
             h = ofp->produceHandle();
         } catch( no_asynchronous_operation_exception const& nao) {
-            log(Error) <<"OperationCallerC::send(): Can not send the '" << ofp->getName() << "' operation:" << nao.what()  << endlog();
+            Logger::log().logf(Logger::Error, "OperationCallerC",
+                               "OperationCallerC::send(): Can not send the '%s' operation:%s",
+                               ofp->getName().c_str(), nao.what());
             return SendHandleC();
         }
         if (s) {
@@ -265,12 +279,16 @@ namespace RTT
             return SendHandleC( s, h, ofp, mname );
         }
         else {
-            Logger::log() <<Logger::Error << "send() called on incomplete OperationCallerC."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "OperationCallerC",
+                               "send() called on incomplete OperationCallerC.");
             if (d) {
                 size_t sz;
                 sz = d->ofp->arity();
-                Logger::log() <<Logger::Error << "Wrong number of arguments provided for method '"+d->mname+"'"<<Logger::nl;
-                Logger::log() <<Logger::Error << "Expected "<< sz << ", got: " << d->args.size() <<Logger::endl;
+                Logger::log().logf(Logger::Error, "OperationCallerC",
+                                   "Wrong number of arguments provided for method '%s'",
+                                   d->mname.c_str());
+                Logger::log().logf(Logger::Error, "OperationCallerC",
+                                   "Expected %zu, got: %zu", sz, d->args.size());
             }
         }
         return SendHandleC();

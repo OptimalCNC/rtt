@@ -50,6 +50,7 @@ namespace
             return false;
         return code.find("log(") != std::string::npos ||
                code.find("endlog") != std::string::npos ||
+               code.find("Logger::In") != std::string::npos ||
                code.find("Logger::endl") != std::string::npos ||
                code.find("Logger::nl") != std::string::npos;
     }
@@ -63,7 +64,9 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
     const char* files[] = {
         "rtt/base/TaskCore.cpp",
         "rtt/internal/BindStorage.hpp",
-        "rtt/internal/LocalOperationCaller.hpp"
+        "rtt/internal/LocalOperationCaller.hpp",
+        "rtt/internal/OperationCallerC.cpp",
+        "rtt/internal/SendHandleC.cpp"
     };
 
     std::vector<std::string> violations;
