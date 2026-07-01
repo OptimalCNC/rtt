@@ -100,6 +100,54 @@ BOOST_AUTO_TEST_CASE( testNewLog )
     log() << " and std::endl." << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE( testRealtimeFormatLogDrainsToHistory )
+{
+    Logger::LogLevel old_level = logger->getLogLevel();
+    logger->setLogLevel(Logger::Debug);
+    logger->mayLogStdOut(false);
+    logger->mayLogFile(true);
+
+    logger->logf(Logger::Info, "RTLOG_TEST", "bounded format message %d", 42);
+    logger->drainLog();
+
+    bool found = false;
+    for (int i = 0; i != 200; ++i) {
+        std::string line = logger->getLogLine();
+        if (line.empty()) {
+            break;
+        }
+        if (line.find("RTLOG_TEST") != std::string::npos &&
+            line.find("bounded format message 42") != std::string::npos) {
+            found = true;
+            break;
+        }
+    }
+
+    logger->mayLogStdOut(true);
+    logger->setLogLevel(old_level);
+    BOOST_CHECK(found);
+}
+
+BOOST_AUTO_TEST_CASE( testRealtimeFormatLogCountsDroppedMessages )
+{
+    Logger::LogLevel old_level = logger->getLogLevel();
+    logger->setLogLevel(Logger::Debug);
+    logger->mayLogStdOut(false);
+    logger->mayLogFile(false);
+
+    const std::size_t before = logger->droppedLogCount();
+    for (int i = 0; i != 2000; ++i) {
+        logger->logf(Logger::Info, "RTLOG_DROP_TEST", "message %d", i);
+    }
+    logger->drainLog();
+    const std::size_t after = logger->droppedLogCount();
+
+    logger->mayLogFile(true);
+    logger->mayLogStdOut(true);
+    logger->setLogLevel(old_level);
+    BOOST_CHECK(after > before);
+}
+
 BOOST_AUTO_TEST_CASE( testThreadLog )
 {
   boost::scoped_ptr<TestLog> run( new TestLog() );

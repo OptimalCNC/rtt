@@ -146,6 +146,17 @@ namespace RTT
         return "";
     }
 
+    inline void Logger::logf(LogLevel, const char*, const char*, ...) {
+    }
+
+    inline int Logger::drainLog() {
+        return 0;
+    }
+
+    inline std::size_t Logger::droppedLogCount() const {
+        return 0;
+    }
+
     inline void Logger::setStdStream( std::ostream& ) {
     }
 

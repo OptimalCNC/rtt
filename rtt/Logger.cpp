@@ -44,6 +44,10 @@
 
 #include "Logger.hpp"
 #include <iomanip>
+#include <atomic>
+#include <cstdio>
+#include <cstdarg>
+#include <utility>
 
 #ifdef OROSEM_PRINTF_LOGGING
 #  include <stdio.h>
@@ -59,6 +63,10 @@
 #  ifdef OROSEM_REMOTE_LOGGING
 #   include "base/BufferLockFree.hpp"
 #  endif
+#endif
+
+#ifndef OROBLD_DISABLE_LOGGING
+#include <rtlog/rtlog.h>
 #endif
 
 #include <stdlib.h>
@@ -114,6 +122,59 @@ namespace RTT
 
 #endif
 
+    namespace {
+        struct RtLogData {
+            Logger::LogLevel level;
+            char module[48];
+        };
+
+        constexpr std::size_t RtLogQueueSize = 1024;
+        constexpr std::size_t RtLogMessageSize = 256;
+
+        std::atomic<std::size_t> rtlogSequenceNumber(0);
+
+        typedef rtlog::Logger<RtLogData, RtLogQueueSize, RtLogMessageSize, rtlogSequenceNumber,
+                              rtlog::MultiRealtimeWriterQueueType> RtLogger;
+
+        void copyBounded(char* destination, std::size_t destination_size, const char* source)
+        {
+            if (destination_size == 0)
+                return;
+
+            if (!source)
+                source = "";
+
+            std::size_t i = 0;
+            for (; i + 1 < destination_size && source[i] != '\0'; ++i)
+                destination[i] = source[i];
+            destination[i] = '\0';
+        }
+
+        const char* showLevelText(Logger::LogLevel ll)
+        {
+            switch (ll)
+                {
+                case Logger::Fatal:
+                    return "[ FATAL  ]";
+                case Logger::Critical:
+                    return "[CRITICAL]";
+                case Logger::Error:
+                    return "[ ERROR  ]";
+                case Logger::Warning:
+                    return "[ Warning]";
+                case Logger::Info:
+                    return "[ Info   ]";
+                case Logger::Debug:
+                    return "[ Debug  ]";
+                case Logger::RealTime:
+                    return "[RealTime]";
+                case Logger::Never:
+                    break;
+                }
+            return "";
+        }
+    }
+
     Logger& Logger::log() {
         return *Instance();
     }
@@ -145,6 +206,8 @@ namespace RTT
               inloglevel(Info),
               outloglevel(Warning),
               timestamp(0),
+              droppedLogMessages(0),
+              nextRtLogSequence(rtlogSequenceNumber.load(std::memory_order_relaxed)),
               started(false), showtime(true), allowRT(false),
               mlogStdOut(true), mlogFile(true),
               moduleptr("Logger")
@@ -212,9 +275,73 @@ namespace RTT
             }
         }
 
+        void queueHistory(const std::string& line)
+        {
+#ifdef OROSEM_REMOTE_LOGGING
+            if (!remotestring.Push(line))
+                droppedLogMessages.fetch_add(1, std::memory_order_relaxed);
+#else
+            (void)line;
+#endif
+        }
+
+        int drainRtLog()
+        {
+            int processed = rtlogger.PrintAndClearLogQueue([this](
+                const RtLogData& data, std::size_t sequence, const char* format, ...) {
+                if (sequence > nextRtLogSequence)
+                    droppedLogMessages.fetch_add(sequence - nextRtLogSequence, std::memory_order_relaxed);
+                if (sequence >= nextRtLogSequence)
+                    nextRtLogSequence = sequence + 1;
+
+                char message[RtLogMessageSize];
+                va_list args;
+                va_start(args, format);
+                vsnprintf(message, sizeof(message), format, args);
+                va_end(args);
+
+                std::stringstream line;
+                if (showtime)
+                    line << fixed << showpoint << setprecision(3)
+                         << TimeService::Instance()->secondsSince(timestamp);
+                line << " " << showLevelText(data.level) << "[" << data.module << "] "
+                     << message;
+                writeLine(data.level, line.str());
+            });
+            return processed;
+        }
+
+        void writeLine(LogLevel level, const std::string& line)
+        {
+            if (!started)
+                return;
+
+            if (level <= outloglevel && outloglevel != Never && level != Never && mlogStdOut) {
+#ifndef OROSEM_PRINTF_LOGGING
+                *stdoutput << line << std::endl;
+#else
+                printf("%s\n", line.c_str());
+#endif
+            }
+
+            if ((level <= Info || level <= outloglevel) && mlogFile) {
+#ifdef OROSEM_FILE_LOGGING
+#if     defined(OROSEM_LOG4CPP_LOGGING)
+                category.log(level2Priority(level), line);
+#elif   !defined(OROSEM_PRINTF_LOGGING)
+                logfile << line << std::endl;
+#else
+                fprintf(logfile, "%s\n", line.c_str());
+#endif
+#endif
+                queueHistory(line);
+            }
+        }
+
 #ifndef OROSEM_PRINTF_LOGGING
         std::ostream* stdoutput;
 #endif
+        RtLogger rtlogger;
         std::stringstream logline;
 #if defined(OROSEM_FILE_LOGGING) || defined(OROSEM_REMOTE_LOGGING)
         std::stringstream fileline;
@@ -235,6 +362,8 @@ namespace RTT
         LogLevel inloglevel, outloglevel;
 
         TimeService::ticks timestamp;
+        std::atomic<std::size_t> droppedLogMessages;
+        std::size_t nextRtLogSequence;
 
         Logger::LogLevel intToLogLevel(int ll) {
             switch (ll)
@@ -504,6 +633,8 @@ namespace RTT
         if (!d->started)
             return "";
 
+        d->drainRtLog();
+
         os::MutexLock lock( d->inpguard );
         std::string line;
         if(d->remotestring.Pop(line))
@@ -513,6 +644,34 @@ namespace RTT
 #else
         return "";
 #endif
+    }
+
+    void Logger::logf(LogLevel ll, const char* module, const char* format, ...)
+    {
+        if (!d->maylog())
+            return;
+
+        RtLogData data;
+        data.level = ll;
+        copyBounded(data.module, sizeof(data.module), module ? module : "Logger");
+
+        va_list args;
+        va_start(args, format);
+        rtlog::Status status = d->rtlogger.Logv(std::move(data), format ? format : "", args);
+        va_end(args);
+
+        if (status == rtlog::Status::Error_QueueFull)
+            d->droppedLogMessages.fetch_add(1, std::memory_order_relaxed);
+    }
+
+    int Logger::drainLog()
+    {
+        return d->drainRtLog();
+    }
+
+    std::size_t Logger::droppedLogCount() const
+    {
+        return d->droppedLogMessages.load(std::memory_order_relaxed);
     }
 
     void Logger::setStdStream( std::ostream& stdos ) {

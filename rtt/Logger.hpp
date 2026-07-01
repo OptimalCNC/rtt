@@ -47,6 +47,7 @@
 #include <iosfwd>
 #endif
 #include <string>
+#include <cstddef>
 #ifndef OROSEM_PRINTF_LOGGING
 #include <iostream>            // for std::cerr
 #endif
@@ -240,6 +241,23 @@ namespace RTT
          * from an internal buffer of Logger.
          */
         std::string getLogLine();
+
+        /**
+         * Enqueue one bounded printf-style log message for non-real-time
+         * draining. This is the real-time-safe logging surface for code that
+         * can format through fixed-size printf arguments.
+         */
+        void logf(LogLevel ll, const char* module, const char* format, ...);
+
+        /**
+         * Drain queued log messages to configured sinks and history.
+         */
+        int drainLog();
+
+        /**
+         * Return the number of log messages dropped by the bounded queue.
+         */
+        std::size_t droppedLogCount() const;
 
         /**
          * Set the standard output stream. (default is cerr).
