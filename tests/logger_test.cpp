@@ -22,6 +22,7 @@
 #include "logger_test.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <boost/scoped_ptr.hpp>
 #include <Activity.hpp>
 #include <base/RunnableInterface.hpp>
@@ -133,7 +134,7 @@ BOOST_AUTO_TEST_CASE( testRealtimeFormatLogCountsDroppedMessages )
     Logger::LogLevel old_level = logger->getLogLevel();
     logger->setLogLevel(Logger::Debug);
     logger->mayLogStdOut(false);
-    logger->mayLogFile(false);
+    logger->mayLogFile(true);
 
     const std::size_t before = logger->droppedLogCount();
     for (int i = 0; i != 2000; ++i) {
@@ -142,10 +143,31 @@ BOOST_AUTO_TEST_CASE( testRealtimeFormatLogCountsDroppedMessages )
     logger->drainLog();
     const std::size_t after = logger->droppedLogCount();
 
-    logger->mayLogFile(true);
     logger->mayLogStdOut(true);
     logger->setLogLevel(old_level);
     BOOST_CHECK(after > before);
+}
+
+BOOST_AUTO_TEST_CASE( testRealtimeFormatLogHonorsNeverAtEnqueue )
+{
+    Logger::LogLevel old_level = logger->getLogLevel();
+    logger->setLogLevel(Logger::Debug);
+    logger->mayLogStdOut(true);
+    logger->mayLogFile(false);
+
+    std::ostringstream output;
+    logger->setStdStream(output);
+    const std::string marker = "RTLOG_NEVER_FILTER_TEST";
+    logger->setLogLevel(Logger::Never);
+    logger->logf(Logger::Critical, "RTLOG_TEST", "%s", marker.c_str());
+    logger->setLogLevel(Logger::Debug);
+    logger->drainLog();
+
+    logger->setStdStream(std::cerr);
+    logger->mayLogFile(true);
+    logger->mayLogStdOut(true);
+    logger->setLogLevel(old_level);
+    BOOST_CHECK(output.str().find(marker) == std::string::npos);
 }
 
 BOOST_AUTO_TEST_CASE( testLegacyStreamLogUsesBoundedBackend )

@@ -125,6 +125,8 @@ namespace RTT
     namespace {
         struct RtLogData {
             Logger::LogLevel level;
+            bool to_stdout;
+            bool to_file;
             char module[48];
         };
 
@@ -246,18 +248,20 @@ namespace RTT
             LogLevel level;
             char module[48];
             std::string message;
-            bool should_log;
+            bool to_stdout;
+            bool to_file;
             {
                 os::MutexLock lock( inpguard );
                 level = inloglevel;
                 copyBounded(module, sizeof(module), moduleptr.c_str());
-                should_log = maylogStdOut() || maylogFile();
+                to_stdout = maylogStdOut();
+                to_file = maylogFile();
 
 #if defined(OROSEM_FILE_LOGGING) || defined(OROSEM_REMOTE_LOGGING)
-                if ( maylogFile() )
+                if ( to_file )
                     message = fileline.str();
 #endif
-                if ( message.empty() && maylogStdOut() )
+                if ( message.empty() && to_stdout )
                     message = logline.str();
 
                 logline.str("");
@@ -268,10 +272,10 @@ namespace RTT
 #endif
             }
 
-            if (!should_log)
+            if (!to_stdout && !to_file)
                 return;
 
-            enqueueRtLine(level, module, message.c_str());
+            enqueueRtLine(level, to_stdout, to_file, module, message.c_str());
             drainRtLog(pf);
         }
 
@@ -285,10 +289,12 @@ namespace RTT
 #endif
         }
 
-        void enqueueRtLine(LogLevel level, const char* module, const char* message)
+        void enqueueRtLine(LogLevel level, bool to_stdout, bool to_file, const char* module, const char* message)
         {
             RtLogData data;
             data.level = level;
+            data.to_stdout = to_stdout;
+            data.to_file = to_file;
             copyBounded(data.module, sizeof(data.module), module);
 
             rtlog::Status status = rtlogger.Log(std::move(data), "%s", message ? message : "");
@@ -317,17 +323,17 @@ namespace RTT
                          << TimeService::Instance()->secondsSince(timestamp);
                 line << " " << showLevelText(data.level) << "[" << data.module << "] "
                      << message;
-                writeLine(data.level, line.str(), pf);
+                writeLine(data, line.str(), pf);
             });
             return processed;
         }
 
-        void writeLine(LogLevel level, const std::string& line, std::ostream& (*pf)(std::ostream&))
+        void writeLine(const RtLogData& data, const std::string& line, std::ostream& (*pf)(std::ostream&))
         {
             if (!started)
                 return;
 
-            if (level <= outloglevel && outloglevel != Never && level != Never && mlogStdOut) {
+            if (data.to_stdout) {
 #ifndef OROSEM_PRINTF_LOGGING
                 *stdoutput << line << pf;
 #else
@@ -335,10 +341,10 @@ namespace RTT
 #endif
             }
 
-            if ((level <= Info || level <= outloglevel) && mlogFile) {
+            if (data.to_file) {
 #ifdef OROSEM_FILE_LOGGING
 #if     defined(OROSEM_LOG4CPP_LOGGING)
-                category.log(level2Priority(level), line);
+                category.log(level2Priority(data.level), line);
 #elif   !defined(OROSEM_PRINTF_LOGGING)
                 logfile << line << pf;
 #else
@@ -664,7 +670,12 @@ namespace RTT
 
         RtLogData data;
         data.level = ll;
+        data.to_stdout = (ll <= d->outloglevel && d->outloglevel != Never && ll != Never && d->mlogStdOut);
+        data.to_file = ((ll <= Logger::Info || ll <= d->outloglevel) && d->mlogFile);
         copyBounded(data.module, sizeof(data.module), module ? module : "Logger");
+
+        if (!data.to_stdout && !data.to_file)
+            return;
 
         va_list args;
         va_start(args, format);

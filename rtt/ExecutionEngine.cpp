@@ -366,11 +366,11 @@ namespace RTT
                     { tracepoint_context(orocos_rtt, TaskContext_updateHook, taskc->mName.c_str());
                         taskc->updateHook(); }
                 ) CATCH(std::exception const& e,
-                    log(Error) << "in updateHook(): switching to exception state because of unhandled exception" << endlog();
-                    log(Error) << "  " << e.what() << endlog();
+                    Logger::log().logf(Logger::Error, "ExecutionEngine", "in updateHook(): switching to exception state because of unhandled exception");
+                    Logger::log().logf(Logger::Error, "ExecutionEngine", "  %s", e.what());
                     taskc->exception();
                ) CATCH_ALL (
-                    log(Error) << "in updateHook(): switching to exception state because of unhandled exception" << endlog();
+                    Logger::log().logf(Logger::Error, "ExecutionEngine", "in updateHook(): switching to exception state because of unhandled exception");
                     taskc->exception(); // calls stopHook,cleanupHook
                 )
             }
@@ -380,11 +380,11 @@ namespace RTT
                     { tracepoint_context(orocos_rtt, TaskContext_errorHook, taskc->mName.c_str());
                         taskc->errorHook(); }
                 ) CATCH(std::exception const& e,
-                    log(Error) << "in errorHook(): switching to exception state because of unhandled exception" << endlog();
-                    log(Error) << "  " << e.what() << endlog();
+                    Logger::log().logf(Logger::Error, "ExecutionEngine", "in errorHook(): switching to exception state because of unhandled exception");
+                    Logger::log().logf(Logger::Error, "ExecutionEngine", "  %s", e.what());
                     taskc->exception();
                ) CATCH_ALL (
-                    log(Error) << "in errorHook(): switching to exception state because of unhandled exception" << endlog();
+                    Logger::log().logf(Logger::Error, "ExecutionEngine", "in errorHook(): switching to exception state because of unhandled exception");
                     taskc->exception(); // calls stopHook,cleanupHook
                 )
             }
@@ -429,4 +429,3 @@ namespace RTT
     }
 
 }
-

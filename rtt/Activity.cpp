@@ -251,12 +251,11 @@ namespace RTT
         if (overruns == maxOverRun)
         {
             this->emergencyStop();
-            log(Critical) << rtos_task_get_name(this->getTask())
-                    << " got too many periodic overruns in step() ("
-                    << overruns << " times), stopped Thread !"
-                    << endlog();
-            log(Critical) << " See Thread::setMaxOverrun() for info."
-                    << endlog();
+            const char* task_name = rtos_task_get_name(this->getTask());
+            Logger::log().logf(Logger::Critical, task_name,
+                               "%s got too many periodic overruns in step() (%d times), stopped Thread !",
+                               task_name, overruns);
+            Logger::log().logf(Logger::Critical, task_name, " See Thread::setMaxOverrun() for info.");
         }
     }
 

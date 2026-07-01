@@ -201,31 +201,28 @@ namespace RTT {
                     if (overruns == task->maxOverRun)
                     {
                         task->emergencyStop();
-                        Logger::In in(rtos_task_get_name(task->getTask()));
-                        log(Critical) << rtos_task_get_name(task->getTask())
-                                << " got too many periodic overruns in step() ("
-                                << overruns << " times), stopped Thread !"
-                                << endlog();
-                        log()   << " See Thread::setMaxOverrun() for info."
-                                << endlog();
+                        const char* task_name = rtos_task_get_name(task->getTask());
+                        Logger::log().logf(Logger::Critical, task_name,
+                                           "%s got too many periodic overruns in step() (%d times), stopped Thread !",
+                                           task_name, overruns);
+                        Logger::log().logf(Logger::Critical, task_name, " See Thread::setMaxOverrun() for info.");
                     }
                 )CATCH(std::exception const& e,
                     SCOPE_OFF
                     task->emergencyStop();
-                    Logger::In in(rtos_task_get_name(task->getTask()));
-                    log(Critical) << rtos_task_get_name(task->getTask())
-                            << " caught a C++ exception, stopped thread !"
-                            << endlog();
-                    log(Critical) << "exception was: "
-                               << e.what() << endlog();
+                    const char* task_name = rtos_task_get_name(task->getTask());
+                    Logger::log().logf(Logger::Critical, task_name,
+                                       "%s caught a C++ exception, stopped thread !",
+                                       task_name);
+                    Logger::log().logf(Logger::Critical, task_name, "exception was: %s", e.what());
                 ) CATCH_ALL
                 (
                     SCOPE_OFF
                     task->emergencyStop();
-                    Logger::In in(rtos_task_get_name(task->getTask()));
-                    log(Critical) << rtos_task_get_name(task->getTask())
-                            << " caught an unknown C++ exception, stopped thread !"
-                            << endlog();
+                    const char* task_name = rtos_task_get_name(task->getTask());
+                    Logger::log().logf(Logger::Critical, task_name,
+                                       "%s caught an unknown C++ exception, stopped thread !",
+                                       task_name);
                 )
             } // while (!prepareForExit)
 
@@ -664,4 +661,3 @@ namespace RTT {
 
     }
 }
-

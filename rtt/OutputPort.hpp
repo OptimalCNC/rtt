@@ -44,6 +44,7 @@
 #include "internal/DataObjectDataSource.hpp"
 #include "internal/Channels.hpp"
 #include "internal/ConnFactory.hpp"
+#include "Logger.hpp"
 #include "Service.hpp"
 #include "OperationCaller.hpp"
 
@@ -88,8 +89,7 @@ namespace RTT
                         return ( channel_el_input->write(initial_sample) != NotConnected );
                     return true;
                 } else {
-                    Logger::In in("OutputPort");
-                    log(Error) << "Failed to pass data sample to data channel. Aborting connection."<<endlog();
+                    Logger::log().logf(Logger::Error, "OutputPort", "Failed to pass data sample to data channel. Aborting connection.");
                     return false;
                 }
             }
@@ -215,7 +215,7 @@ namespace RTT
             if (connected()) {
                 WriteStatus result = getEndpoint()->getWriteEndpoint()->data_sample(sample, /* reset = */ true);
                 if (result == NotConnected) {
-                    log(Error) << "A channel of port " << getName() << " has been invalidated during setDataSample(), it will be removed" << endlog();
+                    Logger::log().logf(Logger::Error, "OutputPort", "A channel of port %s has been invalidated during setDataSample(), it will be removed", getName().c_str());
                 }
             }
         }
@@ -255,7 +255,7 @@ namespace RTT
                 traceWrite();
                 result = getEndpoint()->getWriteEndpoint()->write(sample);
                 if (result == NotConnected) {
-                    log(Error) << "A channel of port " << getName() << " has been invalidated during write(), it will be removed" << endlog();
+                    Logger::log().logf(Logger::Error, "OutputPort", "A channel of port %s has been invalidated during write(), it will be removed", getName().c_str());
                 }
             }
 
@@ -279,7 +279,7 @@ namespace RTT
                     return write(ds->get());
                 }
                 else
-                    log(Error) << "trying to write from an incompatible data source" << endlog();
+                    Logger::log().logf(Logger::Error, "OutputPort", "trying to write from an incompatible data source");
             }
             return WriteFailure;
         }
@@ -350,4 +350,3 @@ namespace RTT
 }
 
 #endif
-

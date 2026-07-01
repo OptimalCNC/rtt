@@ -42,6 +42,7 @@
 #include "base/InputPortInterface.hpp"
 #include "internal/Channels.hpp"
 #include "internal/InputPortSource.hpp"
+#include "Logger.hpp"
 #include "Service.hpp"
 #include "OperationCaller.hpp"
 
@@ -103,7 +104,7 @@ namespace RTT
                 boost::dynamic_pointer_cast< internal::AssignableDataSource<T> >(source);
             if (! ds)
             {
-                log(Error) << "trying to read to an incompatible data source" << endlog();
+                Logger::log().logf(Logger::Error, "InputPort", "trying to read to an incompatible data source");
                 return NoData;
             }
             RTT::FlowStatus status = read(ds->set(), copy_old_data);
@@ -123,7 +124,7 @@ namespace RTT
                 boost::dynamic_pointer_cast< internal::AssignableDataSource<T> >(source);
             if (! ds)
             {
-                log(Error) << "trying to read to an incompatible data source" << endlog();
+                Logger::log().logf(Logger::Error, "InputPort", "trying to read to an incompatible data source");
                 return NoData;
             }
             return readNewest(ds->set(), copy_old_data);
@@ -240,4 +241,3 @@ namespace RTT
 }
 
 #endif
-
