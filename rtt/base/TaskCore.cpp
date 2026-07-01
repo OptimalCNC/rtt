@@ -102,8 +102,8 @@ namespace RTT {
                     successful = configureHook(); }
                 if (successful) {
                     if (mTaskState != Stopped && (mTaskState == mTargetState)) {
-                        log(Error) << "in configure(): state has been changed inside the configureHook" << endlog();
-                        log(Error) << "  but configureHook returned true. Bailing out." << endlog();
+                        Logger::log().logf(Logger::Error, "TaskCore", "in configure(): state has been changed inside the configureHook");
+                        Logger::log().logf(Logger::Error, "TaskCore", "  but configureHook returned true. Bailing out.");
                         exception();
                         return false;
                     }
@@ -116,11 +116,11 @@ namespace RTT {
                     return false;
                 }
              ) CATCH(std::exception const& e,
-                log(Error) << "in configure(): switching to exception state because of unhandled exception" << endlog();
-                log(Error) << "  " << e.what() << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in configure(): switching to exception state because of unhandled exception");
+                Logger::log().logf(Logger::Error, "TaskCore", "  %s", e.what());
                 exception();
              ) CATCH_ALL(
-                log(Error) << "in configure(): switching to exception state because of unhandled exception" << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in configure(): switching to exception state because of unhandled exception");
                 exception();
              )
         }
@@ -137,11 +137,11 @@ namespace RTT {
                     mTaskState = PreOperational;
                 return true;
              ) CATCH(std::exception const& e,
-                log(Error) << "in cleanup(): switching to exception state because of unhandled exception" << endlog();
-                log(Error) << "  " << e.what() << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in cleanup(): switching to exception state because of unhandled exception");
+                Logger::log().logf(Logger::Error, "TaskCore", "  %s", e.what());
                 exception();
              ) CATCH_ALL (
-                log(Error) << "in cleanup(): switching to exception state because of unhandled exception" << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in cleanup(): switching to exception state because of unhandled exception");
                 exception();
              )
         }
@@ -161,7 +161,6 @@ namespace RTT {
     }
 
     void TaskCore::exception() {
-        //log(Error) <<"Exception happend in TaskCore."<<endlog();
         TaskState copy = mTaskState;
         mTargetState = mTaskState = Exception;
         TRY (
@@ -175,10 +174,10 @@ namespace RTT {
             }
             exceptionHook();
         ) CATCH(std::exception const& e,
-            log(RTT::Error) << "stopHook(), cleanupHook() and/or exceptionHook() raised " << e.what() << ", going into Fatal" << endlog();
+            Logger::log().logf(Logger::Error, "TaskCore", "stopHook(), cleanupHook() and/or exceptionHook() raised %s, going into Fatal", e.what());
             fatal();
         ) CATCH_ALL (
-            log(Error) << "stopHook(), cleanupHook() and/or exceptionHook() raised an exception, going into Fatal" << endlog();
+            Logger::log().logf(Logger::Error, "TaskCore", "stopHook(), cleanupHook() and/or exceptionHook() raised an exception, going into Fatal");
             fatal();
         )
     }
@@ -204,8 +203,8 @@ namespace RTT {
                     successful = startHook(); }
                 if (successful) {
                     if (mTaskState != Running && (mTargetState == mTaskState)) {
-                        log(Error) << "in start(): state has been changed inside the startHook" << endlog();
-                        log(Error) << "  but startHook returned true. Bailing out." << endlog();
+                        Logger::log().logf(Logger::Error, "TaskCore", "in start(): state has been changed inside the startHook");
+                        Logger::log().logf(Logger::Error, "TaskCore", "  but startHook returned true. Bailing out.");
                         exception();
                         return false;
                     }
@@ -218,11 +217,11 @@ namespace RTT {
                 }
                 mTargetState = Stopped;
             ) CATCH(std::exception const& e,
-                log(Error) << "in start(): switching to exception state because of unhandled exception" << endlog();
-                log(Error) << "  " << e.what() << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in start(): switching to exception state because of unhandled exception");
+                Logger::log().logf(Logger::Error, "TaskCore", "  %s", e.what());
                 exception();
             ) CATCH_ALL (
-                log(Error) << "in start(): switching to exception state because of unhandled exception" << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in start(): switching to exception state because of unhandled exception");
                 exception();
             )
         }
@@ -244,11 +243,11 @@ namespace RTT {
                     mTargetState = orig;
                 }
             ) CATCH(std::exception const& e,
-                log(Error) << "in stop(): switching to exception state because of unhandled exception" << endlog();
-                log(Error) << "  " << e.what() << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in stop(): switching to exception state because of unhandled exception");
+                Logger::log().logf(Logger::Error, "TaskCore", "  %s", e.what());
                 exception();
             ) CATCH_ALL (
-                log(Error) << "in stop(): switching to exception state because of unhandled exception" << endlog();
+                Logger::log().logf(Logger::Error, "TaskCore", "in stop(): switching to exception state because of unhandled exception");
                 exception();
             )
         }

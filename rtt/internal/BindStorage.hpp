@@ -116,10 +116,10 @@ namespace RTT
                 try{
                     f();
                 } catch (std::exception& e) {
-                    log(Error) << "Exception raised while executing an operation : "  << e.what() << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Exception raised while executing an operation : %s", e.what());
                     error = true;
                 } catch (...) {
-                    log(Error) << "Unknown exception raised while executing an operation." << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Unknown exception raised while executing an operation.");
                     error = true;
                 }
                 executed = true;
@@ -156,10 +156,10 @@ namespace RTT
                 try{
                     arg = f();
                 } catch (std::exception& e) {
-                    log(Error) << "Exception raised while executing an operation : "  << e.what() << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Exception raised while executing an operation : %s", e.what());
                     error = true;
                 } catch (...) {
-                    log(Error) << "Unknown exception raised while executing an operation." << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Unknown exception raised while executing an operation.");
                     error = true;
                 }
                 executed = true;
@@ -178,10 +178,10 @@ namespace RTT
                 try{
                     arg = &f();
                 } catch (std::exception& e) {
-                    log(Error) << "Exception raised while executing an operation : "  << e.what() << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Exception raised while executing an operation : %s", e.what());
                     error = true;
                 } catch (...) {
-                    log(Error) << "Unknown exception raised while executing an operation." << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Unknown exception raised while executing an operation.");
                     error = true;
                 }
                 executed = true;
@@ -213,10 +213,10 @@ namespace RTT
                 try{
                     arg = f();
                 } catch (std::exception& e) {
-                    log(Error) << "Exception raised while executing an operation : "  << e.what() << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Exception raised while executing an operation : %s", e.what());
                     error = true;
                 } catch(...) {
-                    log(Error) << "Unknown exception raised while executing an operation." << endlog();
+                    Logger::log().logf(Logger::Error, "BindStorage", "Unknown exception raised while executing an operation.");
                     error = true;
                 }
                 executed = true;

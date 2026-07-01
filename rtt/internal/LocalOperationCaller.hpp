@@ -283,8 +283,10 @@ namespace RTT
 
             bool checkCaller() const {
                 if (!this->caller) {
-                    log(Error) << "You're using call() an OwnThread operation or collect() on a sent operation without setting a caller in the OperationCaller. This often causes deadlocks." <<endlog();
-                    log(Error) << "Use this->engine() in a component or GlobalEngine::Instance() in a non-component function. Returning a CollectFailure." <<endlog();
+                    Logger::log().logf(Logger::Error, "LocalOperationCaller",
+                                       "You're using call() an OwnThread operation or collect() on a sent operation without setting a caller in the OperationCaller. This often causes deadlocks.");
+                    Logger::log().logf(Logger::Error, "LocalOperationCaller",
+                                       "Use this->engine() in a component or GlobalEngine::Instance() in a non-component function. Returning a CollectFailure.");
                     assert( false && "You forgot to use setCaller(). See Orocos LOG messages for explanation.");
                     return false;
                 }
