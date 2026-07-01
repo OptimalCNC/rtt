@@ -82,7 +82,9 @@ namespace RTT
 
             // disconnect from a shared connection
             if (channel == shared_connection) {
-                RTT::log(Debug) << "Port " << mport->getName() << " disconnected from shared connection " << shared_connection->getName() << RTT::endlog();
+                Logger::log().logf(Logger::Debug, "ConnectionManager",
+                                   "Port %s disconnected from shared connection %s",
+                                   mport->getName().c_str(), shared_connection->getName().c_str());
                 shared_connection.reset();
             }
             Connections::iterator next = connections.erase(descriptor); // invalidates descriptor

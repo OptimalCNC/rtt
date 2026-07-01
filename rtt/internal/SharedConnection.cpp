@@ -86,7 +86,10 @@ SharedConnectionBase::SharedConnectionBase(const ConnPolicy &policy)
     // register at SharedConnectionRepository
     SharedConnectionRepository::Instance()->add(getName(), this);
 
-    log(Debug) << "Constructed shared " << (policy.type == ConnPolicy::DATA ? "data" : (policy.type == ConnPolicy::BUFFER ? "buffer" : "")) << " connection '" << getName() << "'." << endlog();
+    Logger::log().logf(Logger::Debug, "SharedConnection",
+                       "Constructed shared %s connection '%s'.",
+                       policy.type == ConnPolicy::DATA ? "data" : (policy.type == ConnPolicy::BUFFER ? "buffer" : ""),
+                       getName().c_str());
 }
 
 SharedConnectionBase::~SharedConnectionBase()
@@ -94,7 +97,9 @@ SharedConnectionBase::~SharedConnectionBase()
     // unregister this connection at the SharedConnectionRepository
     SharedConnectionRepository::Instance()->remove(this);
 
-    log(Debug) << "Destroyed shared connection '" << getName() << "'." << endlog();
+    Logger::log().logf(Logger::Debug, "SharedConnection",
+                       "Destroyed shared connection '%s'.",
+                       getName().c_str());
 }
 
 SharedConnID *SharedConnectionBase::getConnID()

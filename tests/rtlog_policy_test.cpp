@@ -64,11 +64,13 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
     const char* files[] = {
         "rtt/base/TaskCore.cpp",
         "rtt/internal/BindStorage.hpp",
+        "rtt/internal/ConnectionManager.cpp",
         "rtt/internal/ConnFactory.cpp",
         "rtt/internal/ConnFactory.hpp",
         "rtt/internal/LocalOperationCaller.hpp",
         "rtt/internal/OperationCallerC.cpp",
-        "rtt/internal/SendHandleC.cpp"
+        "rtt/internal/SendHandleC.cpp",
+        "rtt/internal/SharedConnection.cpp"
     };
 
     std::vector<std::string> violations;
