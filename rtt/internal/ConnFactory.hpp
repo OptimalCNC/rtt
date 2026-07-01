@@ -85,6 +85,69 @@ namespace RTT
         virtual bool isSameID(ConnID const& id) const;
     };
 
+    inline const char* connPolicyTypeName(int type)
+    {
+        switch (type) {
+            case ConnPolicy::UNBUFFERED: return "UNBUFFERED";
+            case ConnPolicy::DATA: return "DATA";
+            case ConnPolicy::BUFFER: return "BUFFER";
+            case ConnPolicy::CIRCULAR_BUFFER: return "CIRCULAR_BUFFER";
+            default: return "(unknown type)";
+        }
+    }
+
+    inline const char* connPolicyLockName(int lock_policy)
+    {
+        switch (lock_policy) {
+            case ConnPolicy::UNSYNC: return "UNSYNC";
+            case ConnPolicy::LOCKED: return "LOCKED";
+            case ConnPolicy::LOCK_FREE: return "LOCK_FREE";
+            default: return "(unknown lock policy)";
+        }
+    }
+
+    inline const char* connPolicyPullName(bool pull)
+    {
+        return pull == ConnPolicy::PULL ? "PULL" : "PUSH";
+    }
+
+    inline const char* connPolicyBufferName(int buffer_policy)
+    {
+        switch (buffer_policy) {
+            case UnspecifiedBufferPolicy: return "UnspecifiedBufferPolicy";
+            case PerConnection: return "PerConnection";
+            case PerInputPort: return "PerInputPort";
+            case PerOutputPort: return "PerOutputPort";
+            case Shared: return "Shared";
+            default: return "(unknown buffer policy)";
+        }
+    }
+
+    inline const char* connPolicyNameId(ConnPolicy const& policy)
+    {
+        return policy.name_id.empty() ? "<empty>" : policy.name_id.c_str();
+    }
+
+    inline void reportConnPolicyMismatch(const char* context,
+                                         const char* name,
+                                         ConnPolicy const& requested,
+                                         ConnPolicy const& existing)
+    {
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "You mixed incompatible connection policies for %s '%s': requested %s %s %s %s size=%d max_threads=%d name_id=%s, existing %s %s %s %s size=%d max_threads=%d name_id=%s.",
+                           context, name,
+                           connPolicyPullName(requested.pull),
+                           connPolicyBufferName(requested.buffer_policy),
+                           connPolicyLockName(requested.lock_policy),
+                           connPolicyTypeName(requested.type),
+                           requested.size, requested.max_threads, connPolicyNameId(requested),
+                           connPolicyPullName(existing.pull),
+                           connPolicyBufferName(existing.buffer_policy),
+                           connPolicyLockName(existing.lock_policy),
+                           connPolicyTypeName(existing.type),
+                           existing.size, existing.max_threads, connPolicyNameId(existing));
+    }
+
 
     /** This class provides the basic tools to create channels that represent
      * connections between two ports.
@@ -168,7 +231,8 @@ namespace RTT
                     break;
 #else
                 case ConnPolicy::LOCK_FREE:
-                    RTT::log(Warning) << "lock free connection policy is unavailable on this system, defaulting to LOCKED" << RTT::endlog();
+                    Logger::log().logf(Logger::Warning, "ConnFactory",
+                                       "lock free connection policy is unavailable on this system, defaulting to LOCKED");
 #endif
                 case ConnPolicy::LOCKED:
                     data_object.reset( new base::DataObjectLocked<T>(initial_value) );
@@ -190,7 +254,8 @@ namespace RTT
                     break;
 #else
                 case ConnPolicy::LOCK_FREE:
-                    RTT::log(Warning) << "lock free connection policy is unavailable on this system, defaulting to LOCKED" << RTT::endlog();
+                    Logger::log().logf(Logger::Warning, "ConnFactory",
+                                       "lock free connection policy is unavailable on this system, defaulting to LOCKED");
 #endif
                 case ConnPolicy::LOCKED:
                     buffer_object.reset(new base::BufferLocked<T>(policy.size, initial_value, policy));
@@ -231,8 +296,9 @@ namespace RTT
             if (policy.buffer_policy == PerOutputPort) {
                 if (!buffer) {
                     if (endpoint->connected()) {
-                        log(Error) << "You tried to create a shared output buffer connection for output port " << port.getName() << ", "
-                                   << "but the port already has at least one incompatible outgoing connection." << endlog();
+                        Logger::log().logf(Logger::Error, "ConnFactory",
+                                           "You tried to create a shared output buffer connection for output port %s, but the port already has at least one incompatible outgoing connection.",
+                                           port.getName().c_str());
                         return base::ChannelElementBase::shared_ptr();
                     }
 
@@ -254,9 +320,8 @@ namespace RTT
                         (buffer_policy.lock_policy != policy.lock_policy)
                        )
                     {
-                        log(Error) << "You mixed incompatible connection policies for the shared output buffer of port " << port.getName() << ": "
-                                   << "The new connection requests a " << policy << " connection, "
-                                   << "but the port already has a " << buffer_policy << " buffer." << endlog();
+                        reportConnPolicyMismatch("shared output buffer of port",
+                                                 port.getName().c_str(), policy, buffer_policy);
                         return base::ChannelElementBase::shared_ptr();
                     }
                 }
@@ -267,9 +332,8 @@ namespace RTT
                 assert(buffer->getConnPolicy());
                 ConnPolicy buffer_policy = *(buffer->getConnPolicy());
 
-                log(Error) << "You mixed incompatible connection policies for output port " << port.getName() << ": "
-                           << "The new connection requests a " << policy << " connection, "
-                           << "but the port already has a " << buffer_policy << " buffer." << endlog();
+                reportConnPolicyMismatch("output port",
+                                         port.getName().c_str(), policy, buffer_policy);
                 return base::ChannelElementBase::shared_ptr();
             }
 
@@ -313,8 +377,9 @@ namespace RTT
             if (policy.buffer_policy == PerInputPort) {
                 if (!buffer) {
                     if (endpoint->connected()) {
-                        log(Error) << "You tried to create a shared input buffer connection for input port " << port.getName() << ", "
-                                   << "but the port already has at least one incompatible incoming connection." << endlog();
+                        Logger::log().logf(Logger::Error, "ConnFactory",
+                                           "You tried to create a shared input buffer connection for input port %s, but the port already has at least one incompatible incoming connection.",
+                                           port.getName().c_str());
                         return base::ChannelElementBase::shared_ptr();
                     }
 
@@ -335,9 +400,8 @@ namespace RTT
                         (buffer_policy.lock_policy != policy.lock_policy)
                        )
                     {
-                        log(Error) << "You mixed incompatible connection policies for the shared input buffer of port " << port.getName() << ": "
-                                   << "The new connection requests a " << policy << " connection, "
-                                   << "but the port already has a " << buffer_policy << " buffer." << endlog();
+                        reportConnPolicyMismatch("shared input buffer of port",
+                                                 port.getName().c_str(), policy, buffer_policy);
                         return base::ChannelElementBase::shared_ptr();
                     }
                 }
@@ -348,9 +412,8 @@ namespace RTT
                 assert(buffer->getConnPolicy());
                 ConnPolicy buffer_policy = *(buffer->getConnPolicy());
 
-                log(Error) << "You mixed incompatible connection policies for input port " << port.getName() << ": "
-                           << "The new connection requests a " << policy << " connection, "
-                           << "but the port already has a " << buffer_policy << " buffer." << endlog();
+                reportConnPolicyMismatch("input port",
+                                         port.getName().c_str(), policy, buffer_policy);
                 return base::ChannelElementBase::shared_ptr();
             }
 
@@ -402,7 +465,8 @@ namespace RTT
             // for remote input ports, and if we can derive the type from the output port, build the shared buffer at the remote side and only generate a proxy here:
             if (input_port && !input_port->isLocal()) {
                 if (!output_port) {
-                    log(Error) << "Cannot create a shared connection for a remote input port or a non-standard transport without knowing the local output port." << endlog();
+                    Logger::log().logf(Logger::Error, "ConnFactory",
+                                       "Cannot create a shared connection for a remote input port or a non-standard transport without knowing the local output port.");
                     return SharedConnectionBase::shared_ptr();
                 }
 
@@ -410,7 +474,9 @@ namespace RTT
                 if (!shared_connection) {
                     base::ChannelElementBase::shared_ptr output_half = buildRemoteChannelOutput( *output_port, *input_port, policy);
                     if (!output_half) {
-                        log(Error) << "Could not create a shared remote connection for input port '" << input_port->getName() << "'." << endlog();
+                        Logger::log().logf(Logger::Error, "ConnFactory",
+                                           "Could not create a shared remote connection for input port '%s'.",
+                                           input_port->getName().c_str());
                         return SharedConnectionBase::shared_ptr();
                     }
 
@@ -421,14 +487,11 @@ namespace RTT
                 } else {
 //                    typename SharedRemoteConnection<T>::shared_ptr shared_remote_connection = boost::dynamic_pointer_cast<SharedRemoteConnection<T> >(shared_connection);
 
-//                    if (!shared_remote_connection) {
-//                        log(Error) << "Cannot create a shared connection for a remote input port because the local output port is already connected to a local shared connection." << endlog();
-//                        return SharedConnectionBase::shared_ptr();
-//                    }
-
 //                    if (!input_port->createConnection(shared_remote_connection, policy)) {
                     if (!input_port->createConnection(shared_connection, policy)) {
-                        log(Error) << "The remote side refused to connect the input port '" << input_port->getName() << "' to the existing shared connection '" << shared_connection->getName() << "'." << endlog();
+                        Logger::log().logf(Logger::Error, "ConnFactory",
+                                           "The remote side refused to connect the input port '%s' to the existing shared connection '%s'.",
+                                           input_port->getName().c_str(), shared_connection->getName().c_str());
                         return SharedConnectionBase::shared_ptr();
                     }
                 }
@@ -461,12 +524,15 @@ namespace RTT
             PortConnectionLock lock_input_port(&input_port);
 
             if ( !output_port.isLocal() ) {
-                log(Error) << "Need a local OutputPort to create connections." <<endlog();
+                Logger::log().logf(Logger::Error, "ConnFactory",
+                                   "Need a local OutputPort to create connections.");
                 return false;
             }
 
             if (output_port.connectedTo(&input_port)) {
-                log(Info) << "OutputPort " << output_port.getName() << " is already connected to " << input_port.getName() << ", ignoring new connection." << endlog();
+                Logger::log().logf(Logger::Info, "ConnFactory",
+                                   "OutputPort %s is already connected to %s, ignoring new connection.",
+                                   output_port.getName().c_str(), input_port.getName().c_str());
                 return true;
             }
 
@@ -484,7 +550,9 @@ namespace RTT
                 // Local connection
                 if (!input_p)
                 {
-                    log(Error) << "Port " << input_port.getName() << " is not compatible with " << output_port.getName() << endlog();
+                    Logger::log().logf(Logger::Error, "ConnFactory",
+                                       "Port %s is not compatible with %s",
+                                       input_port.getName().c_str(), output_port.getName().c_str());
                     return false;
                 }
 
@@ -502,7 +570,9 @@ namespace RTT
                 } else if (input_p) {
                     return createOutOfBandConnection<T>( output_port, *input_p, policy);
                 } else {
-                    log(Error) << "Port " << input_port.getName() << " is not compatible with " << output_port.getName() << endlog();
+                    Logger::log().logf(Logger::Error, "ConnFactory",
+                                       "Port %s is not compatible with %s",
+                                       input_port.getName().c_str(), output_port.getName().c_str());
                     return false;
                 }
             }
@@ -619,4 +689,3 @@ namespace RTT
 }}
 
 #endif
-

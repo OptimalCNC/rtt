@@ -79,13 +79,17 @@ base::ChannelElementBase::shared_ptr RTT::internal::ConnFactory::buildRemoteChan
     types::TypeInfo const* type_info = output_port.getTypeInfo();
     if (!type_info || input_port.getTypeInfo() != type_info)
     {
-        log(Error) << "Type of port " << output_port.getName() << " is not registered into the type system, cannot marshal it into the right transporter" << endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Type of port %s is not registered into the type system, cannot marshal it into the right transporter",
+                           output_port.getName().c_str());
         // There is no type info registered for this type
         return base::ChannelElementBase::shared_ptr();
     }
     else if ( !type_info->getProtocol( transport ) )
     {
-        log(Error) << "Type " << type_info->getTypeName() << " cannot be marshalled into the requested transporter (id:"<< transport<<")." << endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Type %s cannot be marshalled into the requested transporter (id:%d).",
+                           type_info->getTypeName().c_str(), transport);
         // This type cannot be marshalled into the right transporter
         return base::ChannelElementBase::shared_ptr();
     }
@@ -116,35 +120,43 @@ bool ConnFactory::createAndCheckConnection(base::OutputPortInterface& output_por
     }
     if ( !output_port.addConnection( input_port.getPortID(), next_hop, policy ) ) {
         // setup failed.
-        log(Error) << "The output port "<< output_port.getName()
-                   << " could not successfully use the connection to input port " << input_port.getName() <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "The output port %s could not successfully use the connection to input port %s",
+                           output_port.getName().c_str(), input_port.getName().c_str());
         channel_input->disconnect(channel_output, true);
         return false;
     }
 
     // Notify input that the connection is now complete and test the connection
     if ( !channel_output->channelReady( channel_input, policy, output_port.getPortID() ) ) {
-        log(Error) << "The input port "<< input_port.getName()
-                   << " could not successfully read from the connection from output port " << output_port.getName() <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "The input port %s could not successfully read from the connection from output port %s",
+                           input_port.getName().c_str(), output_port.getName().c_str());
         output_port.disconnect( &input_port );
         channel_output->disconnect(channel_input, false);
         return false;
     }
 
-    log(Debug) << "Connected output port "<< output_port.getName()
-              << " successfully to " << input_port.getName() <<endlog();
+    Logger::log().logf(Logger::Debug, "ConnFactory",
+                       "Connected output port %s successfully to %s",
+                       output_port.getName().c_str(), input_port.getName().c_str());
     return true;
 }
 
 base::ChannelElementBase::shared_ptr ConnFactory::createAndCheckStream(base::OutputPortInterface& output_port, ConnPolicy const& policy, base::ChannelElementBase::shared_ptr channel_input, StreamConnID* conn_id) {
     if (policy.transport == 0 ) {
-        log(Error) << "Need a transport for creating streams." <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Need a transport for creating streams.");
         return base::ChannelElementBase::shared_ptr();
     }
     const types::TypeInfo* type = output_port.getTypeInfo();
     if ( type->getProtocol(policy.transport) == 0 ) {
-        log(Error) << "Could not create transport stream for port "<< output_port.getName() << " with transport id " << policy.transport <<endlog();
-        log(Error) << "No such transport registered. Check your policy.transport settings or add the transport for type "<< type->getTypeName() <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Could not create transport stream for port %s with transport id %d",
+                           output_port.getName().c_str(), policy.transport);
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "No such transport registered. Check your policy.transport settings or add the transport for type %s",
+                           type->getTypeName().c_str());
         return base::ChannelElementBase::shared_ptr();
     }
     types::TypeMarshaller* ttt = dynamic_cast<types::TypeMarshaller*> ( type->getProtocol(policy.transport) );
@@ -152,12 +164,16 @@ base::ChannelElementBase::shared_ptr ConnFactory::createAndCheckStream(base::Out
         int size_hint = ttt->getSampleSize( output_port.getDataSource() );
         policy.data_size = size_hint;
     } else {
-        log(Debug) <<"Could not determine sample size for type " << type->getTypeName() << endlog();
+        Logger::log().logf(Logger::Debug, "ConnFactory",
+                           "Could not determine sample size for type %s",
+                           type->getTypeName().c_str());
     }
     RTT::base::ChannelElementBase::shared_ptr chan_stream = type->getProtocol(policy.transport)->createStream(&output_port, policy, /* is_sender = */ true);
             
     if ( !chan_stream ) {
-        log(Error) << "Transport failed to create remote channel for output stream of port "<<output_port.getName() << endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Transport failed to create remote channel for output stream of port %s",
+                           output_port.getName().c_str());
         return base::ChannelElementBase::shared_ptr();
     }
 
@@ -167,23 +183,32 @@ base::ChannelElementBase::shared_ptr ConnFactory::createAndCheckStream(base::Out
     if ( !output_port.addConnection( conn_id, chan_stream, policy ) ) {
         // setup failed: manual cleanup.
         channel_input->disconnect( chan_stream, true );
-        log(Error) << "Failed to create output stream for output port "<< output_port.getName() <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Failed to create output stream for output port %s",
+                           output_port.getName().c_str());
         return base::ChannelElementBase::shared_ptr();
     }
 
-    log(Info) << "Created output stream for output port "<< output_port.getName() <<endlog();
+    Logger::log().logf(Logger::Info, "ConnFactory",
+                       "Created output stream for output port %s",
+                       output_port.getName().c_str());
     return chan_stream;
 }
 
 base::ChannelElementBase::shared_ptr ConnFactory::createAndCheckStream(base::InputPortInterface& input_port, ConnPolicy const& policy, base::ChannelElementBase::shared_ptr outhalf, StreamConnID* conn_id) {
     if (policy.transport == 0 ) {
-        log(Error) << "Need a transport for creating streams." <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Need a transport for creating streams.");
         return base::ChannelElementBase::shared_ptr();
     }
     const types::TypeInfo* type = input_port.getTypeInfo();
     if ( type->getProtocol(policy.transport) == 0 ) {
-        log(Error) << "Could not create transport stream for port "<< input_port.getName() << " with transport id " << policy.transport <<endlog();
-        log(Error) << "No such transport registered. Check your policy.transport settings or add the transport for type "<< type->getTypeName() <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Could not create transport stream for port %s with transport id %d",
+                           input_port.getName().c_str(), policy.transport);
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "No such transport registered. Check your policy.transport settings or add the transport for type %s",
+                           type->getTypeName().c_str());
         return base::ChannelElementBase::shared_ptr();
     }
 
@@ -192,7 +217,9 @@ base::ChannelElementBase::shared_ptr ConnFactory::createAndCheckStream(base::Inp
     RTT::base::ChannelElementBase::shared_ptr chan = type->getProtocol(policy.transport)->createStream(&input_port, policy, /* is_sender = */ false);
 
     if ( !chan ) {
-        log(Error) << "Transport failed to create remote channel for input stream of port " << input_port.getName() << endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Transport failed to create remote channel for input stream of port %s",
+                           input_port.getName().c_str());
         return base::ChannelElementBase::shared_ptr();
     }
 
@@ -203,11 +230,15 @@ base::ChannelElementBase::shared_ptr ConnFactory::createAndCheckStream(base::Inp
     if ( !outhalf->channelReady(chan, policy, conn_id) ) {
         // setup failed: manual cleanup.
         chan->disconnect(true);
-        log(Error) << "Failed to create input stream for input port " << input_port.getName() <<endlog();
+        Logger::log().logf(Logger::Error, "ConnFactory",
+                           "Failed to create input stream for input port %s",
+                           input_port.getName().c_str());
         return base::ChannelElementBase::shared_ptr();
     }
 
-    log(Info) << "Created input stream for input port " << input_port.getName() <<endlog();
+    Logger::log().logf(Logger::Info, "ConnFactory",
+                       "Created input stream for input port %s",
+                       input_port.getName().c_str());
     return chan;
 }
 
@@ -230,9 +261,9 @@ bool ConnFactory::createAndCheckSharedConnection(base::OutputPortInterface* outp
         (shared_connection->getConnPolicy()->lock_policy != policy.lock_policy)
        )
     {
-        log(Error) << "You mixed incompatible connection policies for shared connection '" << shared_connection->getName() << "': "
-                   << "The new connection requests a " << policy << " connection, "
-                   << "but the existing connection is of type " << *(shared_connection->getConnPolicy()) << "." << endlog();
+        reportConnPolicyMismatch("shared connection",
+                                 shared_connection->getName().c_str(),
+                                 policy, *(shared_connection->getConnPolicy()));
         return false;
     }
 
@@ -243,8 +274,9 @@ bool ConnFactory::createAndCheckSharedConnection(base::OutputPortInterface* outp
     if (output_port && output_port->getSharedConnection() != shared_connection) {
         if ( !output_port->addConnection( shared_connection->getConnID(), shared_connection, policy ) ) {
             // setup failed.
-            log(Error) << "The output port "<< output_port->getName()
-                       << " could not successfully connect to shared connection '" << shared_connection->getName() << "'." << endlog();
+            Logger::log().logf(Logger::Error, "ConnFactory",
+                               "The output port %s could not successfully connect to shared connection '%s'.",
+                               output_port->getName().c_str(), shared_connection->getName().c_str());
             return false;
         }
 
@@ -255,8 +287,9 @@ bool ConnFactory::createAndCheckSharedConnection(base::OutputPortInterface* outp
     if (input_port && input_port->isLocal() && input_port->getSharedConnection() != shared_connection) {
         if ( !input_port->addConnection( shared_connection->getConnID(), shared_connection, policy ) ) {
             // setup failed.
-            log(Error) << "The input port "<< input_port->getName()
-                       << " could not successfully connect to shared connection '" << shared_connection->getName() << "'." << endlog();
+            Logger::log().logf(Logger::Error, "ConnFactory",
+                               "The input port %s could not successfully connect to shared connection '%s'.",
+                               input_port->getName().c_str(), shared_connection->getName().c_str());
             return false;
         }
 
@@ -283,10 +316,14 @@ bool ConnFactory::findSharedConnection(base::OutputPortInterface *output_port, b
             // For the case both, the output and the input port already have shared connections, check if it matches the one of the input port:
             SharedConnectionBase::shared_ptr input_ports_shared_connection = input_port->getSharedConnection();
             if (shared_connection == input_ports_shared_connection) {
-                RTT::log(RTT::Info) << "Output port '" << output_port->getName() << "' and input port '" << input_port->getName() << "' are already connected to the same shared connection." << RTT::endlog();
+                Logger::log().logf(Logger::Info, "ConnFactory",
+                                   "Output port '%s' and input port '%s' are already connected to the same shared connection.",
+                                   output_port->getName().c_str(), input_port->getName().c_str());
                 // return SharedConnectionBase::shared_ptr();
             } else if (input_ports_shared_connection) {
-                RTT::log(RTT::Error) << "Output port '" << output_port->getName() << "' and input port '" << input_port->getName() << "' are already connected to different shared connections!" << RTT::endlog();
+                Logger::log().logf(Logger::Error, "ConnFactory",
+                                   "Output port '%s' and input port '%s' are already connected to different shared connections!",
+                                   output_port->getName().c_str(), input_port->getName().c_str());
                 shared_connection.reset();
                 return true;
             }
@@ -298,7 +335,9 @@ bool ConnFactory::findSharedConnection(base::OutputPortInterface *output_port, b
             // lookup shared connection by the given name
             shared_connection = SharedConnectionRepository::Instance()->get(policy.name_id);
         } else if (shared_connection->getName() != policy.name_id) {
-            RTT::log(RTT::Error) << "At least one of the given ports is already connected to shared connection '" << shared_connection->getName() << "' but you requested to connect to '" << policy.name_id << "'!" << RTT::endlog();
+            Logger::log().logf(Logger::Error, "ConnFactory",
+                               "At least one of the given ports is already connected to shared connection '%s' but you requested to connect to '%s'!",
+                               shared_connection->getName().c_str(), policy.name_id.c_str());
             shared_connection.reset();
             return true;
         }
