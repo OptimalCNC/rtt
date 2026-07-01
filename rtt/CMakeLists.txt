@@ -216,19 +216,21 @@ ENDIF ( BUILD_STATIC )
 	SET_TARGET_PROPERTIES( orocos-rtt-${OROCOS_TARGET}_dynamic PROPERTIES
 	  LINK_FLAGS "-Wl,-zdefs")
 	if ( LINUX_CAP_NG_LIBRARY )
-	  target_link_libraries( orocos-rtt-${OROCOS_TARGET}_dynamic ${LINUX_CAP_NG_LIBRARY} )
+	  target_link_libraries( orocos-rtt-${OROCOS_TARGET}_dynamic PRIVATE ${LINUX_CAP_NG_LIBRARY} )
 	  set( ORO_OS_LINUX_CAP_NG 1 )
 	endif()
   ENDIF ()
 
 
-  target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic ${OROCOS-RTT_LIBRARIES} ${EXTRA_LIBRARIES})
+  target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic
+    PUBLIC ${OROCOS-RTT_LIBRARIES}
+    PRIVATE ${EXTRA_LIBRARIES})
   IF (BUILD_ENABLE_COVERAGE)
-	target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic gcov)
+	target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic PRIVATE gcov)
   ENDIF (BUILD_ENABLE_COVERAGE)
 
   if(ENABLE_MQ AND OROPKG_OS_XENOMAI AND XENOMAI_POSIX_FOUND)
-    target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic ${XENOMAI_POSIX_LIBRARIES})
+    target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic PRIVATE ${XENOMAI_POSIX_LIBRARIES})
   endif()
 
 create_pc_flags( "${OROCOS-RTT_DEFINITIONS}" "${OROCOS-RTT_INCLUDE_DIRS}" "${OROCOS-RTT_LIBRARIES}" RTT_DEFINES RTT_CFLAGS RTT_LINKFLAGS)
@@ -261,7 +263,7 @@ IF (OROCOS_TARGET STREQUAL "gnulinux")
     if (Lttng_ust_INCLUDE_DIRS AND Lttng_ust_LIBRARIES)
       message(STATUS "lttng-ust tracing support enabled")
       include_directories(${Lttng_ust_INCLUDE_DIRS})
-      target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic ${Lttng_ust_LIBRARIES})
+      target_link_libraries(orocos-rtt-${OROCOS_TARGET}_dynamic PRIVATE ${Lttng_ust_LIBRARIES})
       add_definitions("-DHAVE_LTTNG_UST")
       add_subdirectory( os/gnulinux/traces )
     else()
