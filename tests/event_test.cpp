@@ -177,7 +177,8 @@ public:
 
     int float_listener(float a, float b)
     {
-        Logger::log() << Logger::Debug << "float_listener "<< a<<", "<<b<<Logger::endl;
+        Logger::log().logf(Logger::Debug, "EventTest",
+                           "float_listener %g, %g", a, b);
         float_sum += a + b;
         return 1;
     }
@@ -189,7 +190,8 @@ public:
     }
 
     void float_reference(float& f) {
-        log(Debug) << "Received f:"<<f<<endlog();
+        Logger::log().logf(Logger::Debug, "EventTest",
+                           "Received f:%g", f);
         f = 10.0;
         float_sum +=f ;
     }
@@ -390,4 +392,3 @@ BOOST_AUTO_TEST_CASE( testRTEvent )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

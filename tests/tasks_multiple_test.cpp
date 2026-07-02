@@ -40,7 +40,9 @@ using namespace RTT;
         errStepP ="Not all PreemptibleActivity::step() functions were called.";
         errFinP ="Not all PreemptibleActivity::finalize() functions were called.";
 
-        log(Info) << "Creating "<< nr_of_np << " High priority and "<< nr_of_p << " Low priority activities."<<endlog();
+        Logger::log().logf(Logger::Info, "ActivitiesMultipleTest",
+                           "Creating %u High priority and %u Low priority activities.",
+                           nr_of_np, nr_of_p);
 
         np_tasks.reserve(nr_of_np);
         p_tasks.reserve(nr_of_p);
@@ -55,7 +57,7 @@ using namespace RTT;
         for (unsigned int i=0; i< nr_of_p/3; ++i)
             p_tasks.push_back( new DummyPTask( os::HighestPriority - os::IncreasePriority, 0.032*7) );
 
-        log(Info) << "Done."<<endlog();
+        Logger::log().logf(Logger::Info, "ActivitiesMultipleTest", "Done.");
 
         nr_of_p = p_tasks.size();
         nr_of_np = np_tasks.size();

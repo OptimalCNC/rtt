@@ -75,7 +75,7 @@ public:
     SendStatus tss;
 
     void log(const std::string& msg) {
-        Logger::log(Logger::Info) << msg << endlog();
+        Logger::log().logf(Logger::Info, "StateTest", "%s", msg.c_str());
     }
     void doState(const std::string& name, const std::string& prog, TaskContext*, bool test=true, int runs = 1000 );
     void parseState( const std::string& prog, TaskContext*, bool test=true );
@@ -2087,4 +2087,3 @@ void StateTest::finishState(std::string const& name, TaskContext* tc, bool test)
     }
 
 }
-
