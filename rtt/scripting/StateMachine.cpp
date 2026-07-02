@@ -44,14 +44,16 @@
 
 #include <assert.h>
 #include <boost/bind.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
 #include "internal/mystd.hpp"
 
 #define TRACE(msg) do {                                                                     \
     if (!mtrace)                                                                            \
       break;                                                                                \
-    Logger::In in( _name );                                                                 \
-    log(Info) << '[' << this->getStatusStr() << ']' << std::string(" ") + msg <<endlog();   \
+    const std::string trace_message(msg);                                                   \
+    Logger::log().logf(Logger::Info, _name.c_str(), "[%s] %s",                              \
+                       this->getStatusStr().c_str(), trace_message.c_str());                \
 } while(0)
 
 namespace RTT {
@@ -115,10 +117,10 @@ namespace RTT {
            if (this->currentState() != this->getFinalState() )
                this->execute(); // try one last time
            if (this->currentState() != this->getFinalState() )
-               log(Critical) << "Failed to bring StateMachine "<< this->getName()
-                             << " into the final state. Program stalled in state '"
-                             << this->currentState()->getName()<<"' line number "
-                             << this->getLineNumber()<<endlog(); // critical failure !
+               Logger::log().logf(Logger::Critical, "StateMachine",
+                                   "Failed to bring StateMachine %s into the final state. Program stalled in state '%s' line number %d",
+                                   this->getName().c_str(), this->currentState()->getName().c_str(),
+                                   this->getLineNumber()); // critical failure !
    }
 
     StateMachine::Status::StateMachineStatus StateMachine::getStatus() const {
@@ -503,21 +505,21 @@ namespace RTT {
                                               ConditionInterface* guard, boost::shared_ptr<ProgramInterface> transprog,
                                               StateInterface* elseto, boost::shared_ptr<ProgramInterface> elseprog )
     {
-        Logger::In in("StateMachine::createEventTransition");
         DisposableInterface::shared_ptr di =  sp->getLocalOperation(ename);
         OperationCallerInterface::shared_ptr oci = dynamic_pointer_cast<OperationCallerInterface>(di);
         if ( !oci ) {
-            log(Error) << "Can not receive event '"<< ename <<"' in StateMachine : not a local operation."<< endlog();
+            Logger::log().logf(Logger::Error, "StateMachine::createEventTransition",
+                                "Can not receive event '%s' in StateMachine : not a local operation.",
+                                ename.c_str());
             return false;
         }
 
         if ( !( sp && guard ) ) {
-            log(Error) << "Invalid arguments for event '"<< ename <<"'. ";
-            if (!sp)
-                log() <<"Service was null. ";
-            if (!guard)
-                log() <<"Guard Condition was null. ";
-            log() << endlog();
+            Logger::log().logf(Logger::Error, "StateMachine::createEventTransition",
+                                "Invalid arguments for event '%s'. %s%s",
+                                ename.c_str(),
+                                sp ? "" : "Service was null. ",
+                                guard ? "" : "Guard Condition was null. ");
             return false;
         }
 
@@ -538,13 +540,18 @@ namespace RTT {
         // with the SM. handle.destroy() can be called upon SM destruction.
         Handle handle;
 
-        log(Debug) << "Creating Signal handler for Operation '"<< ename <<"' from state "<< (from ? from->getName() : string("(global)")) << " to state " << ( to ? to->getName() : string("(global)") ) <<Logger::endl;
+        Logger::log().logf(Logger::Debug, "StateMachine::createEventTransition",
+                            "Creating Signal handler for Operation '%s' from state %s to state %s",
+                            ename.c_str(),
+                            (from ? from->getName() : string("(global)")).c_str(),
+                            (to ? to->getName() : string("(global)")).c_str());
 #ifdef ORO_SIGNALLING_OPERATIONS
         // don't deliver this signal asynchronously, we want it right away.
         handle = sp->produceSignal( ename, new CommandFunction( boost::bind( &StateMachine::eventTransition, this, from, guard, transprog.get(), to, elseprog.get(), elseto) ), args, 0 );
 #endif
         if ( !handle.ready() ) {
-            Logger::log() << Logger::Error << "Could not setup handle for event '"<<ename<<"'."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "StateMachine::createEventTransition",
+                                "Could not setup handle for event '%s'.", ename.c_str());
             return false; // event does not exist...
         }
         // all our handles must start in disconnected state:
@@ -1119,7 +1126,7 @@ namespace RTT {
         if ( currentProg && currentProg->inError() ) {
             smStatus = Status::error;
             smpStatus = nill;
-            TRACE("Encountered run-time error at line " << this->getLineNumber() );
+            TRACE("Encountered run-time error at line " + boost::lexical_cast<std::string>(this->getLineNumber()) );
             return false;
         }
 
