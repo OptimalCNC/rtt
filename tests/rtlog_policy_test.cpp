@@ -120,6 +120,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/transports/mqueue/MQSendRecv.cpp",
         "rtt/transports/mqueue/MQSerializationProtocol.hpp",
         "rtt/transports/mqueue/MQTemplateProtocolBase.hpp",
+        "rtt/transports/corba/ConfigurationInterfaceI.cpp",
         "rtt/types/BoostArrayTypeInfo.hpp",
         "rtt/types/CArrayTypeInfo.hpp",
         "rtt/types/EnumTypeInfo.hpp",

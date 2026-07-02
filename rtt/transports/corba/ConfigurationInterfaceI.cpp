@@ -201,7 +201,9 @@ RTT_corba_CConfigurationInterface_i::~RTT_corba_CConfigurationInterface_i (void)
         return new CORBA::Any();
     DataSourceBase::shared_ptr ds = getPropertyDataSource(name);
     if ( !ds ) {
-        log(Error) <<"CConfigurationInterface: no such property: " << name << ". Returning empty CORBA::Any."<<endlog();
+        Logger::log().logf(Logger::Error, "CConfigurationInterface",
+                           "CConfigurationInterface: no such property: %s. Returning empty CORBA::Any.",
+                           name);
         return new CORBA::Any();
     }
     const TypeInfo* ti = ds->getTypeInfo();
@@ -279,7 +281,9 @@ CORBA::Boolean RTT_corba_CConfigurationInterface_i::attributeFromString (
     if (!ds)
         return false;
     if ( ds->getTypeInfo()->fromString( value, ds ) ) {
-        RTT::log(RTT::Error) << "corba::CConfigurationInterface: Could not assign string to "<< ds->getType() <<"." <<RTT::endlog();
+        Logger::log().logf(Logger::Error, "CConfigurationInterface",
+                           "corba::CConfigurationInterface: Could not assign string to %s.",
+                           ds->getType().c_str());
         return false;
     }
     return true;
@@ -328,10 +332,11 @@ CORBA::Boolean RTT_corba_CConfigurationInterface_i::propertyFromString (
     if (!ds)
         return false;
     if ( ds->getTypeInfo()->fromString( value, ds ) ) {
-        RTT::log(RTT::Error) << "corba::CConfigurationInterface: Could not assign string to "<< ds->getType() <<"." <<RTT::endlog();
+        Logger::log().logf(Logger::Error, "CConfigurationInterface",
+                           "corba::CConfigurationInterface: Could not assign string to %s.",
+                           ds->getType().c_str());
         return false;
     }
     return true;
 }
-
 
