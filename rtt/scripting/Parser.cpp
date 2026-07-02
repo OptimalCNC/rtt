@@ -64,7 +64,8 @@ namespace RTT
   Parser::Parser(ExecutionEngine* caller) : mcaller(caller) {
 
       if (mcaller == 0) {
-          log(Debug) << "WARNING: Parser does not know which TaskContext is executing (calling) the parsed code. Using Global Engine. Please specify the caller explicitly in order to avoid any asynchronous operation problems." <<endlog();
+          Logger::log().logf(Logger::Debug, "Parser",
+                             "WARNING: Parser does not know which TaskContext is executing (calling) the parsed code. Using Global Engine. Please specify the caller explicitly in order to avoid any asynchronous operation problems.");
           mcaller = GlobalEngine::Instance();
       }
   }

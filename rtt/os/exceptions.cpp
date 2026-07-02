@@ -56,7 +56,8 @@ namespace boost
      */
     void throw_exception(std::exception const & e) {
 #ifdef OROPKG_CORELIB_LOGGER
-        Logger::log() << "throw_exception: " << e.what() << Logger::endl;
+        Logger::log().logf(Logger::Error, "throw_exception",
+                           "throw_exception: %s", e.what());
 #endif
     }
 }

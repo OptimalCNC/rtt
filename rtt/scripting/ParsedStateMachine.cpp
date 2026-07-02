@@ -72,7 +72,8 @@ namespace RTT {
         ret->setName( this->_name, false);
 
         if (instantiate)
-            Logger::log() <<Logger::Debug <<"Creating an instance of "<< this->_name << Logger::endl;
+            Logger::log().logf(Logger::Debug, "ParsedStateMachine",
+                               "Creating an instance of %s", this->_name.c_str());
 
         // First copy the task such that commands and attributes can be correctly
         // copied. This also sets the EventProcessor for the SM.

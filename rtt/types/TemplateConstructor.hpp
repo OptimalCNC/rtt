@@ -106,7 +106,10 @@ namespace RTT
                     base::DataSourceBase::shared_ptr ret = this->build(args);
                     assert( ret );
                     if (!automatic)
-                        log(Warning) << "Conversion from " << arg->getTypeName() << " to " << ret->getTypeName() <<endlog();
+                        Logger::log().logf(Logger::Warning, "TemplateConstructor",
+                                           "Conversion from %s to %s",
+                                           arg->getTypeName().c_str(),
+                                           ret->getTypeName().c_str());
                     return ret;
                 }
             }

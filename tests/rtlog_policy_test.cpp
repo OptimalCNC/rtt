@@ -83,7 +83,11 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/marsh/PropertyLoader.cpp",
         "rtt/marsh/PropertyMarshaller.cpp",
         "rtt/marsh/TinyDemarshaller.cpp",
-        "rtt/ServiceRequester.cpp"
+        "rtt/os/exceptions.cpp",
+        "rtt/scripting/ParsedStateMachine.cpp",
+        "rtt/scripting/Parser.cpp",
+        "rtt/ServiceRequester.cpp",
+        "rtt/types/TemplateConstructor.hpp"
     };
 
     std::vector<std::string> violations;
