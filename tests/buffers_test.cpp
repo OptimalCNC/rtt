@@ -1268,7 +1268,6 @@ BOOST_AUTO_TEST_CASE( testMemoryPool )
 
 BOOST_AUTO_TEST_CASE( testMemoryPoolMultiThreaded )
 {
-    Logger::In in("testMemoryPoolMultiThreaded");
     int number_of_workers = QS;
 
     {
@@ -1282,7 +1281,8 @@ BOOST_AUTO_TEST_CASE( testMemoryPoolMultiThreaded )
         int total_cycles = 0;
         BOOST_FOREACH(ThreadPool<BuffersMPoolTest::Worker<Dummy> >::value_type &worker, workers) {
             BOOST_CHECK_GT(worker.first->cycles, 0);
-            log(Info) << worker.second->getName() << ": " << worker.first->cycles << " cycles" << endlog();
+            Logger::log().logf(Logger::Info, "testMemoryPoolMultiThreaded",
+                               "%s: %d cycles", worker.second->getName(), worker.first->cycles);
             total_cycles += worker.first->cycles;
         }
     }
@@ -1297,7 +1297,8 @@ BOOST_AUTO_TEST_CASE( testMemoryPoolMultiThreaded )
         int total_cycles = 0;
         BOOST_FOREACH(ThreadPool<BuffersMPoolTest::Worker<std::vector<Dummy> > >::value_type &worker, workers) {
             BOOST_CHECK_GT(worker.first->cycles, 0);
-            log(Info) << worker.second->getName() << ": " << worker.first->cycles << " cycles" << endlog();
+            Logger::log().logf(Logger::Info, "testMemoryPoolMultiThreaded",
+                               "%s: %d cycles", worker.second->getName(), worker.first->cycles);
             total_cycles += worker.first->cycles;
         }
     }
@@ -1400,11 +1401,15 @@ BOOST_AUTO_TEST_CASE( testListLockFree )
 
 #if 0
     for(ThreadPool< LLFWorker >::const_iterator it = pool.begin(); it != pool.end(); ++it) {
-        log(Info) << it->second->getName() << " appends: " << it->first->appends<<endlog();
-        log(Info) << it->second->getName() << " erases: " << it->first->erases<<endlog();
+        Logger::log().logf(Logger::Info, "testListLockFree",
+                           "%s appends: %d", it->second->getName().c_str(), it->first->appends);
+        Logger::log().logf(Logger::Info, "testListLockFree",
+                           "%s erases: %d", it->second->getName().c_str(), it->first->erases);
     }
-    log(Info) << "List capacity: "<< listlockfree->capacity()<<endlog();
-    log(Info) << "List size: "<< listlockfree->size()<<endlog();
+    Logger::log().logf(Logger::Info, "testListLockFree",
+                       "List capacity: %d", listlockfree->capacity());
+    Logger::log().logf(Logger::Info, "testListLockFree",
+                       "List size: %d", listlockfree->size());
 //     while( listlockfree->empty() == false ) {
 //         Dummy d =  listlockfree->back();
 //         //log(Info) << "Left: "<< d <<endlog();
@@ -1423,8 +1428,6 @@ BOOST_AUTO_TEST_CASE( testListLockFree )
 
 BOOST_AUTO_TEST_CASE( testAtomicMWMRQueue )
 {
-    Logger::In in("testAtomicMWMRQueue");
-
     MWMRQueueType* qt = new MWMRQueueType(QS);
     ThreadPool< AQWorker<MWMRQueueType> > pool(5, ORO_SCHED_OTHER, 20, 0.0, "AQWorker", qt);
     AQGrower<MWMRQueueType>* grower = new AQGrower<MWMRQueueType>( qt );
@@ -1437,19 +1440,23 @@ BOOST_AUTO_TEST_CASE( testAtomicMWMRQueue )
     ethread->thread()->setScheduler(ORO_SCHED_OTHER);
 
     {
-        log(Info) <<"Stressing multi-read/multi-write..." <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                           "Stressing multi-read/multi-write...");
         BOOST_REQUIRE(pool.start());
         sleep(5);
-        log(Info) <<"Stressing multi-read/multi-write...on full buffer" <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                           "Stressing multi-read/multi-write...on full buffer");
         BOOST_REQUIRE(gthread->start()); // stress full bufs
         sleep(5);
         BOOST_REQUIRE(gthread->stop());
-        log(Info) <<"Stressing multi-read/multi-write...on empty buffer" <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                           "Stressing multi-read/multi-write...on empty buffer");
         BOOST_REQUIRE(ethread->start()); // stress empty bufs
         sleep(5);
         BOOST_REQUIRE(pool.stop());
         gthread->start(); // stress single-reader single-writer
-        log(Info) <<"Stressing read&write..." <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                           "Stressing read&write...");
         sleep(5);
         BOOST_REQUIRE(gthread->stop());
         BOOST_REQUIRE(ethread->stop());
@@ -1464,11 +1471,13 @@ BOOST_AUTO_TEST_CASE( testAtomicMWMRQueue )
     appends += grower->appends;
     erases += eater->erases;
 
-    log(Info) << nlog()
-              << "Total appends: " << appends << endlog();
-    log(Info) << "Total erases : " << erases << endlog();
+    Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                       "Total appends: %d", appends);
+    Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                       "Total erases : %d", erases);
     if (appends != erases + int(qt->size())) {
-        log(Info) << "Mismatch detected !" <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                           "Mismatch detected !");
     }
     int i = 0; // left-over count
     Dummy* d = 0;
@@ -1482,7 +1491,8 @@ BOOST_AUTO_TEST_CASE( testAtomicMWMRQueue )
             break;
         }
     }
-    log(Info) << "Left in Queue: "<< i <<endlog();
+    Logger::log().logf(Logger::Info, "testAtomicMWMRQueue",
+                       "Left in Queue: %d", i);
     BOOST_CHECK( qt->dequeue(d) == false );
     BOOST_CHECK( qt->dequeue(d) == false );
     BOOST_CHECK( qt->isEmpty() );
@@ -1500,8 +1510,6 @@ BOOST_AUTO_TEST_CASE( testAtomicMWMRQueue )
 
 BOOST_AUTO_TEST_CASE( testAtomicMWSRQueue )
 {
-    Logger::In in("testAtomicMWSRQueue");
-
     MWSRQueueType* qt = new MWSRQueueType(QS);
     ThreadPool< AQGrower<MWSRQueueType> > pool(5, ORO_SCHED_OTHER, 20, 0.0, "AQGrower", qt);
     AQGrower<MWSRQueueType>* grower = new AQGrower<MWSRQueueType>( qt );
@@ -1514,13 +1522,15 @@ BOOST_AUTO_TEST_CASE( testAtomicMWSRQueue )
     ethread->thread()->setScheduler(ORO_SCHED_OTHER);
 
     {
-        log(Info) <<"Stressing multi-write/single-read..." <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWSRQueue",
+                           "Stressing multi-write/single-read...");
         BOOST_REQUIRE(pool.start());
         BOOST_REQUIRE(gthread->start());
         BOOST_REQUIRE(ethread->start());
         sleep(5);
         BOOST_REQUIRE(pool.stop());
-        log(Info) <<"Stressing single-write/single-read..." <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWSRQueue",
+                           "Stressing single-write/single-read...");
         sleep(5);
         BOOST_REQUIRE(gthread->stop());
         BOOST_REQUIRE(ethread->stop());
@@ -1534,11 +1544,13 @@ BOOST_AUTO_TEST_CASE( testAtomicMWSRQueue )
     appends += grower->appends;
     erases += eater->erases;
 
-    log(Info) << nlog()
-              << "Total appends: " << appends << endlog();
-    log(Info) << "Total erases : " << erases << endlog();
+    Logger::log().logf(Logger::Info, "testAtomicMWSRQueue",
+                       "Total appends: %d", appends);
+    Logger::log().logf(Logger::Info, "testAtomicMWSRQueue",
+                       "Total erases : %d", erases);
     if (appends != int(qt->size()) + erases) {
-        log(Info) << "Mismatch detected !" <<endlog();
+        Logger::log().logf(Logger::Info, "testAtomicMWSRQueue",
+                           "Mismatch detected !");
     }
     int i = 0; // left-over count
     Dummy* d = 0;
@@ -1552,7 +1564,8 @@ BOOST_AUTO_TEST_CASE( testAtomicMWSRQueue )
             break;
         }
     }
-    log(Info) << "Left in Queue: "<< i <<endlog();
+    Logger::log().logf(Logger::Info, "testAtomicMWSRQueue",
+                       "Left in Queue: %d", i);
     BOOST_CHECK( qt->dequeue(d) == false );
     BOOST_CHECK( qt->dequeue(d) == false );
     BOOST_CHECK( qt->isEmpty() );
