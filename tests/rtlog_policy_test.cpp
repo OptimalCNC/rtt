@@ -80,6 +80,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/extras/IRQActivity.cpp",
         "rtt/extras/MultiVectorComposition.hpp",
         "rtt/extras/SimulationThread.cpp",
+        "rtt/DataFlowInterface.cpp",
         "rtt/marsh/CPFDemarshaller.cpp",
         "rtt/marsh/CPFMarshaller.cpp",
         "rtt/marsh/MarshallingService.cpp",

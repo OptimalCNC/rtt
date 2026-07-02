@@ -64,12 +64,16 @@ namespace RTT
             // Since there is at least one child service, mservice is ref counted. The danger here is that mservice is destructed during removeService()
             // for this reason, we take a ref to mservice until we leave addPort.
             mservice_ref = mservice->provides(); // uses shared_from_this()
-            log(Warning) <<"'addPort' "<< port.getName() << ": name already in use as Service. Replacing previous service with new one." <<endlog();
+            Logger::log().logf(Logger::Warning, "DataFlowInterface",
+                               "'addPort' %s: name already in use as Service. Replacing previous service with new one.",
+                               port.getName().c_str());
             mservice->removeService(port.getName());
         }
 
         if (!mservice) {
-            log(Warning) <<"'addPort' "<< port.getName() << ": DataFlowInterface not given to parent. Not adding Service." <<endlog();
+            Logger::log().logf(Logger::Warning, "DataFlowInterface",
+                               "'addPort' %s: DataFlowInterface not given to parent. Not adding Service.",
+                               port.getName().c_str());
             return port;
         }
         Service::shared_ptr ms( this->createPortObject( port.getName()) );
@@ -84,7 +88,9 @@ namespace RTT
               it != mports.end();
               ++it)
             if ( (*it)->getName() == port.getName() ) {
-                log(Warning) <<"'addPort' "<< port.getName() << ": name already in use. Disconnecting and replacing previous port with new one." <<endlog();
+                Logger::log().logf(Logger::Warning, "DataFlowInterface",
+                                   "'addPort' %s: name already in use. Disconnecting and replacing previous port with new one.",
+                                   port.getName().c_str());
                 removeLocalPort( port.getName() );
                 break;
             }
@@ -102,12 +108,16 @@ namespace RTT
             // Since there is at least one child service, mservice is ref counted. The danger here is that mservice is destructed during removeService()
             // for this reason, we take a ref to mservice until we leave addPort.
             mservice_ref = mservice->provides(); // uses shared_from_this()
-            log(Warning) <<"'addPort' "<< port.getName() << ": name already in use as Service. Replacing previous service with new one." <<endlog();
+            Logger::log().logf(Logger::Warning, "DataFlowInterface",
+                               "'addPort' %s: name already in use as Service. Replacing previous service with new one.",
+                               port.getName().c_str());
             mservice->removeService(port.getName());
         }
 
         if (!mservice) {
-            log(Warning) <<"'addPort' "<< port.getName() << ": DataFlowInterface not given to parent. Not adding Service." <<endlog();
+            Logger::log().logf(Logger::Warning, "DataFlowInterface",
+                               "'addPort' %s: DataFlowInterface not given to parent. Not adding Service.",
+                               port.getName().c_str());
             return port;
         }
         Service::shared_ptr ms( this->createPortObject( port.getName()) );
@@ -136,7 +146,9 @@ namespace RTT
         this->addLocalPort(port);
 
         if (mservice == 0 || mservice->getOwner() == 0) {
-            log(Error) << "addLocalEventPort "<< port.getName() <<": DataFlowInterface not part of a TaskContext. Will not trigger any TaskContext nor register callback." <<endlog();
+            Logger::log().logf(Logger::Error, "DataFlowInterface",
+                               "addLocalEventPort %s: DataFlowInterface not part of a TaskContext. Will not trigger any TaskContext nor register callback.",
+                               port.getName().c_str());
             return port;
         }
 
@@ -144,10 +156,14 @@ namespace RTT
         // setup synchronous callback, only purpose is to register that port fired and trigger the TC's engine.
         Handle h = port.getNewDataOnPortEvent()->connect(boost::bind(&TaskContext::dataOnPort, mservice->getOwner(), _1) );
         if (h) {
-            log(Info) << mservice->getName() << " will be triggered when new data is available on InputPort " << port.getName() << endlog();
+            Logger::log().logf(Logger::Info, "DataFlowInterface",
+                               "%s will be triggered when new data is available on InputPort %s",
+                               mservice->getName().c_str(), port.getName().c_str());
             handles.push_back(h);
         } else {
-            log(Error) << mservice->getName() << " can't connect to event of InputPort " << port.getName() << endlog();
+            Logger::log().logf(Logger::Error, "DataFlowInterface",
+                               "%s can't connect to event of InputPort %s",
+                               mservice->getName().c_str(), port.getName().c_str());
             return port;
         }
 #endif
@@ -265,7 +281,9 @@ namespace RTT
     bool DataFlowInterface::chkPtr(const std::string & where, const std::string & name, const void *ptr)
     {
         if ( ptr == 0) {
-            log(Error) << "You tried to add a null pointer in '"<< where << "' for the object '" << name << "'. Fix your code !"<< endlog();
+            Logger::log().logf(Logger::Error, "DataFlowInterface",
+                               "You tried to add a null pointer in '%s' for the object '%s'. Fix your code !",
+                               where.c_str(), name.c_str());
             return false;
         }
         return true;
