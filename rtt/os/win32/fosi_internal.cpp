@@ -286,13 +286,15 @@ void ErrorHandler(LPTSTR lpszFunction)
             struct rlimit	r;
             if ((0 != getrlimit(RLIMIT_RTPRIO, &r)) || (0 == r.rlim_cur))
             {
-                log(Warning) << "Lowering scheduler type to SCHED_OTHER for non-privileged users.." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Lowering scheduler type to SCHED_OTHER for non-privileged users..");
                 *scheduler = SCHED_OTHER;
                 return -1;
             }
         }
         if (*scheduler != SCHED_OTHER && *scheduler != SCHED_FIFO && *scheduler != SCHED_RR ) {
-            log(Error) << "Unknown scheduler type." <<endlog();
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "Unknown scheduler type.");
             *scheduler = SCHED_OTHER;
             return -1;
         }*/
@@ -306,12 +308,16 @@ void ErrorHandler(LPTSTR lpszFunction)
         //ret = rtos_task_check_scheduler(scheduler);
 
         if (*priority <= -15){
-            log(Warning) << "Forcing priority ("<<*priority<<") of thread with !SCHED_OTHER policy to -15." <<endlog();
+            Logger::log().logf(Logger::Warning, "FOSI",
+                               "Forcing priority (%d) of thread with !SCHED_OTHER policy to -15.",
+                               *priority);
             *priority = -15;
             ret = -1;
         }
         if (*priority > 15){
-            log(Warning) << "Forcing priority ("<<*priority<<") of thread with !SCHED_OTHER policy to 15." <<endlog();
+            Logger::log().logf(Logger::Warning, "FOSI",
+                               "Forcing priority (%d) of thread with !SCHED_OTHER policy to 15.",
+                               *priority);
             *priority = 15;
             ret = -1;
         }

@@ -105,7 +105,9 @@ namespace RTT
                 return rv;
             }
 	    rv = pthread_create(&(task->thread), &(task->attr), start_routine, obj);
-            log(Debug) <<"Created Posix thread "<< task->thread <<endlog();
+            Logger::log().logf(Logger::Debug, "FOSI",
+                               "Created Posix thread %p",
+                               reinterpret_cast<void*>(task->thread));
             return rv;
 	}
 
@@ -211,7 +213,8 @@ namespace RTT
         INTERNAL_QUAL int rtos_task_check_scheduler(int* scheduler)
         {
             if (*scheduler != SCHED_OTHER && *scheduler != SCHED_FIFO && *scheduler != SCHED_RR ) {
-                log(Error) << "Unknown scheduler type." <<endlog();
+                Logger::log().logf(Logger::Error, "FOSI",
+                                   "Unknown scheduler type.");
                 *scheduler = SCHED_OTHER;
                 return -1;
             }
@@ -225,12 +228,16 @@ namespace RTT
             ret = rtos_task_check_scheduler(scheduler);
 
             if (*priority < 0){
-                log(Warning) << "Forcing priority ("<<*priority<<") of thread to 0." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Forcing priority (%d) of thread to 0.",
+                                   *priority);
                 *priority = 0;
                 ret = -1;
             }
             if (*priority > 63){
-                log(Warning) << "Forcing priority ("<<*priority<<") of thread to 63." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Forcing priority (%d) of thread to 63.",
+                                   *priority);
                 *priority = 63;
                 ret = -1;
             }

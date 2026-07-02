@@ -31,6 +31,7 @@
 #include "ThreadInterface.hpp"
 #include "fosi.h"
 #include "../fosi_internal_interface.hpp"
+#include "../../Logger.hpp"
 #include <cyg/kernel/kapi.h>
 #include <iostream>
 #include <string>
@@ -237,8 +238,9 @@ namespace RTT
 
     INTERNAL_QUAL int rtos_task_check_scheduler(int* scheduler)
     {
-        if (*scheduler != SCHED_ECOS_FIFO )
-            log(Error) << "Unknown scheduler type." <<endlog();
+        if (*scheduler != SCHED_ECOS_FIFO ) {
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "Unknown scheduler type.");
             *scheduler = SCHED_ECOS_FIFO;
             return -1;
         }
@@ -263,4 +265,3 @@ namespace RTT
   }
 }
 #undef INTERNAL_QUAL
-

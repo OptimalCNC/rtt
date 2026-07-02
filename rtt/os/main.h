@@ -44,7 +44,6 @@
  */
 
 #include "startstop.h"
-#include "../Logger.hpp"
 
 /**
  * Forward declare this wrapper around the user code.
@@ -65,9 +64,7 @@ int ORO_main_impl(int,char**);
 #define ORO_main                                                \
     main( int argc, char **argv) {                              \
         int res = -1;                                           \
-        std::string location(argv[0]); location += "::main()";  \
         __os_init(argc, argv); {                                \
-            RTT::Logger::In in(location.c_str());               \
             if ( __os_checkException(argc,argv) ) {             \
                 try {                                           \
                     res = ORO_main_impl(argc, argv);            \
@@ -85,4 +82,3 @@ int ORO_main_impl(int,char**);
         return res;                                             \
     }                                                           \
 int ORO_main_impl
-
