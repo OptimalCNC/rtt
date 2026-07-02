@@ -391,7 +391,6 @@ namespace RTT
 
     bool storeProperty(PropertyBag& bag, const std::string& path, base::PropertyBase* item, const std::string& separator )
     {
-        Logger::In in("storeProperty");
         if ( path.empty() || path == separator )
             return bag.ownProperty( item );
         // find top-level parent
@@ -414,7 +413,9 @@ namespace RTT
         }
         Property<PropertyBag>* parentbag = dynamic_cast<Property<PropertyBag>* >(parent);
         if ( !parentbag ) {
-            log(Error) << "Path component '" << pname << "' in path '"<<path<<"' does not point to a PropertyBag."<<endlog();
+            Logger::log().logf(Logger::Error, "storeProperty",
+                               "Path component '%s' in path '%s' does not point to a PropertyBag.",
+                               pname.c_str(), path.c_str());
             return false;
         }
         // recurse using new parentbag and rest.
@@ -446,13 +447,13 @@ namespace RTT
     {
 #ifndef NDEBUG
         if (update)
-            log(Debug) << "updateProperties: updating Property "
-            << source->getType() << " "<< source->getName()
-            << "." << endlog();
+            Logger::log().logf(Logger::Debug, "updateProperties",
+                               "updateProperties: updating Property %s %s.",
+                               source->getType().c_str(), source->getName().c_str());
         else
-            log(Debug) << "refreshProperties: refreshing Property "
-            << source->getType() << " "<< source->getName()
-            << "." << endlog();
+            Logger::log().logf(Logger::Debug, "refreshProperties",
+                               "refreshProperties: refreshing Property %s %s.",
+                               source->getType().c_str(), source->getName().c_str());
 #endif
         // no need to make new one, just update existing one
         if ( (update && target->update( source ) == false ) || (!update && target->refresh( source ) == false ) ) {
@@ -463,16 +464,20 @@ namespace RTT
                 converted = target->getDataSource();
                 if (target->getTypeInfo()->composeType( source->getDataSource(), converted ) ) {
                     // case where there is a type composition -> target was updated by composeType
-                    log(Debug) << "Composed Property "
-                            << target->getType() << " "<< source->getName() << " to type " <<target->getType()
-                            << " from type "  << source->getType() << endlog();
+                    Logger::log().logf(Logger::Debug,
+                                       update ? "updateProperties" : "refreshProperties",
+                                       "Composed Property %s %s to type %s from type %s",
+                                       target->getType().c_str(), source->getName().c_str(),
+                                       target->getType().c_str(), source->getType().c_str());
                     return true;
                 } else {
                     //if ( !target->getTypeInfo()->composeType( source->getDataSource(), target->getDataSource() ) )
-                    log(Error) << (update ? "updateProperties: " : "refreshProperties: ") << " Could not update, nor convert Property "
-                            << target->getType() << " "<< target->getName()
-                            << ": type mismatch, can not update with "
-                            << source->getType() << " "<< source->getName() << endlog();
+                    Logger::log().logf(Logger::Error,
+                                       update ? "updateProperties" : "refreshProperties",
+                                       "%s Could not update, nor convert Property %s %s: type mismatch, can not update with %s %s",
+                                       update ? "updateProperties:" : "refreshProperties:",
+                                       target->getType().c_str(), target->getName().c_str(),
+                                       source->getType().c_str(), source->getName().c_str());
                     return false;
                 }
             } else {
@@ -487,9 +492,11 @@ namespace RTT
                     target->update(dummy.get());
                 else
                     target->refresh(dummy.get());
-                log(Debug) << "Converted Property "
-                        << target->getType() << " "<< source->getName() << " to type " <<dummy->getType()
-                        << " from type "  << source->getType() << endlog();
+                Logger::log().logf(Logger::Debug,
+                                   update ? "updateProperties" : "refreshProperties",
+                                   "Converted Property %s %s to type %s from type %s",
+                                   target->getType().c_str(), source->getName().c_str(),
+                                   dummy->getType().c_str(), source->getType().c_str());
             }
         }
         return true;
@@ -497,11 +504,11 @@ namespace RTT
 
     bool refreshProperties(const PropertyBag& target, const PropertyBag& source, bool allprops)
     {
-        Logger::In in("refreshProperties");
-
         // if the target is of different type than source, it is replaced by source.
         if ( Types()->type(target.getType()) != Types()->getTypeInfo<PropertyBag>() && Types()->type( target.getType() ) != Types()->type( source.getType() ) ) {
-            log(Error) << "Can not populate typed PropertyBag '"<< target.getType() <<"' from '"<<source.getType()<<"' (source and target type differed)."<<endlog();
+            Logger::log().logf(Logger::Error, "refreshProperties",
+                               "Can not populate typed PropertyBag '%s' from '%s' (source and target type differed).",
+                               target.getType().c_str(), source.getType().c_str());
             return false;
         }
 
@@ -522,9 +529,9 @@ namespace RTT
                     return false;
                 // ok.
             } else if (allprops) {
-                log(Error) << "Could not find Property "
-                           << tgtprop->getType() << " "<< tgtprop->getName()
-                           << " in source."<< endlog();
+                Logger::log().logf(Logger::Error, "refreshProperties",
+                                   "Could not find Property %s %s in source.",
+                                   tgtprop->getType().c_str(), tgtprop->getName().c_str());
                 failure = true;
             }
             ++it;
@@ -570,7 +577,9 @@ namespace RTT
 
         // if the target is of different type than source, it is replaced by source.
         if ( Types()->type( target.getType() ) != Types()->getTypeInfo<PropertyBag>() && Types()->type(target.getType()) != Types()->type(source.getType()) ) {
-            log(Error) << "Can not populate typed PropertyBag '"<< target.getType() <<"' from '"<<source.getType()<<"' (source and target type differed)."<<endlog();
+            Logger::log().logf(Logger::Error, "updateProperties",
+                               "Can not populate typed PropertyBag '%s' from '%s' (source and target type differed).",
+                               target.getType().c_str(), source.getType().c_str());
             return false;
         }
 
@@ -598,10 +607,9 @@ namespace RTT
                 else
                     {
 #ifndef NDEBUG
-                        Logger::log() << Logger::Debug;
-                        Logger::log() << "updateProperties: creating Property "
-                                      << (*sit)->getType() << " "<< (*sit)->getName()
-                                      << "." << Logger::endl;
+                        Logger::log().logf(Logger::Debug, "updateProperties",
+                                           "updateProperties: creating Property %s %s.",
+                                           (*sit)->getType().c_str(), (*sit)->getName().c_str());
 #endif
                         // step 1: test for composing a typed property bag:
                         PropertyBase* temp = 0;
@@ -633,7 +641,6 @@ namespace RTT
 
     bool updateProperty(PropertyBag& target, const PropertyBag& source, const std::string& name, const std::string& separator)
     {
-        Logger::In in("updateProperty");
         // this code has been copied&modified from findProperty().
         PropertyBase* source_walker;
         PropertyBase* target_walker;
@@ -667,7 +674,9 @@ namespace RTT
             target_walker_bag = dynamic_cast<Property<PropertyBag>*>(target_walker);
             if ( source_walker_bag != 0 && start != std::string::npos ) {
                 if ( target_walker_bag == 0 ) {
-                    log(Error) << "Property '"<<target_walker->getName()<<"' is not a PropertyBag !"<<endlog();
+                    Logger::log().logf(Logger::Error, "updateProperty",
+                                       "Property '%s' is not a PropertyBag !",
+                                       target_walker->getName().c_str());
                     return false;
                 }
                 return updateProperty( target_walker_bag->value(), source_walker_bag->rvalue(), name.substr( start ), separator );// a bag so search recursively
@@ -676,12 +685,16 @@ namespace RTT
                 // found it, update !
                 if (updateOrRefreshProperty( source_walker, target_walker, true) == false)
                     return false;
-                log(Debug) << "Found Property '"<<target_walker->getName() <<"': update done." << endlog();
+                Logger::log().logf(Logger::Debug, "updateProperty",
+                                   "Found Property '%s': update done.",
+                                   target_walker->getName().c_str());
                 return true;
             }
         } else {
             // error wrong path, not present in source !
-            log(Error) << "Property '"<< token <<"' is not present in the source PropertyBag !"<<endlog();
+            Logger::log().logf(Logger::Error, "updateProperty",
+                               "Property '%s' is not present in the source PropertyBag !",
+                               token.c_str());
             return false;
         }
         // not reached.
@@ -690,7 +703,6 @@ namespace RTT
 
     bool refreshProperty(PropertyBag& target, const PropertyBag& source, const std::string& name, const std::string& separator)
     {
-        Logger::In in("refreshProperty");
         // this code has been copied&modified from findProperty().
         PropertyBase* source_walker;
         PropertyBase* target_walker;
@@ -714,7 +726,9 @@ namespace RTT
         if (source_walker != 0 )
         {
             if ( target_walker == 0 ) {
-                log(Error) << "Property '"<<source_walker->getName()<<"' was not found in target !"<<endlog();
+                Logger::log().logf(Logger::Error, "refreshProperty",
+                                   "Property '%s' was not found in target !",
+                                   source_walker->getName().c_str());
                 return false;
             }
             Property<PropertyBag>*  source_walker_bag;
@@ -723,7 +737,9 @@ namespace RTT
             target_walker_bag = dynamic_cast<Property<PropertyBag>*>(target_walker);
             if ( source_walker_bag != 0 && start != std::string::npos ) {
                 if ( target_walker_bag == 0 ) {
-                    log(Error) << "Property '"<<target_walker->getName()<<"' is not a PropertyBag !"<<endlog();
+                    Logger::log().logf(Logger::Error, "refreshProperty",
+                                       "Property '%s' is not a PropertyBag !",
+                                       target_walker->getName().c_str());
                     return false;
                 }
                 return refreshProperty( target_walker_bag->value(), source_walker_bag->rvalue(), name.substr( start ), separator );// a bag so search recursively
@@ -731,12 +747,16 @@ namespace RTT
             else {
                 if (updateOrRefreshProperty( source_walker, target_walker, false) == false)
                     return false;
-                log(Debug) << "Found Property '"<<target_walker->getName() <<"': refresh done." << endlog();
+                Logger::log().logf(Logger::Debug, "refreshProperty",
+                                   "Found Property '%s': refresh done.",
+                                   target_walker->getName().c_str());
                 return true;
             }
         } else {
             // error wrong path, not present in source !
-            log(Error) << "Property '"<< token <<"' is not present in the source PropertyBag !"<<endlog();
+            Logger::log().logf(Logger::Error, "refreshProperty",
+                               "Property '%s' is not present in the source PropertyBag !",
+                               token.c_str());
             return false;
         }
         // not reached.
