@@ -42,7 +42,6 @@
 #include "rtt-config.h"
 #ifndef OROBLD_DISABLE_LOGGING
 #include <ostream>
-#include <sstream>
 #else
 #include <iosfwd>
 #endif
@@ -53,27 +52,24 @@
 #endif
 
 #include "os/TimeService.hpp"
-#include "os/Mutex.hpp"
-#include "os/MutexLock.hpp"
 
 namespace RTT
 {
     /**
      * A simple logging class to debug/ analyse what is
-     * going on in the Orocos system. You MUST NOT use this
-     * logger in a HARD realtime task or thread.
+     * going on in the Orocos system.
      *
      * You can disable all logging at compile time by
      * defining \a OROBLD_DISABLE_LOGGING (not advised for normal usage).
      * This class can log to a console, and/or to a file and/or to an
      * internal buffer which may be emptied by another class. This
      * is decided upon compile time and can not be changed during runtime.
-     * Both printf/iostream are supported.
+     * Both printf/iostream drains are supported.
      *
      * Example Usage :
      * @verbatim
-     Logger::log() << Logger::Error << "An error Occured !" << Logger::endl;
-     Logger::log() << Logger::Debug << "All debug info ..." << Logger::endl;
+     Logger::log().logf(Logger::Error, "MyModule", "An error occurred: %d", 333);
+     Logger::log().logf(Logger::Debug, "MyModule", "All debug info ...");
      * @endverbatim
      *
      * When the application is started, set the displayed loglevel with
@@ -87,24 +83,14 @@ namespace RTT
      * The \a ORO_LOGLEVEL has the same effect on the 'orocos.log' file, but can not lower it below "Info".
      *
      * @warning
-     * Use Logger::RealTime to log from real-time threads. As long as the output LogLevel
-     * is 6 or lower, these messages will not appear and do no harm to real-time performance.
-     * You need to call @verbatim Logger::log().allowRealTime(); @endverbatim once in your program
-     * to confirm this choice. AGAIN: THIS WILL BREAK REAL-TIME PERFORMANCE.
+     * logf() is the bounded real-time logging entry point. Draining,
+     * configuration, and output stream/file work remain non-real-time work.
      * @ingroup CoreLib
      */
     class RTT_API Logger
     {
         struct D;
         D* d;
-        /**
-         * These three are required to have a correct
-         * operator<<(T t) behavior for setting the stream
-         * formatting etc.
-         */
-        os::Mutex& inpguard;
-        std::ostream& logline;
-        std::ostream& fileline;
     public:
 
         /**
@@ -144,64 +130,6 @@ namespace RTT
         void mayLogFile(bool tf);
 
         /**
-         * Notify the Logger in which 'module' the message occured. This returns an object
-         * whose scope (i.e. {...} ) is indicative for the boundaries of the module.
-         * This is reset to the previous module name (default is 'Logger') after the in object is destroyed. Practical
-         * usage must thus have the form:
-         * @verbatim
-         {
-             Logger::In("Mymodule");
-             Logger::log() << Logger::Warning << "My warning message"<<Logger::nl;
-             Logger::log() << "A second message, still in MyModule"<<Logger::nl;
-         }
-         Logger::log() << Logger::Info << "A message in module 'Logger'..."<<Logger::endl;
-         @endverbatim
-        */
-        struct RTT_API In {
-            In(const std::string& module);
-            ~In();
-			std::string oldmod;
-        };
-
-        /**
-         * Inform the Logger of the entry of a module.
-         * @see In. Use Logger::In(\a modname) for management.
-         */
-        Logger& in(const std::string& modname);
-
-        /**
-         * The counterpart of in().
-         * @see In. Use Logger::In(\a modname) for management.
-         */
-        Logger& out(const std::string& modname);
-
-        /**
-         * Get the name of the current Log generating Module.
-         */
-		std::string getLogModule() const;
-
-        /**
-         * Function signature of the functions that influence the
-         * log stream.
-         */
-        typedef std::ostream& (*LogFunction)(std::ostream&);
-
-        /**
-         * Insert a newline '\n' in the ostream. (Why is this not in the standard ?)
-         */
-        static std::ostream& nl(std::ostream& __os);
-
-        /*
-         * Insert a newline '\n' in the ostream and flush. (Copy of the standard)
-         */
-        static std::ostream& endl(std::ostream& __os);
-
-        /**
-         * Flush the output stream.
-         */
-        static std::ostream& flush(std::ostream& __os);
-
-        /**
          * Get the singleton logger.
          * \post If the singleton did not already exist then it is created
          * and associated with the given ostream. If the singleton already
@@ -219,11 +147,6 @@ namespace RTT
          * As Instance(), but more userfriendly.
          */
         static Logger& log();
-
-        /**
-         * As log(), but also specify the LogLevel of the next message.
-         */
-        static Logger& log(LogLevel ll);
 
         /**
          * Print a 'welcome' string in Info  and reset log timestamp.
@@ -278,39 +201,6 @@ namespace RTT
         void setStdStream( std::ostream& stdos  );
 
         /**
-         * Send (user defined) data into this logger. All data with lower priority than
-         * the current loglevel will be discarded. If any loglevel (thus in or out)
-         * is set to \a Never, it will never be displayed. You must flush() or
-         * end with std::endl to get the log's output in your file or display.
-         */
-        template< class T>
-        Logger& operator<<( const T &t );
-
-        /**
-         * Set the loglevel of the incomming messages.
-         */
-        Logger& operator<<(LogLevel ll);
-
-        /**
-         * Log a string. This is equivalent to the templated
-         * operator<<, but reduces code size since it is compiled
-         * only once.
-         */
-        Logger& operator<<(const std::string&);
-
-        /**
-         * Log a text message. This is equivalent to the templated
-         * operator<<, but reduces code size since it is compiled
-         * only once.
-         */
-        Logger& operator<<(const char*);
-
-        /**
-         * Catch the std::endl and other stream manipulators.
-         */
-        Logger& operator<<(std::ostream& (*pf)(std::ostream&));
-
-        /**
          * Set the loglevel of the outgoing (streamed) messages.
          * All messages with this level or higher importance will be displayed.
          * For example, setting to \a Logger::Debug will print everyting,
@@ -324,24 +214,6 @@ namespace RTT
          */
         LogLevel getLogLevel() const;
 
-        /**
-         * Flush log buffers. May log nothing if empty.
-         */
-        void logflush();
-
-        /**
-         * Add endl and flush buffers. Will always log
-         * at least one line.
-         */
-        void logendl();
-
-        /**
-         * Add newline without flushing buffers.
-         * If you need to log a lot of lines, this is advised with
-         * a flush or endl at the end.
-         */
-        void lognl();
-
     private:
         /**
          * Returns true if the next message will be logged.
@@ -350,59 +222,12 @@ namespace RTT
          * was not started.
          */
         bool mayLog() const;
-        bool mayLogStdOut() const;
-        bool mayLogFile() const;
 
         Logger(std::ostream& str=std::cerr);
         ~Logger();
 
         static Logger* _instance;
     };
-
-    /**
-     * Enumerate all log-levels from absolute silence to
-     * everything.
-     * @warning If you enable 'RealTime' logging, this may break realtime performance. Use With Care and NOT
-     * on production systems.
-     * @see Logger::allowRealTime()
-     */
-    enum LoggerLevel { Never = 0, Fatal, Critical, Error, Warning, Info, Debug, RealTime };
-
-    /**
-     * Free function in order to access the Logger instance.
-     */
-    static inline Logger& log() { return Logger::log(); }
-
-    /**
-     * Free function in order to access the Logger instance and set the
-     * LoggerLevel of next message.
-     */
-    static inline Logger& log(LoggerLevel ll) { return Logger::log(Logger::LogLevel(ll)); }
-
-    /**
-     * Function to tell the logger that the log message ended.
-     * Usage: log() << "Message" << endlog();
-     */
-    static inline Logger::LogFunction endlog() {return Logger::endl; }
-
-    /**
-     * Function to tell the logger that the log message ended and
-     * specify the LoggerLevel of that message
-     * Usage: log() << "Error Message" << endlog(Error);
-     */
-    static inline Logger::LogFunction endlog(LoggerLevel ll) { log(ll); return Logger::endl; }
-
-    /**
-     * Function to tell the logger that a newline may be inserted in the log message.
-     * Usage: log() << "Message on line 1" << nlog() << "Message on line 2" << endlog();
-     */
-    static inline Logger::LogFunction nlog() {return Logger::nl; }
-
-    /**
-     * Function to tell the logger that the logs may be flushed.
-     * Usage: log() << "Message on line 1" << flushlog();
-     */
-    static inline Logger::LogFunction flushlog() {return Logger::flush; }
 }
 
 #include "Logger.inl"

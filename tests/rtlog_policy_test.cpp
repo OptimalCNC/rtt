@@ -55,10 +55,6 @@ namespace
     bool hasLegacyStreamLog(const std::string& line)
     {
         const std::string code = stripLineComment(line);
-        if (code.find("Logger::log(Logger::Info) << payload << Logger::endl") != std::string::npos)
-            return false;
-        if (code.find("Logger::log(Logger::Info) << marker << \"_STREAM\" << Logger::endl") != std::string::npos)
-            return false;
         const char* stream_log_starts[] = {
             "log() <<",
             "log(Info) <<",
@@ -90,6 +86,55 @@ namespace
 }
 
 BOOST_AUTO_TEST_SUITE(RtLogPolicyTestSuite)
+
+BOOST_AUTO_TEST_CASE(testLoggerDoesNotExposeStreamApi)
+{
+    const std::string root = sourceRoot();
+    const char* files[] = {
+        "rtt/Logger.hpp",
+        "rtt/Logger.cpp",
+        "rtt/Logger.inl",
+        "tests/logger_test.cpp",
+        "doc/xml/orocos-corelib.xml"
+    };
+    const char* forbidden[] = {
+        "operator<<",
+        "Logger::endl",
+        "Logger::nl",
+        "Logger::flush",
+        "LogFunction",
+        "Logger::In(",
+        "LoggerLevel",
+        "endlog",
+        "nlog",
+        "flushlog",
+        "logline",
+        "fileline",
+        "logflush",
+        "logendl",
+        "lognl"
+    };
+
+    std::vector<std::string> violations;
+    for (std::size_t file_index = 0; file_index != sizeof(files) / sizeof(files[0]); ++file_index) {
+        const std::string relative = files[file_index];
+        std::istringstream lines(readFile(root + "/" + relative));
+        std::string line;
+        int line_number = 0;
+        while (std::getline(lines, line)) {
+            ++line_number;
+            if (containsAny(line, forbidden, sizeof(forbidden) / sizeof(forbidden[0]))) {
+                std::ostringstream message;
+                message << relative << ":" << line_number << ": " << line;
+                violations.push_back(message.str());
+            }
+        }
+    }
+
+    BOOST_CHECK_MESSAGE(violations.empty(),
+                        "Logger must expose only the bounded logf API; first violation: "
+                        << (violations.empty() ? "" : violations.front()));
+}
 
 BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
 {

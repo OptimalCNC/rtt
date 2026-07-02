@@ -224,60 +224,18 @@ BOOST_AUTO_TEST_CASE( testAutoDrainCanBeSuspendedForInteractivePrompt )
     logger->setStdStream(output);
     const std::string marker = "RTLOG_SUSPENDED_DRAIN_TEST";
     logger->logf(Logger::Info, "RTLOG_TEST", "%s", marker.c_str());
-    Logger::log(Logger::Info) << marker << "_STREAM" << Logger::endl;
 
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     BOOST_CHECK(output.str().find(marker) == std::string::npos);
 
     logger->drainLog();
     BOOST_CHECK(output.str().find(marker) != std::string::npos);
-    BOOST_CHECK(output.str().find(marker + "_STREAM") != std::string::npos);
 
     logger->setStdStream(std::cerr);
     logger->mayLogFile(true);
     logger->mayLogStdOut(true);
     logger->setLogLevel(old_level);
     logger->setAutoDrain(old_auto_drain);
-}
-
-BOOST_AUTO_TEST_CASE( testLegacyStreamLogUsesBoundedBackend )
-{
-    Logger::LogLevel old_level = logger->getLogLevel();
-    logger->setLogLevel(Logger::Debug);
-    logger->mayLogStdOut(false);
-    logger->mayLogFile(true);
-
-    for (int i = 0; i != 2500; ++i) {
-        if (logger->getLogLine().empty()) {
-            break;
-        }
-    }
-
-    const std::string marker = "RTLOG_STREAM_BOUND_TEST";
-    const std::string tail_marker = "RTLOG_STREAM_TAIL_MARKER";
-    const std::string payload = marker + " " + std::string(400, 'x') + tail_marker;
-
-    Logger::log(Logger::Info) << payload << Logger::endl;
-
-    bool found = false;
-    bool tail_found = false;
-    for (int i = 0; i != 2500; ++i) {
-        std::string line = logger->getLogLine();
-        if (line.empty()) {
-            break;
-        }
-        if (line.find(marker) != std::string::npos) {
-            found = true;
-            tail_found = line.find(tail_marker) != std::string::npos;
-            break;
-        }
-    }
-
-    logger->mayLogFile(true);
-    logger->mayLogStdOut(true);
-    logger->setLogLevel(old_level);
-    BOOST_CHECK(found);
-    BOOST_CHECK(!tail_found);
 }
 
 BOOST_AUTO_TEST_CASE( testThreadLog )
