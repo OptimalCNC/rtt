@@ -74,6 +74,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/internal/SharedConnection.cpp",
         "rtt/ExecutionEngine.cpp",
         "rtt/marsh/MarshallingService.cpp",
+        "rtt/marsh/PropertyLoader.cpp",
         "rtt/ServiceRequester.cpp"
     };
 

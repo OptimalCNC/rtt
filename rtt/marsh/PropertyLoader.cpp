@@ -53,6 +53,53 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::detail;
 
+namespace {
+#ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
+    void logNoDemarshaller(const char* module)
+    {
+        Logger::log().logf(Logger::Error, module, "No Property DemarshallInterface configured !");
+    }
+
+    void logNoMarshaller(const char* module, const char* interface_name)
+    {
+        Logger::log().logf(Logger::Error, module, "No Property %s configured !", interface_name);
+    }
+#endif
+
+#ifdef OROPKG_CORELIB_PROPERTIES_MARSHALLING
+    void logNoPropertiesToConfigure(const char* module, Service* target)
+    {
+        Logger::log().logf(Logger::Error, module,
+                           "Service %s has no Properties to configure.",
+                           target->getName().c_str());
+    }
+
+    void logCannotOpenFile(const char* module, const std::string& filename)
+    {
+        Logger::log().logf(Logger::Error, module, "Could not open file %s", filename.c_str());
+    }
+
+    void logCannotOpenFileForWriting(const char* module, const std::string& filename)
+    {
+        Logger::log().logf(Logger::Error, module,
+                           "Could not open file %s for writing.",
+                           filename.c_str());
+    }
+
+    void logParseError(const char* module, const std::string& filename)
+    {
+        Logger::log().logf(Logger::Error, module,
+                           "Some error occured while parsing %s",
+                           filename.c_str());
+    }
+
+    void logUncaughtDeserialiseException(const char* module)
+    {
+        Logger::log().logf(Logger::Error, module, "Uncaught exception in deserialise !");
+    }
+#endif
+}
+
 PropertyLoader::PropertyLoader(TaskContext *task)
   : target(task->provides().get())
 {}
@@ -63,26 +110,26 @@ PropertyLoader::PropertyLoader(Service *service)
 
 bool PropertyLoader::load(const std::string& filename) const
 {
-    Logger::In in("PropertyLoader:load");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-        log(Error) << "No Property DemarshallInterface configured !" << endlog();
+        logNoDemarshaller("PropertyLoader:load");
         return false;
 
 #else
     if ( target->properties() == 0) {
-        log(Error) << "Service " <<target->getName()<<" has no Properties to configure." << endlog();
+        logNoPropertiesToConfigure("PropertyLoader:load", target);
         return false;
     }
 
-    log(Info) << "Loading properties into Service '" <<target->getName()
-                  <<"' with '"<<filename<<"'."<< endlog();
+    Logger::log().logf(Logger::Info, "PropertyLoader:load",
+                       "Loading properties into Service '%s' with '%s'.",
+                       target->getName().c_str(), filename.c_str());
     bool failure = false;
     OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER* demarshaller = 0;
     try
     {
         demarshaller = new OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER (filename);
     } catch (...) {
-        log(Error) << "Could not open file "<< filename << endlog();
+        logCannotOpenFile("PropertyLoader:load", filename);
         return false;
     }
     try {
@@ -115,13 +162,12 @@ bool PropertyLoader::load(const std::string& filename) const
         }
         else
             {
-                log(Error) << "Some error occured while parsing "<< filename.c_str() <<endlog();
+                logParseError("PropertyLoader:load", filename);
                 failure = true;
             }
     } catch (...)
     {
-        log(Error)
-                      << "Uncaught exception in deserialise !"<< endlog();
+        logUncaughtDeserialiseException("PropertyLoader:load");
         failure = true;
     }
     delete demarshaller;
@@ -132,26 +178,26 @@ bool PropertyLoader::load(const std::string& filename) const
 
 bool PropertyLoader::configure(const std::string& filename, bool all ) const
 {
-    Logger::In in("PropertyLoader:configure");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-        log(Error) << "No Property DemarshallInterface configured !" << endlog();
+        logNoDemarshaller("PropertyLoader:configure");
         return false;
 
 #else
     if ( target->properties() == 0) {
-        log(Error) << "Service " <<target->getName()<<" has no Properties to configure." << endlog();
+        logNoPropertiesToConfigure("PropertyLoader:configure", target);
         return false;
     }
 
-    log(Info) << "Configuring Service '" <<target->getName()
-                  <<"' with '"<<filename<<"'."<< endlog();
+    Logger::log().logf(Logger::Info, "PropertyLoader:configure",
+                       "Configuring Service '%s' with '%s'.",
+                       target->getName().c_str(), filename.c_str());
     bool failure = false;
     OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER* demarshaller = 0;
     try
     {
         demarshaller = new OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER (filename);
     } catch (...) {
-        log(Error) << "Could not open file "<< filename << endlog();
+        logCannotOpenFile("PropertyLoader:configure", filename);
         return false;
     }
     try {
@@ -178,14 +224,13 @@ bool PropertyLoader::configure(const std::string& filename, bool all ) const
         }
         else
             {
-                log(Error) << "Some error occured while parsing "<< filename.c_str() <<endlog();
+                logParseError("PropertyLoader:configure", filename);
                 failure = true;
             }
         deletePropertyBag( propbag );
     } catch (...)
     {
-        log(Error)
-                      << "Uncaught exception in deserialise !"<< endlog();
+        logUncaughtDeserialiseException("PropertyLoader:configure");
         failure = true;
     }
     delete demarshaller;
@@ -196,9 +241,8 @@ bool PropertyLoader::configure(const std::string& filename, bool all ) const
 
 bool PropertyLoader::store(const std::string& filename) const
 {
-    Logger::In in("PropertyLoader::store");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-    log(Error) << "No Property Marshaller configured !" << endlog();
+    logNoMarshaller("PropertyLoader::store", "Marshaller");
     return false;
 #else
     std::ofstream file( filename.c_str() );
@@ -215,10 +259,11 @@ bool PropertyLoader::store(const std::string& filename) const
         OROCLS_CORELIB_PROPERTIES_MARSHALLING_DRIVER<std::ostream> marshaller( file );
         marshaller.serialize( allProps );
         deletePropertyBag( allProps );
-        log(Info) << "Wrote "<< filename <<endlog();
+        Logger::log().logf(Logger::Info, "PropertyLoader::store",
+                           "Wrote %s", filename.c_str());
     }
     else {
-        log(Error) << "Could not open file "<< filename <<" for writing."<<endlog();
+        logCannotOpenFileForWriting("PropertyLoader::store", filename);
         return false;
     }
     return true;
@@ -227,62 +272,73 @@ bool PropertyLoader::store(const std::string& filename) const
 
 bool PropertyLoader::save(const std::string& filename, bool all) const
 {
-    Logger::In in("PropertyLoader::save");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-        log(Error) << "No Property MarshallInterface configured !" << endlog();
+        logNoMarshaller("PropertyLoader::save", "MarshallInterface");
         return false;
 
 #else
     if ( target->properties() == 0 ) {
-        log(Error) << "Service "<< target->getName()
-                      << " does not have Properties to save." << endlog();
+        Logger::log().logf(Logger::Error, "PropertyLoader::save",
+                           "Service %s does not have Properties to save.",
+                           target->getName().c_str());
         return false;
     }
     PropertyBag allProps;
 	PropertyBag  decompProps;
 
-	// first check if the target file exists.
-	std::ifstream ifile( filename.c_str() );
-	// if target file does not exist, skip this step.
-	if ( ifile ) {
-	    ifile.close();
-	    log(Info) << target->getName()<<" updating of file "<< filename << endlog();
-	    // The demarshaller itself will open the file.
-	    OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER demarshaller( filename );
-	    if ( demarshaller.deserialize( allProps ) == false ) {
-	        // Parse error, abort writing of this file.
-	        log(Error) << "While updating "<< target->getName() <<" : Failed to read "<< filename << endlog();
-	        return false;
-	    }
-	}
-	else {
-	    log(Info) << "Creating "<< filename << endlog();
-	    return store(filename);
-	}
+    // first check if the target file exists.
+    std::ifstream ifile( filename.c_str() );
+    // if target file does not exist, skip this step.
+    if ( ifile ) {
+        ifile.close();
+        Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                           "%s updating of file %s",
+                           target->getName().c_str(), filename.c_str());
+        // The demarshaller itself will open the file.
+        OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER demarshaller( filename );
+        if ( demarshaller.deserialize( allProps ) == false ) {
+            // Parse error, abort writing of this file.
+            Logger::log().logf(Logger::Error, "PropertyLoader::save",
+                               "While updating %s : Failed to read %s",
+                               target->getName().c_str(), filename.c_str());
+            return false;
+        }
+    }
+    else {
+        Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                           "Creating %s", filename.c_str());
+        return store(filename);
+    }
 
-	// Write results
-	PropertyBag* compProps = target->properties();
+    // Write results
+    PropertyBag* compProps = target->properties();
 
-	// decompose repos into primitive property types.
-	PropertyBagIntrospector pbi( decompProps );
-	pbi.introspect( *compProps );
+    // decompose repos into primitive property types.
+    PropertyBagIntrospector pbi( decompProps );
+    pbi.introspect( *compProps );
 
-	//Add target properties to existing properties
-	bool updater = false;
-	if (all) {
-	    log(Info) << "Writing all properties of "<<target->getName()<<" to file "<< filename << endlog();
-	    updater = updateProperties( allProps, decompProps ); // add new.
-	}
-	else {
-	    log(Info) << "Refreshing properties in file "<< filename << " with values of properties of "<<target->getName() << endlog();
-	    updater = refreshProperties( allProps, decompProps ); // only refresh existing.
-	}
-	if (updater == false) {
-	    log(Error) << "Could not update properties of file "<< filename <<"."<<endlog();
-	    deletePropertyBag( allProps );
-	    deletePropertyBag( decompProps );
-	    return false;
-	}
+    //Add target properties to existing properties
+    bool updater = false;
+    if (all) {
+        Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                           "Writing all properties of %s to file %s",
+                           target->getName().c_str(), filename.c_str());
+        updater = updateProperties( allProps, decompProps ); // add new.
+    }
+    else {
+        Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                           "Refreshing properties in file %s with values of properties of %s",
+                           filename.c_str(), target->getName().c_str());
+        updater = refreshProperties( allProps, decompProps ); // only refresh existing.
+    }
+    if (updater == false) {
+        Logger::log().logf(Logger::Error, "PropertyLoader::save",
+                           "Could not update properties of file %s.",
+                           filename.c_str());
+        deletePropertyBag( allProps );
+        deletePropertyBag( decompProps );
+        return false;
+    }
     // ok, finish.
     // serialize and cleanup
     std::ofstream file( filename.c_str() );
@@ -290,10 +346,11 @@ bool PropertyLoader::save(const std::string& filename, bool all) const
         {
             OROCLS_CORELIB_PROPERTIES_MARSHALLING_DRIVER<std::ostream> marshaller( file );
             marshaller.serialize( allProps );
-            log(Info) << "Wrote "<< filename <<endlog();
+            Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                               "Wrote %s", filename.c_str());
         }
     else {
-        log(Error) << "Could not open file "<< filename <<" for writing."<<endlog();
+        logCannotOpenFileForWriting("PropertyLoader::save", filename);
         deletePropertyBag( allProps );
         return false;
     }
@@ -306,21 +363,21 @@ bool PropertyLoader::save(const std::string& filename, bool all) const
 
 bool PropertyLoader::configure(const std::string& filename, const std::string& name ) const
 {
-    Logger::In in("PropertyLoader:configure");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-    log(Error) << "No Property DemarshallInterface configured !" << endlog();
+    logNoDemarshaller("PropertyLoader:configure");
     return false;
 
 #else
-    log(Info) << "Reading Property '" <<name
-              <<"' from file '"<<filename<<"'."<< endlog();
+    Logger::log().logf(Logger::Info, "PropertyLoader:configure",
+                       "Reading Property '%s' from file '%s'.",
+                       name.c_str(), filename.c_str());
     bool failure = false;
     OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER* demarshaller = 0;
     try
     {
         demarshaller = new OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER (filename);
     } catch (...) {
-        log(Error) << "Could not open file "<< filename << endlog();
+        logCannotOpenFile("PropertyLoader:configure", filename);
         return false;
     }
     try {
@@ -338,13 +395,13 @@ bool PropertyLoader::configure(const std::string& filename, const std::string& n
         }
         else
             {
-                log(Error) << "Some error occured while parsing "<< filename.c_str() <<endlog();
+                logParseError("PropertyLoader:configure", filename);
                 failure = true;
             }
         deletePropertyBag( propbag );
     } catch (...)
     {
-        log(Error) << "Uncaught exception in deserialise !"<< endlog();
+        logUncaughtDeserialiseException("PropertyLoader:configure");
         failure = true;
     }
     delete demarshaller;
@@ -354,9 +411,8 @@ bool PropertyLoader::configure(const std::string& filename, const std::string& n
 
 bool PropertyLoader::save(const std::string& filename, const std::string& name) const
 {
-    Logger::In in("PropertyLoader::save");
 #ifndef OROPKG_CORELIB_PROPERTIES_MARSHALLING
-        log(Error) << "No Property MarshallInterface configured !" << endlog();
+        logNoMarshaller("PropertyLoader::save", "MarshallInterface");
         return false;
 
 #else
@@ -368,17 +424,21 @@ bool PropertyLoader::save(const std::string& filename, const std::string& name) 
         // if target file does not exist, skip this step.
         if ( ifile ) {
             ifile.close();
-            log(Info) << "Updating file "<< filename << " with properties of "<<target->getName()<<endlog();
+            Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                               "Updating file %s with properties of %s",
+                               filename.c_str(), target->getName().c_str());
             // The demarshaller itself will open the file.
             OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER demarshaller( filename );
             if ( demarshaller.deserialize( fileProps ) == false ) {
                 // Parse error, abort writing of this file.
-                log(Error) << "Failed to read "<< filename << endlog();
+                Logger::log().logf(Logger::Error, "PropertyLoader::save",
+                                   "Failed to read %s", filename.c_str());
                 return false;
             }
         }
         else
-            log(Info) << "Creating "<< filename << endlog();
+            Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                               "Creating %s", filename.c_str());
     }
 
     // decompose service properties into primitive property types.
@@ -392,7 +452,9 @@ bool PropertyLoader::save(const std::string& filename, const std::string& name) 
     deletePropertyBag( serviceProps );
 
     if ( failure ) {
-        log(Error) << "Could not update properties of file "<< filename <<"."<<endlog();
+        Logger::log().logf(Logger::Error, "PropertyLoader::save",
+                           "Could not update properties of file %s.",
+                           filename.c_str());
         deletePropertyBag( fileProps );
         return false;
     }
@@ -402,10 +464,12 @@ bool PropertyLoader::save(const std::string& filename, const std::string& name) 
         {
             OROCLS_CORELIB_PROPERTIES_MARSHALLING_DRIVER<std::ostream> marshaller( file );
             marshaller.serialize( fileProps );
-            log(Info) << "Wrote Property "<<name <<" to "<< filename <<endlog();
+            Logger::log().logf(Logger::Info, "PropertyLoader::save",
+                               "Wrote Property %s to %s",
+                               name.c_str(), filename.c_str());
         }
     else {
-        log(Error) << "Could not open file "<< filename <<" for writing."<<endlog();
+        logCannotOpenFileForWriting("PropertyLoader::save", filename);
         deletePropertyBag( fileProps );
         return false;
     }
@@ -414,4 +478,3 @@ bool PropertyLoader::save(const std::string& filename, const std::string& name) 
     return true;
 #endif
 }
-
