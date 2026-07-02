@@ -91,6 +91,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/scripting/ParsedStateMachine.cpp",
         "rtt/scripting/Parser.cpp",
         "rtt/ServiceRequester.cpp",
+        "rtt/TaskContext.cpp",
         "rtt/types/TemplateConstructor.hpp",
         "rtt/types/PropertyComposition.cpp",
         "rtt/types/PropertyDecomposition.cpp",

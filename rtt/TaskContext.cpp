@@ -152,7 +152,6 @@ namespace RTT
     {
         bool failure = false;
         const std::string& location = this->getName();
-        Logger::In in( location.c_str()  );
 
         DataFlowInterface::Ports myports = this->ports()->getPorts();
         for (DataFlowInterface::Ports::iterator it = myports.begin();
@@ -162,7 +161,10 @@ namespace RTT
             // Then try to get the peer port's connection
             PortInterface* peerport = peer->ports()->getPort( (*it)->getName() );
             if ( !peerport ) {
-                log(Debug)<< "Peer Task "<<peer->getName() <<" has no Port " << (*it)->getName() << endlog();
+                Logger::log().logf(Logger::Debug, location.c_str(),
+                                   "Peer Task %s has no Port %s",
+                                   peer->getName().c_str(),
+                                   (*it)->getName().c_str());
                 continue;
             }
 
@@ -170,15 +172,21 @@ namespace RTT
             if((dynamic_cast<OutputPortInterface*>(*it) && dynamic_cast<OutputPortInterface*>(peerport)) ||
                (dynamic_cast<InputPortInterface*>(*it) &&  dynamic_cast<InputPortInterface*>(peerport)))
               {
-                log(Debug)<< (*it)->getName() << " and " << peerport->getName() << " have the same type" << endlog();
+                Logger::log().logf(Logger::Debug, location.c_str(),
+                                   "%s and %s have the same type",
+                                   (*it)->getName().c_str(),
+                                   peerport->getName().c_str());
                 continue;
               }
 
             // Try to find a way to connect them
             if ( !(*it)->connectTo( peerport ) ) {
-                log(Debug)<< "Data flow incompatible between ports "
-                          << getName() << "." << (*it)->getName() << " and "
-                          << peer->getName() << "." << (*it)->getName() << endlog();
+                Logger::log().logf(Logger::Debug, location.c_str(),
+                                   "Data flow incompatible between ports %s.%s and %s.%s",
+                                   getName().c_str(),
+                                   (*it)->getName().c_str(),
+                                   peer->getName().c_str(),
+                                   (*it)->getName().c_str());
                 failure = true;
             }
         }
@@ -189,7 +197,6 @@ namespace RTT
     {
         bool success = true;
         const std::string& location = this->getName();
-        Logger::In in( location.c_str()  );
 
         vector<string> myreqs = this->requires()->getRequesterNames();
         vector<string> peerreqs = peer->requires()->getRequesterNames();
@@ -203,7 +210,10 @@ namespace RTT
                 if (peer->provides()->hasService( *it ))
                     success = sr->connectTo( peer->provides(*it) ) && success;
                 else {
-                    log(Debug)<< "Peer Task "<<peer->getName() <<" provides no Service " << *it << endlog();
+                    Logger::log().logf(Logger::Debug, location.c_str(),
+                                       "Peer Task %s provides no Service %s",
+                                       peer->getName().c_str(),
+                                       it->c_str());
                 }
             }
         }
@@ -217,7 +227,10 @@ namespace RTT
                 if (this->provides()->hasService(*it))
                     success = sr->connectTo( this->provides(*it) ) && success;
                 else
-                    log(Debug)<< "This Task provides no Service " << *it << " for peer Task "<<peer->getName() <<"."<< endlog();
+                    Logger::log().logf(Logger::Debug, location.c_str(),
+                                       "This Task provides no Service %s for peer Task %s.",
+                                       it->c_str(),
+                                       peer->getName().c_str());
             }
         }
         return success;
@@ -287,7 +300,6 @@ namespace RTT
         }
 
     void TaskContext::disconnect() {
-        Logger::In in( this->getName().c_str()  );
         // disconnect all our ports
         DataFlowInterface::Ports myports = this->ports()->getPorts();
         for (DataFlowInterface::Ports::iterator it = myports.begin();
@@ -345,8 +357,9 @@ namespace RTT
         // refuse to setActivity from our own active thread
         if (our_act) {
             if (our_act->isActive() && our_act->thread() && our_act->thread()->isSelf()) {
-                log(Error) << "Cannot set the activity of TaskContext "
-                           << this->getName() << " from its own thread." << endlog();
+                Logger::log().logf(Logger::Error, "TaskContext",
+                                   "Cannot set the activity of TaskContext %s from its own thread.",
+                                   this->getName().c_str());
                 return false;
             }
         }
