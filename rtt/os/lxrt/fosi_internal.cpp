@@ -112,7 +112,9 @@ namespace RTT
 #ifdef OROSEM_OS_LXRT_PERIODIC
             rt_set_periodic_mode();
             start_rt_timer( nano2count( NANO_TIME(ORODAT_OS_LXRT_PERIODIC_TICK*1000*1000*1000) ) );
-            Logger::log() << Logger::Info << "RTAI Periodic Timer ticks at "<<ORODAT_OS_LXRT_PERIODIC_TICK<<" seconds." << Logger::endl;
+            Logger::log().logf(Logger::Info, "FOSI",
+                               "RTAI Periodic Timer ticks at %.9g seconds.",
+                               ORODAT_OS_LXRT_PERIODIC_TICK);
 #else
             // BE SURE TO SET rt_preempt_always(1) when using one shot mode
             rt_set_oneshot_mode();
@@ -125,9 +127,11 @@ namespace RTT
             rt_preempt_always(1);
 #endif
             start_rt_timer(0);
-            Logger::log() << Logger::Info << "RTAI Periodic Timer runs in preemptive 'one-shot' mode." << Logger::endl;
+            Logger::log().logf(Logger::Info, "FOSI",
+                               "RTAI Periodic Timer runs in preemptive 'one-shot' mode.");
 #endif
-            Logger::log() << Logger::Debug << "RTAI Task Created" << Logger::endl;
+            Logger::log().logf(Logger::Debug, "FOSI",
+                               "RTAI Task Created");
             return 0;
         }
 
@@ -261,7 +265,8 @@ namespace RTT
         INTERNAL_QUAL int rtos_task_check_scheduler(int* scheduler)
         {
             if (*scheduler != SCHED_LXRT_HARD && *scheduler != SCHED_LXRT_SOFT ) {
-                log(Error) << "Unknown scheduler type." <<endlog();
+                Logger::log().logf(Logger::Error, "FOSI",
+                                   "Unknown scheduler type.");
                 *scheduler = SCHED_LXRT_SOFT;
                 return -1;
             }
@@ -338,7 +343,8 @@ namespace RTT
 
         INTERNAL_QUAL void rtos_task_delete(RTOS_TASK* mytask) {
             if ( pthread_join((mytask->thread),0) != 0 )
-                Logger::log() << Logger::Critical << "Failed to join "<< mytask->name <<"."<< Logger::endl;
+                Logger::log().logf(Logger::Critical, "FOSI",
+                                   "Failed to join %s.", mytask->name);
 
             free( mytask->name );
             mytask->name = NULL;
@@ -354,12 +360,16 @@ namespace RTT
             // correct priority
             // Hard & Soft:
             if (*priority < 0){
-                log(Warning) << "Forcing priority ("<<*priority<<") of thread to 0." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Forcing priority (%d) of thread to 0.",
+                                   *priority);
                 *priority = 0;
                 ret = -1;
             }
             if (*priority > 255){
-                log(Warning) << "Forcing priority ("<<*priority<<") of thread to 255." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Forcing priority (%d) of thread to 255.",
+                                   *priority);
                 *priority = 255;
                 ret = -1;
             }

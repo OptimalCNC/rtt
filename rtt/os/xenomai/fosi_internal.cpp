@@ -108,7 +108,8 @@ namespace RTT
                     }
                     if ( ret == -EBUSY ) {
                         // ok: we are a xeno thread (may log() ):
-                        log(Info) << "MainThread already a Xenomai task." <<endlog();
+                        Logger::log().logf(Logger::Info, "FOSI",
+                                           "MainThread already a Xenomai task.");
                         break;
                     }
                     if ( ret == -EEXIST ) {
@@ -129,7 +130,8 @@ namespace RTT
             // We are a xeno thread now:
             // Only use Logger after this point (i.e. when rt_task_shadow was succesful).
             if ( mt_name == 0) {
-                log(Warning) << "'MainThread' name was already in use. Registered empty name with Xenomai.\n" <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "'MainThread' name was already in use. Registered empty name with Xenomai.");
             }
 
             // main is created in main thread.
@@ -139,25 +141,30 @@ namespace RTT
 # if CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR == 0
             // time in nanoseconds
             rt_timer_start( ORODAT_OS_XENO_PERIODIC_TICK*1000*1000*1000 );
-            Logger::In in("Scheduler");
-            Logger::log() << Logger::Info << "Xenomai Periodic Timer started using "<<ORODAT_OS_XENO_PERIODIC_TICK<<" seconds." << Logger::endl;
+            Logger::log().logf(Logger::Info, "Scheduler",
+                               "Xenomai Periodic Timer started using %.9g seconds.",
+                               ORODAT_OS_XENO_PERIODIC_TICK);
 # else
-            Logger::In in("Scheduler");
-            Logger::log() << Logger::Error << "Set Xenomai Periodic Timer using the Linux kernel configuration." << Logger::endl;
+            Logger::log().logf(Logger::Error, "Scheduler",
+                               "Set Xenomai Periodic Timer using the Linux kernel configuration.");
 # endif
 #else
 # if CONFIG_XENO_VERSION_MAJOR == 2 && CONFIG_XENO_VERSION_MINOR == 0
             rt_timer_start( TM_ONESHOT );
-            Logger::log() << Logger::Info << "Xenomai Periodic Timer runs in preemptive 'one-shot' mode." << Logger::endl;
+            Logger::log().logf(Logger::Info, "Scheduler",
+                               "Xenomai Periodic Timer runs in preemptive 'one-shot' mode.");
 # else
 #  if CONFIG_XENO_OPT_TIMING_PERIODIC
-            Logger::log() << Logger::Info << "Xenomai Periodic Timer configured in 'periodic' mode." << Logger::endl;
+            Logger::log().logf(Logger::Info, "Scheduler",
+                               "Xenomai Periodic Timer configured in 'periodic' mode.");
 #   else
-            Logger::log() << Logger::Info << "Xenomai Periodic Timer runs in preemptive 'one-shot' mode." << Logger::endl;
+            Logger::log().logf(Logger::Info, "Scheduler",
+                               "Xenomai Periodic Timer runs in preemptive 'one-shot' mode.");
 #  endif
 # endif
 #endif
-            log(Info) << "Installing SIGXCPU handler." <<endlog();
+            Logger::log().logf(Logger::Info, "FOSI",
+                               "Installing SIGXCPU handler.");
             //signal(SIGXCPU, warn_upon_switch);
             struct sigaction sa;
             sa.sa_handler = warn_upon_switch;
@@ -165,7 +172,8 @@ namespace RTT
             sa.sa_flags = 0;
             sigaction(SIGXCPU, &sa, 0);
 
-            Logger::log() << Logger::Debug << "Xenomai Timer and Main Task Created" << Logger::endl;
+            Logger::log().logf(Logger::Debug, "FOSI",
+                               "Xenomai Timer and Main Task Created");
             return 0;
         }
 
@@ -225,7 +233,9 @@ namespace RTT
                         if ( i > 7 ) {
                             const unsigned int all_cpus = ~0;
                             if ( cpu_affinity != all_cpus ) // suppress this warning when ~0 is provided
-                                log(Warning) << "rtos_task_create: ignoring cpu_affinity for "<< name << " on CPU " << i << " since it's larger than RTHAL_NR_CPUS - 1 (="<< 7 <<")"<<endlog();
+                                Logger::log().logf(Logger::Warning, "FOSI",
+                                                   "rtos_task_create: ignoring cpu_affinity for %s on CPU %u since it's larger than RTHAL_NR_CPUS - 1 (=7)",
+                                                   name, i);
                         } else {
                             aff |= T_CPU(i); 
                         }
@@ -234,7 +244,8 @@ namespace RTT
             }
             
             if (stack_size == 0) {
-                log(Debug) << "Raizing default stack size to 128kb for Xenomai threads in Orocos." <<endlog();
+                Logger::log().logf(Logger::Debug, "FOSI",
+                                   "Raizing default stack size to 128kb for Xenomai threads in Orocos.");
                 stack_size = 128000;
             }
 
@@ -252,11 +263,15 @@ namespace RTT
                 }
             }
             if ( rv == -EEXIST ) {
-                log(Warning) << name << ": an object with that name is already existing in Xenomai." << endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "%s: an object with that name is already existing in Xenomai.",
+                                   name);
                 rv = rt_task_spawn(&(task->xenotask), 0, stack_size, priority, T_JOINABLE | (aff & T_CPUMASK), rtos_xeno_thread_wrapper, xcookie);
             }
             if ( rv != 0) {
-                log(Error) << name << " : CANNOT INIT Xeno TASK " << task->name <<" error code: "<< rv << endlog();
+                Logger::log().logf(Logger::Error, "FOSI",
+                                   "%s : CANNOT INIT Xeno TASK %s error code: %d",
+                                   name, task->name, rv);
                 return rv;
             }
 
@@ -287,7 +302,8 @@ namespace RTT
     INTERNAL_QUAL int rtos_task_check_scheduler(int* scheduler)
     {
         if (*scheduler != SCHED_XENOMAI_HARD && *scheduler != SCHED_XENOMAI_SOFT ) {
-            log(Error) << "Unknown scheduler type." <<endlog();
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "Unknown scheduler type.");
             *scheduler = SCHED_XENOMAI_SOFT;
             return -1;
         }
@@ -308,12 +324,16 @@ namespace RTT
         const int minprio = 1;
 #endif
         if (*priority < minprio){
-            log(Warning) << "Forcing priority ("<<*priority<<") of thread to " << minprio <<"." <<endlog();
+            Logger::log().logf(Logger::Warning, "FOSI",
+                               "Forcing priority (%d) of thread to %d.",
+                               *priority, minprio);
             *priority = minprio;
             ret = -1;
         }
         if (*priority > 99){
-            log(Warning) << "Forcing priority ("<<*priority<<") of thread to 99." <<endlog();
+            Logger::log().logf(Logger::Warning, "FOSI",
+                               "Forcing priority (%d) of thread to 99.",
+                               *priority);
             *priority = 99;
             ret = -1;
         }
@@ -420,7 +440,8 @@ namespace RTT
 
         INTERNAL_QUAL int rtos_task_set_cpu_affinity(RTOS_TASK * task, unsigned cpu_affinity)
         {
-            log(Error) << "rtos_task_set_cpu_affinity: Xenomai tasks don't allow to migrate to another CPU once created." << endlog();
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "rtos_task_set_cpu_affinity: Xenomai tasks don't allow to migrate to another CPU once created.");
             return -1;
         }
 
@@ -450,7 +471,9 @@ namespace RTT
 
         INTERNAL_QUAL void rtos_task_delete(RTOS_TASK* mytask) {
             if ( rt_task_join(&(mytask->xenotask)) != 0 ) {
-                log(Error) << "Failed to join with thread " << mytask->name << endlog();
+                Logger::log().logf(Logger::Error, "FOSI",
+                                   "Failed to join with thread %s",
+                                   mytask->name);
             }
             rt_task_delete(&(mytask->xenotask));
             free(mytask->name);
@@ -468,4 +491,3 @@ namespace RTT
     }
 }
 #undef INTERNAL_QUAL
-
