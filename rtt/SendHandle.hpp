@@ -90,11 +90,13 @@ namespace RTT
                 return *this;
             this->RBase::impl.reset( boost::dynamic_pointer_cast< internal::ReturnBase<Signature> >(implementation) );
             if ( !this->RBase::impl && implementation ) {
-                log(Error) << "Tried to assign SendHandle from incompatible type."<< endlog();
+                Logger::log().logf(Logger::Error, "SendHandle",
+                                   "Tried to assign SendHandle from incompatible type.");
             }
             this->CBase::cimpl = dynamic_cast< internal::CollectBase<Signature>* >(implementation);
             if ( !this->CBase::cimpl && implementation ) {
-                log(Error) << "Tried to assign SendHandle from incompatible type."<< endlog();
+                Logger::log().logf(Logger::Error, "SendHandle",
+                                   "Tried to assign SendHandle from incompatible type.");
             }
             return *this;
         }
