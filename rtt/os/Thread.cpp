@@ -85,7 +85,6 @@ namespace RTT {
              * This is one time initialisation
              */
             Thread* task = static_cast<os::Thread*> (t);
-            Logger::In in(task->getName());
 
             SCOPE_INIT(task->getName())
 
@@ -255,24 +254,23 @@ namespace RTT {
 
         void Thread::setup(int _priority, unsigned cpu_affinity, const std::string& name)
         {
-            Logger::In in("Thread");
             int ret;
 
             // we do this under lock in order to force the thread to wait until we're done.
             MutexLock lock(breaker);
 
-            log(Info) << "Creating Thread for scheduler=" << (msched_type == ORO_SCHED_OTHER ? "ORO_SCHED_OTHER" : "ORO_SCHED_RT")
-                      << ", priority=" << _priority
-                      << ", CPU affinity=" << cpu_affinity
-                      << ", with name='" << name << "'"
-                      << endlog();
+            Logger::log().logf(Logger::Info, "Thread",
+                               "Creating Thread for scheduler=%s, priority=%d, CPU affinity=%u, with name='%s'",
+                               msched_type == ORO_SCHED_OTHER ? "ORO_SCHED_OTHER" : "ORO_SCHED_RT",
+                               _priority,
+                               cpu_affinity,
+                               name.c_str());
             ret = rtos_sem_init(&sem, 0);
             if (ret != 0)
             {
-                log(Critical)
-                        << "Could not allocate configuration semaphore 'sem' for "
-                        << name
-                        << ". Throwing std::bad_alloc." << endlog();
+                Logger::log().logf(Logger::Critical, "Thread",
+                                   "Could not allocate configuration semaphore 'sem' for %s. Throwing std::bad_alloc.",
+                                   name.c_str());
                 rtos_sem_destroy(&sem);
 #ifndef ORO_EMBEDDED
                 throw std::bad_alloc();
@@ -291,7 +289,8 @@ namespace RTT {
                 }
                 else
                 {
-                    log(Warning) << "Failed to find 'ThreadScope' object in DigitalOutInterface::nameserver." << endlog();
+                    Logger::log().logf(Logger::Warning, "Thread",
+                                       "Failed to find 'ThreadScope' object in DigitalOutInterface::nameserver.");
                 }
             }
 #endif
@@ -299,9 +298,9 @@ namespace RTT {
                     msched_type, default_stack_size, thread_function, this);
             if (rv != 0)
             {
-                log(Critical) << "Could not create thread "
-                        << name << "."
-                        << endlog();
+                Logger::log().logf(Logger::Critical, "Thread",
+                                   "Could not create thread %s.",
+                                   name.c_str());
                 rtos_sem_destroy(&sem);
 #ifndef ORO_EMBEDDED
                 throw std::bad_alloc();
@@ -314,23 +313,27 @@ namespace RTT {
             rtos_sem_wait( &sem );
 
             const char* modname = getName();
-            Logger::In in2(modname);
-            log(Info) << "Thread created with scheduler type '"
-                    << (getScheduler() == ORO_SCHED_OTHER ? "ORO_SCHED_OTHER" : "ORO_SCHED_RT") << "', priority " << getPriority()
-                    << ", cpu affinity " << getCpuAffinity()
-                    << " and period " << getPeriod() << " (PID= " << getPid() << " )." << endlog();
+            Logger::log().logf(Logger::Info, modname,
+                               "Thread created with scheduler type '%s', priority %d, cpu affinity %u and period %g (PID= %u ).",
+                               getScheduler() == ORO_SCHED_OTHER ? "ORO_SCHED_OTHER" : "ORO_SCHED_RT",
+                               getPriority(),
+                               getCpuAffinity(),
+                               getPeriod(),
+                               getPid());
 #ifdef OROPKG_OS_THREAD_SCOPE
             if (d)
             {
                 unsigned int bit = threadNumber();
-                log(Info) << "ThreadScope :"<< modname <<" toggles bit "<< bit << endlog();
+                Logger::log().logf(Logger::Info, modname,
+                                   "ThreadScope :%s toggles bit %u",
+                                   modname,
+                                   bit);
             }
 #endif
         }
 
         Thread::~Thread()
         {
-            Logger::In in("~Thread");
             if (this->isRunning())
                 this->stop();
 
@@ -395,9 +398,9 @@ namespace RTT {
                 rtos_task_make_periodic(&rtos_task, period);
                 int ret = rtos_sem_signal(&sem);
                 if (ret != 0)
-                    log(Critical)
-                    << "Thread::start(): sem_signal returns " << ret
-                    << endlog();
+                    Logger::log().logf(Logger::Critical, "Thread",
+                                       "Thread::start(): sem_signal returns %d",
+                                       ret);
                 // do not wait, we did our job.
 
                 return true;
@@ -429,7 +432,9 @@ namespace RTT {
             {
                 if ( inloop ) {
                     if ( !this->breakLoop() ) {
-                        log(Warning) << "Failed to stop thread " << this->getName() << ": breakLoop() returned false."<<endlog();
+                        Logger::log().logf(Logger::Warning, "Thread",
+                                           "Failed to stop thread %s: breakLoop() returned false.",
+                                           this->getName());
                         running = true;
                         return false;
                     }
@@ -438,7 +443,10 @@ namespace RTT {
                 // always take this lock, but after breakLoop was called !
                 MutexTimedLock lock(breaker, getStopTimeout()); 
                 if ( !lock.isSuccessful() ) {
-                    log(Error) << "Failed to stop thread " << this->getName() << ": breakLoop() returned true, but loop() function did not return after " << getStopTimeout() <<" seconds."<<endlog();
+                    Logger::log().logf(Logger::Error, "Thread",
+                                       "Failed to stop thread %s: breakLoop() returned true, but loop() function did not return after %g seconds.",
+                                       this->getName(),
+                                       getStopTimeout());
                     running = true;
                     return false;
                 }
@@ -449,7 +457,10 @@ namespace RTT {
                     // drop out of periodic mode.
                     rtos_task_make_periodic(&rtos_task, 0);
                 } else {
-                    log(Error) << "Failed to stop thread " << this->getName() << ": step() function did not return after "<< getStopTimeout() <<" seconds."<<endlog();
+                    Logger::log().logf(Logger::Error, "Thread",
+                                       "Failed to stop thread %s: step() function did not return after %g seconds.",
+                                       this->getName(),
+                                       getStopTimeout());
                     running = true;
                     return false;
                 }
@@ -472,7 +483,6 @@ namespace RTT {
 
         bool Thread::setScheduler(int sched_type)
         {
-            Logger::In in("Thread::setScheduler");
             if (os::CheckScheduler(sched_type) == false)
                 return false;
             if (this->getScheduler() == sched_type)
@@ -480,9 +490,10 @@ namespace RTT {
                 return true;
             }
 
-            log(Info) << "Setting scheduler type for Thread '"
-                      << rtos_task_get_name(&rtos_task) << "' to "
-                      << sched_type << endlog();
+            Logger::log().logf(Logger::Info, "Thread::setScheduler",
+                               "Setting scheduler type for Thread '%s' to %d",
+                               rtos_task_get_name(&rtos_task),
+                               sched_type);
             rtos_task_set_scheduler(&rtos_task, sched_type); // this may be a no-op, in that case, configure() will pick the change up.
             msched_type = sched_type;
             rtos_sem_signal(&sem);
@@ -627,8 +638,9 @@ namespace RTT {
             // avoid callling twice.
             if (prepareForExit) return;
 
-            Logger::In in("Thread");
-            log(Debug) << "Terminating " << this->getName() << endlog();
+            Logger::log().logf(Logger::Debug, "Thread",
+                               "Terminating %s",
+                               this->getName());
 
             prepareForExit = true;
             rtos_sem_signal(&sem);
@@ -636,7 +648,7 @@ namespace RTT {
             rtos_task_delete(&rtos_task); // this must join the thread.
             active = false;
 
-            log(Debug) << " done" << endlog();
+            Logger::log().logf(Logger::Debug, "Thread", " done");
         }
 
         const char* Thread::getName() const

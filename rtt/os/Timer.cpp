@@ -165,7 +165,7 @@ namespace RTT {
     {
         if ( timer_id < 0 || timer_id >= int(mtimers.size()) || period < 0.0)
         {
-            log(Error) << "Invalid timer id or period" << endlog();
+            Logger::log().logf(Logger::Error, "Timer", "Invalid timer id or period");
             return false;
         }
 
@@ -184,7 +184,7 @@ namespace RTT {
     {
         if ( timer_id < 0 || timer_id >= int(mtimers.size()) || wait_time < 0.0)
         {
-            log(Error) << "Invalid timer id or wait time" << endlog();
+            Logger::log().logf(Logger::Error, "Timer", "Invalid timer id or wait time");
             return false;
         }
 
@@ -205,7 +205,7 @@ namespace RTT {
         MutexLock locker(mmutex);
         if (timer_id < 0 || timer_id >= int(mtimers.size()) )
         {
-            log(Error) << "Invalid timer id" << endlog();
+            Logger::log().logf(Logger::Error, "Timer", "Invalid timer id");
             return false;
         }
         return mtimers[timer_id].expires != 0;
@@ -216,7 +216,7 @@ namespace RTT {
         MutexLock locker(mmutex);
         if (timer_id < 0 || timer_id >= int(mtimers.size()) )
         {
-            log(Error) << "Invalid timer id" << endlog();
+            Logger::log().logf(Logger::Error, "Timer", "Invalid timer id");
             return 0.0;
         }
         Time now = rtos_get_time_ns();
@@ -232,7 +232,7 @@ namespace RTT {
         MutexLock locker(mmutex);
         if (timer_id < 0 || timer_id >= int(mtimers.size()) )
         {
-            log(Error) << "Invalid timer id" << endlog();
+            Logger::log().logf(Logger::Error, "Timer", "Invalid timer id");
             return false;
         }
         mtimers[timer_id].expires = 0;
@@ -246,7 +246,7 @@ namespace RTT {
         MutexLock locker(mmutex);
         if (timer_id < 0 || timer_id >= int(mtimers.size()) )
         {
-            log(Error) << "Invalid timer id" << endlog();
+            Logger::log().logf(Logger::Error, "Timer", "Invalid timer id");
             return false;
         }
         if (mtimers[timer_id].expires == 0) return false;
@@ -259,7 +259,7 @@ namespace RTT {
         MutexLock locker(mmutex);
         if (timer_id < 0 || timer_id >= int(mtimers.size()) )
         {
-            log(Error) << "Invalid timer id" << endlog();
+            Logger::log().logf(Logger::Error, "Timer", "Invalid timer id");
             return false;
         }
         if (mtimers[timer_id].expires == 0) return false;

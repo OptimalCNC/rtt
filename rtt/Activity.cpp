@@ -294,7 +294,9 @@ namespace RTT
         {
             if ( inloop ) {
                 if ( !this->breakLoop() ) {
-                    log(Warning) << "Failed to stop thread " << this->getName() << ": breakLoop() returned false."<<endlog();
+                    Logger::log().logf(Logger::Warning, "Activity",
+                                       "Failed to stop thread %s: breakLoop() returned false.",
+                                       this->getName());
                     running = true;
                     return false;
                 }
@@ -302,7 +304,10 @@ namespace RTT
             }
             MutexTimedLock lock(breaker, getStopTimeout());
             if ( !lock.isSuccessful() ) {
-                log(Error) << "Failed to stop thread " << this->getName() << ": breakLoop() returned true, but loop() function did not return after "<<getStopTimeout() << " second(s)."<<endlog();
+                Logger::log().logf(Logger::Error, "Activity",
+                                   "Failed to stop thread %s: breakLoop() returned true, but loop() function did not return after %g second(s).",
+                                   this->getName(),
+                                   getStopTimeout());
                 running = true;
                 return false;
             }
@@ -313,7 +318,10 @@ namespace RTT
                 // drop out of periodic mode.
                 rtos_task_make_periodic(&rtos_task, 0);
             } else {
-                log(Error) << "Failed to stop thread " << this->getName() << ": step() function did not return after "<< getStopTimeout() <<" second(s)."<<endlog();
+                Logger::log().logf(Logger::Error, "Activity",
+                                   "Failed to stop thread %s: step() function did not return after %g second(s).",
+                                   this->getName(),
+                                   getStopTimeout());
                 running = true;
                 return false;
             }
