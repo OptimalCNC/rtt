@@ -136,6 +136,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/transports/corba/ServiceRequesterI.cpp",
         "rtt/transports/corba/TaskContextI.cpp",
         "rtt/transports/corba/TaskContextProxy.cpp",
+        "rtt/transports/corba/TaskContextServer.cpp",
         "rtt/types/BoostArrayTypeInfo.hpp",
         "rtt/types/CArrayTypeInfo.hpp",
         "rtt/types/EnumTypeInfo.hpp",

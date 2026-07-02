@@ -77,7 +77,6 @@ namespace RTT
 
     TaskContextServer::~TaskContextServer()
     {
-        Logger::In in("~TaskContextServer()");
         servers.erase(mtaskcontext);
 
         // Remove taskcontext ior reference
@@ -92,7 +91,9 @@ namespace RTT
                 CosNaming::NamingContext_var rootNC = CosNaming::NamingContext::_narrow(rootObj.in());
 
                 if (CORBA::is_nil( rootNC.in() ) ) {
-                    log(Warning) << "CTaskContext '"<< mregistered_name << "' could not find CORBA Naming Service."<<endlog();
+                    Logger::log().logf(Logger::Warning, "~TaskContextServer",
+                                       "CTaskContext '%s' could not find CORBA Naming Service.",
+                                       mregistered_name.c_str());
                 } else {
                     // Nameserver found...
                     CosNaming::Name name;
@@ -101,17 +102,25 @@ namespace RTT
                     name[1].id = CORBA::string_dup( mregistered_name.c_str() );
                     try {
                         rootNC->unbind(name);
-                        log(Info) << "Successfully removed CTaskContext '"<< mregistered_name <<"' from CORBA Naming Service."<<endlog();
+                        Logger::log().logf(Logger::Info, "~TaskContextServer",
+                                           "Successfully removed CTaskContext '%s' from CORBA Naming Service.",
+                                           mregistered_name.c_str());
                     }
                     catch( const CosNaming::NamingContext::NotFound& ) {
-                        log(Info) << "CTaskContext '"<< mregistered_name << "' task was already unbound."<<endlog();
+                        Logger::log().logf(Logger::Info, "~TaskContextServer",
+                                           "CTaskContext '%s' task was already unbound.",
+                                           mregistered_name.c_str());
                     }
                     catch( ... ) {
-                        log(Warning) << "CTaskContext '"<< mregistered_name << "' unbinding failed."<<endlog();
+                        Logger::log().logf(Logger::Warning, "~TaskContextServer",
+                                           "CTaskContext '%s' unbinding failed.",
+                                           mregistered_name.c_str());
                     }
                 }
             } catch (...) {
-                log(Warning) << "CTaskContext '"<< mregistered_name << "' unbinding failed from CORBA Naming Service."<<endlog();
+                Logger::log().logf(Logger::Warning, "~TaskContextServer",
+                                   "CTaskContext '%s' unbinding failed from CORBA Naming Service.",
+                                   mregistered_name.c_str());
             }
         }
     }
@@ -119,7 +128,6 @@ namespace RTT
 
     void TaskContextServer::initTaskContextServer(bool require_name_service)
     {
-        Logger::In in("TaskContextServer()");
         servers[mtaskcontext] = this;
         try {
             // Each server has its own POA.
@@ -161,15 +169,19 @@ namespace RTT
                 if (CORBA::is_nil( rootNC ) ) {
                     std::string  err("CTaskContext '" + mregistered_name + "' could not find CORBA Naming Service.");
                     if (require_name_service) {
-                        log(Error) << err << endlog();
+                        Logger::log().logf(Logger::Error, "TaskContextServer",
+                                           "%s", err.c_str());
                         servers.erase(mtaskcontext);
                         throw IllegalServer(err);
                     }
                     else
                     {
-                        log(Warning) << err << endlog();
+                        Logger::log().logf(Logger::Warning, "TaskContextServer",
+                                           "%s", err.c_str());
 #ifndef ORO_NO_EMIT_CORBA_IOR
-                        log() <<"Writing IOR to 'std::cerr' and file '" << mregistered_name <<".ior'"<<endlog();
+                        Logger::log().logf(Logger::Info, "TaskContextServer",
+                                           "Writing IOR to 'std::cerr' and file '%s.ior'",
+                                           mregistered_name.c_str());
 
                         // this part only publishes the IOR to a file.
                         CORBA::String_var ior = orb->object_to_string( mtask.in() );
@@ -185,7 +197,9 @@ namespace RTT
                         return;
                     }
                 }
-                log(Info) << "CTaskContext '"<< mregistered_name << "' found CORBA Naming Service."<<endlog();
+                Logger::log().logf(Logger::Info, "TaskContextServer",
+                                   "CTaskContext '%s' found CORBA Naming Service.",
+                                   mregistered_name.c_str());
                 // Nameserver found...
                 CosNaming::Name name;
                 name.length(1);
@@ -195,7 +209,8 @@ namespace RTT
                     controlNC = rootNC->bind_new_context(name);
                 }
                 catch( CosNaming::NamingContext::AlreadyBound&) {
-                    log(Debug) << "NamingContext 'TaskContexts' already bound to CORBA Naming Service."<<endlog();
+                    Logger::log().logf(Logger::Debug, "TaskContextServer",
+                                       "NamingContext 'TaskContexts' already bound to CORBA Naming Service.");
                     // NOP.
                 }
 
@@ -203,24 +218,35 @@ namespace RTT
                 name[1].id = CORBA::string_dup( mregistered_name.c_str() );
                 try {
                     rootNC->bind(name, mtask );
-                    log(Info) << "Successfully added CTaskContext '"<< mregistered_name <<"' to CORBA Naming Service."<<endlog();
+                    Logger::log().logf(Logger::Info, "TaskContextServer",
+                                       "Successfully added CTaskContext '%s' to CORBA Naming Service.",
+                                       mregistered_name.c_str());
                 }
                 catch( CosNaming::NamingContext::AlreadyBound&) {
-                    log(Warning) << "CTaskContext '"<< mregistered_name << "' already bound to CORBA Naming Service."<<endlog();
-                    log() <<"Trying to rebind...";
+                    Logger::log().logf(Logger::Warning, "TaskContextServer",
+                                       "CTaskContext '%s' already bound to CORBA Naming Service.",
+                                       mregistered_name.c_str());
                     try {
                         rootNC->rebind(name, mtask);
                     } catch( ... ) {
-                        log() << " failed!"<<endlog();
+                        Logger::log().logf(Logger::Error, "TaskContextServer",
+                                           "Trying to rebind CTaskContext '%s' failed!",
+                                           mregistered_name.c_str());
                         return;
                     }
-                    log() << " done. New CTaskContext bound to Naming Service."<<endlog();
+                    Logger::log().logf(Logger::Info, "TaskContextServer",
+                                       "Trying to rebind CTaskContext '%s' done. New CTaskContext bound to Naming Service.",
+                                       mregistered_name.c_str());
                 }
             } // use_naming
             else {
-                log(Info) <<"CTaskContext '"<< mregistered_name << "' is not using the CORBA Naming Service."<<endlog();
+                Logger::log().logf(Logger::Info, "TaskContextServer",
+                                   "CTaskContext '%s' is not using the CORBA Naming Service.",
+                                   mregistered_name.c_str());
 #ifndef ORO_NO_EMIT_CORBA_IOR
-                log() <<"Writing IOR to 'std::cerr' and file '" << mregistered_name <<".ior'"<<endlog();
+                Logger::log().logf(Logger::Info, "TaskContextServer",
+                                   "Writing IOR to 'std::cerr' and file '%s.ior'",
+                                   mregistered_name.c_str());
 
                 // this part only publishes the IOR to a file.
                 CORBA::String_var ior = orb->object_to_string( mtask.in() );
@@ -237,8 +263,9 @@ namespace RTT
             }
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "CORBA exception raised!" << endlog();
-            log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextServer",
+                               "CORBA exception raised! %s",
+                               CORBA_EXCEPTION_INFO(e));
         }
 
     }
@@ -258,13 +285,15 @@ namespace RTT
 
     void TaskContextServer::CleanupServers() {
         if ( !CORBA::is_nil(orb) && !is_shutdown) {
-            log(Info) << "Cleaning up TaskContextServers..."<<endlog();
+            Logger::log().logf(Logger::Info, "TaskContextServer",
+                               "Cleaning up TaskContextServers...");
             while ( !servers.empty() ){
                 delete servers.begin()->second;
                 // note: destructor will self-erase from map !
             }
             CDataFlowInterface_i::clearServants();
-            log() << "Cleanup done."<<endlog();
+            Logger::log().logf(Logger::Info, "TaskContextServer",
+                               "Cleanup done.");
         }
     }
 
@@ -272,7 +301,9 @@ namespace RTT
         if ( !CORBA::is_nil(orb) ) {
             ServerMap::iterator it = servers.find(c);
             if ( it != servers.end() ){
-                log(Info) << "Cleaning up TaskContextServer for "<< c->getName()<<endlog();
+                Logger::log().logf(Logger::Info, "TaskContextServer",
+                                   "Cleaning up TaskContextServer for %s",
+                                   c->getName().c_str());
                 CDataFlowInterface_i::deregisterServant(c->provides().get());
                 delete it->second; // destructor will do the rest.
                 // note: destructor will self-erase from map !
@@ -282,33 +313,35 @@ namespace RTT
 
     void TaskContextServer::ShutdownOrb(bool wait_for_completion)
     {
-        Logger::In in("ShutdownOrb");
         DoShutdownOrb(wait_for_completion);
     }
 
     void TaskContextServer::DoShutdownOrb(bool wait_for_completion)
     {
         if (is_shutdown) {
-            log(Info) << "Orb already down..."<<endlog();
+            Logger::log().logf(Logger::Info, "ShutdownOrb",
+                               "Orb already down...");
             return;
         }
         if ( CORBA::is_nil(orb) ) {
-            log(Error) << "Orb Shutdown...failed! Orb is nil." << endlog();
+            Logger::log().logf(Logger::Error, "ShutdownOrb",
+                               "Orb Shutdown...failed! Orb is nil.");
             return;
         }
 
         try {
             CleanupServers(); // can't do this after an orb->shutdown().
-            log(Info) << "Orb Shutdown...";
             is_shutdown = true;
-            if (wait_for_completion)
-                log(Info)<<"waiting..."<<endlog();
+            Logger::log().logf(Logger::Info, "ShutdownOrb",
+                               wait_for_completion ? "Orb Shutdown...waiting..." : "Orb Shutdown...");
             orb->shutdown( wait_for_completion );
-            log(Info) << "done." << endlog();
+            Logger::log().logf(Logger::Info, "ShutdownOrb",
+                               "Orb Shutdown...done.");
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "Orb Shutdown...failed! CORBA exception raised." << endlog();
-            log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "ShutdownOrb",
+                               "Orb Shutdown...failed! CORBA exception raised. %s",
+                               CORBA_EXCEPTION_INFO(e));
             return;
         }
     }
@@ -317,17 +350,21 @@ namespace RTT
     void TaskContextServer::RunOrb()
     {
         if ( CORBA::is_nil(orb) ) {
-            log(Error) << "RunOrb...failed! Orb is nil." << endlog();
+            Logger::log().logf(Logger::Error, "RunOrb",
+                               "RunOrb...failed! Orb is nil.");
             return;
         }
         try {
-            log(Info) <<"Entering orb->run()."<<endlog();
+            Logger::log().logf(Logger::Info, "RunOrb",
+                               "Entering orb->run().");
             orb->run();
-            log(Info) <<"Breaking out of orb->run()."<<endlog();
+            Logger::log().logf(Logger::Info, "RunOrb",
+                               "Breaking out of orb->run().");
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "Orb Run : CORBA exception raised!" << endlog();
-            log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "RunOrb",
+                               "Orb Run : CORBA exception raised! %s",
+                               CORBA_EXCEPTION_INFO(e));
         }
     }
 
@@ -343,7 +380,6 @@ namespace RTT
         {}
         void loop()
         {
-            Logger::In in("OrbRunner");
             TaskContextServer::RunOrb();
         }
 
@@ -354,8 +390,8 @@ namespace RTT
 
         void finalize()
         {
-            Logger::In in("OrbRunner");
-            log(Info) <<"Safely stopped."<<endlog();
+            Logger::log().logf(Logger::Info, "OrbRunner",
+                               "Safely stopped.");
         }
     };
 
@@ -378,15 +414,17 @@ namespace RTT
     }
     void TaskContextServer::ThreadOrb(int scheduler, int priority, unsigned cpu_affinity)
     {
-        Logger::In in("ThreadOrb");
         if ( CORBA::is_nil(orb) ) {
-            log(Error) << "ThreadOrb...failed! Orb is nil." << endlog();
+            Logger::log().logf(Logger::Error, "ThreadOrb",
+                               "ThreadOrb...failed! Orb is nil.");
             return;
         }
         if (orbrunner != 0) {
-            log(Error) <<"Orb already running in a thread."<<endlog();
+            Logger::log().logf(Logger::Error, "ThreadOrb",
+                               "Orb already running in a thread.");
         } else {
-            log(Info) <<"Starting Orb in a thread."<<endlog();
+            Logger::log().logf(Logger::Info, "ThreadOrb",
+                               "Starting Orb in a thread.");
             orbrunner = new OrbRunner(scheduler, priority, cpu_affinity);
             orbrunner->start();
         }
@@ -394,9 +432,9 @@ namespace RTT
 
     void TaskContextServer::DestroyOrb()
     {
-        Logger::In in("DestroyOrb");
         if ( CORBA::is_nil(orb) ) {
-            log(Error) << "DestroyOrb...failed! Orb is nil." << endlog();
+            Logger::log().logf(Logger::Error, "DestroyOrb",
+                               "DestroyOrb...failed! Orb is nil.");
             return;
         }
 
@@ -413,11 +451,13 @@ namespace RTT
             orb->destroy();
             rootPOA = 0;
             orb = 0;
-            log(Info) <<"Orb destroyed."<<endlog();
+            Logger::log().logf(Logger::Info, "DestroyOrb",
+                               "Orb destroyed.");
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "Orb Destroy : CORBA exception raised!" << endlog();
-            log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "DestroyOrb",
+                               "Orb Destroy : CORBA exception raised! %s",
+                               CORBA_EXCEPTION_INFO(e));
         }
 
     }
@@ -431,12 +471,16 @@ namespace RTT
             return 0;
 
         if ( servers.count(tc) ) {
-            log(Debug) << "Returning existing TaskContextServer for "<< alias <<endlog();
+            Logger::log().logf(Logger::Debug, "TaskContextServer",
+                               "Returning existing TaskContextServer for %s",
+                               alias.c_str());
             return servers.find(tc)->second;
         }
 
         // create new:
-        log(Info) << "Creating new TaskContextServer for "<< alias <<endlog();
+        Logger::log().logf(Logger::Info, "TaskContextServer",
+                           "Creating new TaskContextServer for %s",
+                           alias.c_str());
         try {
             TaskContextServer* cts = new TaskContextServer(tc, alias, use_naming, require_name_service);
             return cts;
@@ -456,18 +500,24 @@ namespace RTT
             return CTaskContext::_nil();
 
         if ( servers.count(tc) ) {
-            log(Debug) << "Returning existing TaskContextServer for "<< alias <<endlog();
+            Logger::log().logf(Logger::Debug, "TaskContextServer",
+                               "Returning existing TaskContextServer for %s",
+                               alias.c_str());
             return CTaskContext::_duplicate( servers.find(tc)->second->server() );
         }
 
         for (TaskContextProxy::PMap::iterator it = TaskContextProxy::proxies.begin(); it != TaskContextProxy::proxies.end(); ++it)
             if ( (it->first) == tc ) {
-                log(Debug) << "Returning server of Proxy for "<< alias <<endlog();
+                Logger::log().logf(Logger::Debug, "TaskContextServer",
+                                   "Returning server of Proxy for %s",
+                                   alias.c_str());
                 return CTaskContext::_duplicate(it->second);
             }
 
         // create new:
-        log(Info) << "Creating new TaskContextServer for "<< alias <<endlog();
+        Logger::log().logf(Logger::Info, "TaskContextServer",
+                           "Creating new TaskContextServer for %s",
+                           alias.c_str());
         try {
             TaskContextServer* cts = new TaskContextServer(tc, alias, use_naming, require_name_service);
             return CTaskContext::_duplicate( cts->server() );
