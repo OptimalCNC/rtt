@@ -255,8 +255,9 @@ namespace RTT
         virtual bool Set( param_t push )
         {
             if (!initialized) {
-                log(Error) << "You set a lock-free data object of type " << internal::DataSourceTypeInfo<T>::getType() << " without initializing it with a data sample. "
-                           << "This might not be real-time safe." << endlog();
+                Logger::log().logf(Logger::Error, "DataObjectLockFree",
+                                   "You set a lock-free data object of type %s without initializing it with a data sample. This might not be real-time safe.",
+                                   internal::DataSourceTypeInfo<T>::getType().c_str());
                 data_sample(value_t(), true);
             }
 

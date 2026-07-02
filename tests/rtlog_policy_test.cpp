@@ -64,6 +64,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
     const char* files[] = {
         "rtt/base/TaskCore.cpp",
         "rtt/base/CoreRunnableInterface.cpp",
+        "rtt/base/DataObjectLockFree.hpp",
         "rtt/base/InputPortInterface.cpp",
         "rtt/ConfigurationInterface.cpp",
         "rtt/deployment/ComponentLoader.cpp",
