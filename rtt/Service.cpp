@@ -80,7 +80,9 @@ namespace RTT {
 
     bool Service::addService( Service::shared_ptr obj ) {
         if ( services.find( obj->getName() ) != services.end() ) {
-            log(Error) << "Could not add Service " << obj->getName() <<": name already in use." <<endlog();
+            Logger::log().logf(Logger::Error, "Service",
+                               "Could not add Service %s: name already in use.",
+                               obj->getName().c_str());
             return false;
         }
         // we pass and store a shared ptr in setParent, so we hack it like this:
@@ -114,8 +116,10 @@ namespace RTT {
         try {
             return shared_from_this();
         } catch( boost::bad_weak_ptr& /*bw*/ ) {
-            log(Error) <<"When using boost < 1.40.0 : You are not allowed to call provides() on a Service that does not yet belong to a TaskContext or another Service (for example in a constructor)." << endlog();
-            log(Error) <<"Try to avoid using provides() in this case: omit it or use the service directly." <<endlog();
+            Logger::log().logf(Logger::Error, "Service",
+                               "When using boost < 1.40.0 : You are not allowed to call provides() on a Service that does not yet belong to a TaskContext or another Service (for example in a constructor).");
+            Logger::log().logf(Logger::Error, "Service",
+                               "Try to avoid using provides() in this case: omit it or use the service directly.");
             throw std::runtime_error("Illegal use of provides()");
         }
     }
@@ -141,11 +145,12 @@ namespace RTT {
 
     OperationInterfacePart* Service::getOperation( std::string name )
     {
-        Logger::In in("Service::getOperation");
         if ( this->hasMember(name ) ) {
             return this->getPart(name);
         }
-        log(Warning) << "No such operation in service '"<< getName() <<"': "<< name <<endlog();
+        Logger::log().logf(Logger::Warning, "Service::getOperation",
+                           "No such operation in service '%s': %s",
+                           getName().c_str(), name.c_str());
         return 0;
     }
 
@@ -177,18 +182,23 @@ namespace RTT {
 
     bool Service::addLocalOperation( OperationBase& op )
     {
-        Logger::In in("Service::addLocalOperation");
         if ( op.getName().empty() ) {
-            log(Error) << "Failed to add Operation: '"<< op.getName() <<"' has no name." <<endlog();
+            Logger::log().logf(Logger::Error, "Service::addLocalOperation",
+                               "Failed to add Operation: '%s' has no name.",
+                               op.getName().c_str());
             return false;
         }
         // don't check ready() since the op may not have an owner yet:
         if ( !op.getImplementation() ) {
-            log(Error) << "Failed to add Operation: '"<< op.getName() <<"' is not ready: not bound to a function." <<endlog();
+            Logger::log().logf(Logger::Error, "Service::addLocalOperation",
+                               "Failed to add Operation: '%s' is not ready: not bound to a function.",
+                               op.getName().c_str());
             return false;
         }
         if ( simpleoperations.count( op.getName() ) ) {
-            log(Warning) << "While adding Operation: '"<< op.getName() <<"': replacing previously added operation." <<endlog();
+            Logger::log().logf(Logger::Warning, "Service::addLocalOperation",
+                               "While adding Operation: '%s': replacing previously added operation.",
+                               op.getName().c_str());
             this->removeOperation(op.getName());
         }
         simpleoperations[op.getName()] = &op;
