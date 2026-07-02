@@ -76,8 +76,6 @@ namespace RTT
 
     ExecutionEngine::~ExecutionEngine()
     {
-        Logger::In in("~ExecutionEngine");
-
         ExecutableInterface* foo;
         while ( f_queue->dequeue( foo ) )
             foo->unloaded();
@@ -418,7 +416,9 @@ namespace RTT
             name = "TaskCore";
         else
             name = "GlobalEngine";
-        log(Error) << "in "<<name<<": unhandled exception in sent operation." << endlog();
+        Logger::log().logf(Logger::Error, "ExecutionEngine",
+                           "in %s: unhandled exception in sent operation.",
+                           name.c_str());
         if(taskc)
             taskc->exception();
     }
