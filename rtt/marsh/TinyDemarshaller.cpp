@@ -61,6 +61,33 @@ namespace RTT
 {
     namespace marsh
     {
+        namespace {
+            void logWrongValue(const std::string& type, const char* expected, const std::string& value)
+            {
+                Logger::log().logf(Logger::Error, "TinyDemarshaller",
+                                   "Wrong value for property '%s'. Value should contain %s, got '%s'.",
+                                   type.c_str(), expected, value.c_str());
+            }
+
+            void logShortTypeWarning(const std::string& name)
+            {
+                Logger::log().logf(Logger::Warning, "TinyDemarshaller",
+                                   "Use type='long' instead of type='short' for Property '%s', since 16bit integers are not supported.",
+                                   name.c_str());
+                Logger::log().logf(Logger::Warning, "TinyDemarshaller",
+                                   "Future versions of RTT will no longer map XML 'short' to C++ 'int' but to C++ 'short' Property objects.");
+            }
+
+            void logUnsignedShortTypeWarning(const std::string& name)
+            {
+                Logger::log().logf(Logger::Warning, "TinyDemarshaller",
+                                   "Use type='ulong' instead of type='ushort' for Property '%s', since 16bit integers are not supported.",
+                                   name.c_str());
+                Logger::log().logf(Logger::Warning, "TinyDemarshaller",
+                                   "Future versions of RTT will no longer map XML 'ushort' to C++ 'unsigned int' but to C++ 'unsigned short' Property objects.");
+            }
+        }
+
         class Tiny2CPFHandler
         {
             /**
@@ -102,15 +129,13 @@ namespace RTT
                                 bag_stack.top().first->ownProperty
                                 ( new Property<bool>( name, description, false ) );
                             else {
-                                log(Error)<< "Wrong value for property '"+type+"'." \
-                                    " Value should contain '0' or '1', got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "'0' or '1'", value_string);
                                 return false;
                             }
                         }
                         else if ( type == "char" ) {
                             if ( value_string.length() > 1 ) {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain a single character, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "a single character", value_string);
                                 return false;
                             }
                             else
@@ -119,8 +144,7 @@ namespace RTT
                         }
                         else if ( type == "uchar" || type == "octet" ) {
                             if ( value_string.length() > 1 ) {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain a single unsigned character, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "a single unsigned character", value_string);
                                 return false;
                             }
                             else
@@ -130,30 +154,26 @@ namespace RTT
                         else if ( type == "long" || type == "short")
                         {
                             if (type == "short") {
-                                log(Warning) << "Use type='long' instead of type='short' for Property '"<< name << "', since 16bit integers are not supported." <<endlog();
-                                log(Warning) << "Future versions of RTT will no longer map XML 'short' to C++ 'int' but to C++ 'short' Property objects." <<endlog();
+                                logShortTypeWarning(name);
                             }
                             int v;
                             if ( sscanf(value_string.c_str(), "%d", &v) == 1)
                                 bag_stack.top().first->ownProperty( new Property<int>( name, description, v ) );
                             else {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain an integer value, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "an integer value", value_string);
                                 return false;
                             }
                         }
                         else if ( type == "ulong" || type == "ushort")
                         {
                             if (type == "ushort") {
-                                log(Warning) << "Use type='ulong' instead of type='ushort' for Property '"<< name << "', since 16bit integers are not supported." <<endlog();
-                                log(Warning) << "Future versions of RTT will no longer map XML 'ushort' to C++ 'unsigned int' but to C++ 'unsigned short' Property objects." <<endlog();
+                                logUnsignedShortTypeWarning(name);
                             }
                             unsigned int v;
                             if ( sscanf(value_string.c_str(), "%u", &v) == 1)
                                 bag_stack.top().first->ownProperty( new Property<unsigned int>( name, description, v ) );
                             else {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain an integer value, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "an integer value", value_string);
                                 return false;
                             }
                         }
@@ -163,8 +183,7 @@ namespace RTT
                             if ( sscanf(value_string.c_str(), "%lld", &v) == 1)
                                 bag_stack.top().first->ownProperty( new Property<long long>( name, description, v ) );
                             else {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain an integer value, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "an integer value", value_string);
                                 return false;
                             }
                         }
@@ -174,8 +193,7 @@ namespace RTT
                             if ( sscanf(value_string.c_str(), "%llu", &v) == 1)
                                 bag_stack.top().first->ownProperty( new Property<unsigned long long>( name, description, v ) );
                             else {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain an integer value, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "an integer value", value_string);
                                 return false;
                             }
                         }
@@ -186,8 +204,7 @@ namespace RTT
                                 bag_stack.top().first->ownProperty
                                     ( new Property<double>( name, description, v ) );
                             else {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain a double value, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "a double value", value_string);
                                 return false;
                             }
                         }
@@ -198,8 +215,7 @@ namespace RTT
                                 bag_stack.top().first->ownProperty
                                     ( new Property<float>( name, description, v ) );
                             else {
-                                log(Error) << "Wrong value for property '"+type+"'." \
-                                    " Value should contain a float value, got '"+ value_string +"'." << endlog();
+                                logWrongValue(type, "a float value", value_string);
                                 return false;
                             }
                         }
@@ -207,7 +223,9 @@ namespace RTT
                             bag_stack.top().first->ownProperty
                             ( new Property<std::string>( name, description, value_string ) );
                         else{
-                        	log(Error)<<"Unknown type \""<<type<< "\" for for tag simple"<<endlog();
+                            Logger::log().logf(Logger::Error, "TinyDemarshaller",
+                                               "Unknown type \"%s\" for for tag simple",
+                                               type.c_str());
                         	return false;
                         }
                         tag_stack.pop();
@@ -315,7 +333,9 @@ namespace RTT
                                     if ( ln == "value"  )
                                         tag_stack.push( TAG_VALUE );
                                     else {
-                                        log(Warning) << "Unrecognised XML tag :"<< ln <<": ignoring." << endlog();
+                                        Logger::log().logf(Logger::Warning, "TinyDemarshaller",
+                                                           "Unrecognised XML tag :%s: ignoring.",
+                                                           ln.c_str());
                                         tag_stack.push( TAG_UNKNOWN );
                                     }
             }
@@ -359,7 +379,9 @@ namespace RTT
                         for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling())
                             {
                                 if ( this->populateBag( pChild ) == false){
-                                	log(Error)<<"Error in element at line "<<pChild->Row() << endlog();
+                                    Logger::log().logf(Logger::Error, "TinyDemarshaller",
+                                                       "Error in element at line %d",
+                                                       pChild->Row());
                                     return false;
                                 }
                             }
@@ -398,11 +420,12 @@ namespace RTT
         TinyDemarshaller::TinyDemarshaller( const std::string& filename )
             : d( new TinyDemarshaller::D(filename) )
         {
-            Logger::In in("TinyDemarshaller");
             d->loadOkay = d->doc.LoadFile();
 
             if ( !d->loadOkay ) {
-                log(Error) << "Could not load " << filename << " Error: "<< d->doc.ErrorDesc() << endlog();
+                Logger::log().logf(Logger::Error, "TinyDemarshaller",
+                                   "Could not load %s Error: %s",
+                                   filename.c_str(), d->doc.ErrorDesc());
                 return;
             }
 
@@ -415,8 +438,6 @@ namespace RTT
 
         bool TinyDemarshaller::deserialize( PropertyBag &v )
         {
-            Logger::In in("TinyDemarshaller");
-
             if ( !d->loadOkay )
                 return false;
 
@@ -424,7 +445,8 @@ namespace RTT
             TiXmlHandle propHandle = docHandle.FirstChildElement( "properties" );
 
             if ( ! propHandle.Node() ) {
-                log(Error) << "No <properties> element found in document!"<< endlog();
+                Logger::log().logf(Logger::Error, "TinyDemarshaller",
+                                   "No <properties> element found in document!");
                 return false;
             }
 

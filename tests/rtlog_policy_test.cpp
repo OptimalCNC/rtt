@@ -79,6 +79,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/marsh/PropertyDemarshaller.cpp",
         "rtt/marsh/PropertyLoader.cpp",
         "rtt/marsh/PropertyMarshaller.cpp",
+        "rtt/marsh/TinyDemarshaller.cpp",
         "rtt/ServiceRequester.cpp"
     };
 
