@@ -400,25 +400,37 @@ namespace RTT
           std::map<const DataSourceBase*, DataSourceBase*> dummy;
           FunctionFactory* cfi = new FunctionFactory(ProgramInterfacePtr(mfunc->copy(dummy)), rootc->engine() ); // execute in the processor which has the command.
           if (rootc->provides()->hasMember( mfunc->getName() ) )
-              log(Warning) << "Redefining function '"<< rootc->getName() << "." << mfunc->getName() << "': only new programs will use this new function." <<endlog();
+              Logger::log().logf(Logger::Warning, "ProgramGraphParser",
+                                  "Redefining function '%s.%s': only new programs will use this new function.",
+                                  rootc->getName().c_str(), mfunc->getName().c_str());
           rootc->provides()->add(mfunc->getName(), cfi );
-          Logger::log() << Logger::Info << "Exported Function '" << mfunc->getName() << "' added to task '"<< rootc->getName() << "'" <<Logger::endl;
+          Logger::log().logf(Logger::Info, "ProgramGraphParser",
+                              "Exported Function '%s' added to task '%s'",
+                              mfunc->getName().c_str(), rootc->getName().c_str());
       }
       // attach the function to the global service interface.
       else if (globalf){
           std::map<const DataSourceBase*, DataSourceBase*> dummy;
           FunctionFactory* cfi = new FunctionFactory(ProgramInterfacePtr(mfunc->copy(dummy)), rootc->engine() ); // execute in the processor which has the command.
           if (GlobalService::Instance()->provides()->hasMember( mfunc->getName() ) )
-              log(Warning) << "Redefining function '"<< GlobalService::Instance()->getName() << "."<< mfunc->getName() << "': only new programs will use this new function." <<endlog();
+              Logger::log().logf(Logger::Warning, "ProgramGraphParser",
+                                  "Redefining function '%s.%s': only new programs will use this new function.",
+                                  GlobalService::Instance()->getName().c_str(), mfunc->getName().c_str());
           GlobalService::Instance()->provides()->add(mfunc->getName(), cfi );
-          Logger::log() << Logger::Debug << "Seen Function '" << mfunc->getName() << "' for Global Service." <<Logger::endl;
+          Logger::log().logf(Logger::Debug, "ProgramGraphParser",
+                              "Seen Function '%s' for Global Service.",
+                              mfunc->getName().c_str());
       } else {
           std::map<const DataSourceBase*, DataSourceBase*> dummy;
           FunctionFactory* cfi = new FunctionFactory(ProgramInterfacePtr(mfunc->copy(dummy)), rootc->engine() ); // execute in the processor which has the command.
           if (rootc->provides("scripting")->hasMember( mfunc->getName() ) )
-              log(Warning) << "Redefining function '"<< rootc->getName() << ".scripting."<< mfunc->getName() << "': only new programs will use this new function." <<endlog();
+              Logger::log().logf(Logger::Warning, "ProgramGraphParser",
+                                  "Redefining function '%s.scripting.%s': only new programs will use this new function.",
+                                  rootc->getName().c_str(), mfunc->getName().c_str());
           rootc->provides("scripting")->add(mfunc->getName(), cfi );
-          Logger::log() << Logger::Debug << "Seen Function '" << mfunc->getName() << "' for scripting service of '"<< rootc->getName() << "'" <<Logger::endl;
+          Logger::log().logf(Logger::Debug, "ProgramGraphParser",
+                              "Seen Function '%s' for scripting service of '%s'",
+                              mfunc->getName().c_str(), rootc->getName().c_str());
       }
 
       fcontext.reset();
@@ -508,7 +520,8 @@ namespace RTT
 
   void ProgramGraphParser::seencallfuncstatement()
   {
-      log(Warning) << " 'call' has been deprecated. Please remove this keyword." << endlog();
+      Logger::log().logf(Logger::Warning, "ProgramGraphParser",
+                          " 'call' has been deprecated. Please remove this keyword.");
       // This function is called if the 'call func' is outside
       // a termination clause.
 
