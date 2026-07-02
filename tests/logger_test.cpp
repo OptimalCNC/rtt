@@ -23,6 +23,8 @@
 
 #include <iostream>
 #include <sstream>
+#include <chrono>
+#include <thread>
 #include <boost/scoped_ptr.hpp>
 #include <Activity.hpp>
 #include <base/RunnableInterface.hpp>
@@ -176,6 +178,36 @@ BOOST_AUTO_TEST_CASE( testRealtimeFormatLogHonorsNeverAtEnqueue )
     logger->mayLogStdOut(true);
     logger->setLogLevel(old_level);
     BOOST_CHECK(output.str().find(marker) == std::string::npos);
+}
+
+BOOST_AUTO_TEST_CASE( testRealtimeFormatLogDrainsWithoutExplicitFlush )
+{
+    Logger::LogLevel old_level = logger->getLogLevel();
+    logger->setLogLevel(Logger::Debug);
+    logger->mayLogStdOut(true);
+    logger->mayLogFile(false);
+    logger->drainLog();
+
+    std::ostringstream output;
+    logger->setStdStream(output);
+    const std::string marker = "RTLOG_BACKGROUND_DRAIN_TEST";
+    logger->logf(Logger::Info, "RTLOG_TEST", "%s", marker.c_str());
+
+    bool found = false;
+    for (int i = 0; i != 100; ++i) {
+        if (output.str().find(marker) != std::string::npos) {
+            found = true;
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    logger->drainLog();
+    logger->setStdStream(std::cerr);
+    logger->mayLogFile(true);
+    logger->mayLogStdOut(true);
+    logger->setLogLevel(old_level);
+    BOOST_CHECK(found);
 }
 
 BOOST_AUTO_TEST_CASE( testLegacyStreamLogUsesBoundedBackend )

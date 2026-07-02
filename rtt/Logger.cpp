@@ -45,8 +45,10 @@
 #include "Logger.hpp"
 #include <iomanip>
 #include <atomic>
+#include <chrono>
 #include <cstdio>
 #include <cstdarg>
+#include <thread>
 #include <utility>
 
 #ifdef OROSEM_PRINTF_LOGGING
@@ -99,6 +101,7 @@ namespace RTT
             Logger::LogLevel level;
             bool to_stdout;
             bool to_file;
+            os::TimeService::ticks timestamp;
             char module[48];
         };
 
@@ -180,6 +183,7 @@ namespace RTT
               timestamp(0),
               droppedLogMessages(0),
               nextRtLogSequence(rtlogSequenceNumber.load(std::memory_order_relaxed)),
+              drainThreadRunning(false),
               started(false), showtime(true), allowRT(false),
               mlogStdOut(true), mlogFile(true),
               moduleptr("Logger")
@@ -187,6 +191,11 @@ namespace RTT
 #if defined(OROSEM_FILE_LOGGING) && defined(OROSEM_PRINTF_LOGGING)
             logfile = fopen(logfile_name ? logfile_name : "orocos.log","w");
 #endif
+        }
+
+        ~D()
+        {
+            stopDrainThread();
         }
 
         bool maylog() const {
@@ -265,6 +274,7 @@ namespace RTT
             data.level = level;
             data.to_stdout = to_stdout;
             data.to_file = to_file;
+            data.timestamp = TimeService::Instance()->getTicks();
             copyBounded(data.module, sizeof(data.module), module);
 
             rtlog::Status status = rtlogger.Log(std::move(data), "%s", message ? message : "");
@@ -274,6 +284,7 @@ namespace RTT
 
         int drainRtLog(std::ostream& (*pf)(std::ostream&) = Logger::endl)
         {
+            os::MutexLock lock(drainGuard);
             int processed = rtlogger.PrintAndClearLogQueue([this, pf](
                 const RtLogData& data, std::size_t sequence, const char* format, ...) {
                 if (sequence > nextRtLogSequence)
@@ -290,12 +301,36 @@ namespace RTT
                 std::stringstream line;
                 if (showtime)
                     line << fixed << showpoint << setprecision(3)
-                         << TimeService::Instance()->secondsSince(timestamp);
+                         << Seconds(TimeService::ticks2nsecs(data.timestamp - timestamp)) / NSECS_IN_SECS;
                 line << " " << showLevelText(data.level) << "[" << data.module << "] "
                      << message;
                 writeLine(data, line.str(), pf);
             });
             return processed;
+        }
+
+        void startDrainThread()
+        {
+            if (drainThreadRunning.exchange(true, std::memory_order_acq_rel))
+                return;
+
+            drainThread = std::thread([this] {
+                while (drainThreadRunning.load(std::memory_order_acquire)) {
+                    if (drainRtLog() == 0)
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+                drainRtLog();
+            });
+        }
+
+        void stopDrainThread()
+        {
+            if (!drainThreadRunning.exchange(false, std::memory_order_acq_rel))
+                return;
+
+            if (drainThread.joinable())
+                drainThread.join();
+            drainRtLog();
         }
 
         void writeLine(const RtLogData& data, const std::string& line, std::ostream& (*pf)(std::ostream&))
@@ -346,6 +381,8 @@ namespace RTT
         TimeService::ticks timestamp;
         std::atomic<std::size_t> droppedLogMessages;
         std::size_t nextRtLogSequence;
+        std::atomic<bool> drainThreadRunning;
+        std::thread drainThread;
 
         Logger::LogLevel intToLogLevel(int ll) {
             switch (ll)
@@ -431,6 +468,7 @@ namespace RTT
         std::string moduleptr;
 
         os::Mutex inpguard;
+        os::Mutex drainGuard;
     };
 
     Logger::Logger(std::ostream& str)
@@ -582,6 +620,7 @@ namespace RTT
         d->started = true;
 
         d->timestamp = TimeService::Instance()->getTicks();
+        d->startDrainThread();
         *this<<xtramsg<<Logger::nl;
         *this<< " OROCOS version '" ORO_xstr(RTT_VERSION) "'";
 #ifdef __GNUC__
@@ -606,6 +645,7 @@ namespace RTT
         if (!d->started)
             return;
         *this<<Logger::Info<<"Orocos Logging Deactivated." << Logger::endl;
+        d->stopDrainThread();
         this->logflush();
         d->started = false;
     }
@@ -637,6 +677,7 @@ namespace RTT
         data.level = ll;
         data.to_stdout = (ll <= d->outloglevel && d->outloglevel != Never && ll != Never && d->mlogStdOut);
         data.to_file = ((ll <= Logger::Info || ll <= d->outloglevel) && d->mlogFile);
+        data.timestamp = TimeService::Instance()->getTicks();
         copyBounded(data.module, sizeof(data.module), module ? module : "Logger");
 
         if (!data.to_stdout && !data.to_file)
@@ -663,6 +704,7 @@ namespace RTT
 
     void Logger::setStdStream( std::ostream& stdos ) {
 #ifndef OROSEM_PRINTF_LOGGING
+        os::MutexLock lock( d->drainGuard );
         d->stdoutput = &stdos;
 #endif
     }
