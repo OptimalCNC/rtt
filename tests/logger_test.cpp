@@ -210,6 +210,36 @@ BOOST_AUTO_TEST_CASE( testRealtimeFormatLogDrainsWithoutExplicitFlush )
     BOOST_CHECK(found);
 }
 
+BOOST_AUTO_TEST_CASE( testAutoDrainCanBeSuspendedForInteractivePrompt )
+{
+    Logger::LogLevel old_level = logger->getLogLevel();
+    const bool old_auto_drain = logger->isAutoDrainEnabled();
+    logger->setLogLevel(Logger::Debug);
+    logger->mayLogStdOut(true);
+    logger->mayLogFile(false);
+    logger->setAutoDrain(false);
+    logger->drainLog();
+
+    std::ostringstream output;
+    logger->setStdStream(output);
+    const std::string marker = "RTLOG_SUSPENDED_DRAIN_TEST";
+    logger->logf(Logger::Info, "RTLOG_TEST", "%s", marker.c_str());
+    Logger::log(Logger::Info) << marker << "_STREAM" << Logger::endl;
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    BOOST_CHECK(output.str().find(marker) == std::string::npos);
+
+    logger->drainLog();
+    BOOST_CHECK(output.str().find(marker) != std::string::npos);
+    BOOST_CHECK(output.str().find(marker + "_STREAM") != std::string::npos);
+
+    logger->setStdStream(std::cerr);
+    logger->mayLogFile(true);
+    logger->mayLogStdOut(true);
+    logger->setLogLevel(old_level);
+    logger->setAutoDrain(old_auto_drain);
+}
+
 BOOST_AUTO_TEST_CASE( testLegacyStreamLogUsesBoundedBackend )
 {
     Logger::LogLevel old_level = logger->getLogLevel();

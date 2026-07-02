@@ -255,6 +255,19 @@ namespace RTT
         int drainLog();
 
         /**
+         * Enable or disable the background drain thread.
+         *
+         * Interactive frontends may disable automatic draining while they own
+         * terminal input and call drainLog() at prompt-safe points instead.
+         */
+        void setAutoDrain(bool enabled);
+
+        /**
+         * Returns true when the background drain thread is enabled.
+         */
+        bool isAutoDrainEnabled() const;
+
+        /**
          * Return the number of log messages dropped by the bounded queue.
          */
         std::size_t droppedLogCount() const;

@@ -255,7 +255,8 @@ namespace RTT
                 return;
 
             enqueueRtLine(level, to_stdout, to_file, module, message.c_str());
-            drainRtLog(pf);
+            if (autoDrainEnabled())
+                drainRtLog(pf);
         }
 
         void queueHistory(const std::string& line)
@@ -325,12 +326,16 @@ namespace RTT
 
         void stopDrainThread()
         {
-            if (!drainThreadRunning.exchange(false, std::memory_order_acq_rel))
-                return;
-
-            if (drainThread.joinable())
-                drainThread.join();
+            if (drainThreadRunning.exchange(false, std::memory_order_acq_rel)) {
+                if (drainThread.joinable())
+                    drainThread.join();
+            }
             drainRtLog();
+        }
+
+        bool autoDrainEnabled() const
+        {
+            return drainThreadRunning.load(std::memory_order_acquire);
         }
 
         void writeLine(const RtLogData& data, const std::string& line, std::ostream& (*pf)(std::ostream&))
@@ -695,6 +700,21 @@ namespace RTT
     int Logger::drainLog()
     {
         return d->drainRtLog();
+    }
+
+    void Logger::setAutoDrain(bool enabled)
+    {
+        if (enabled) {
+            if (d->started)
+                d->startDrainThread();
+        } else {
+            d->stopDrainThread();
+        }
+    }
+
+    bool Logger::isAutoDrainEnabled() const
+    {
+        return d->autoDrainEnabled();
     }
 
     std::size_t Logger::droppedLogCount() const

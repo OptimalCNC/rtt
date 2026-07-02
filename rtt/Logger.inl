@@ -153,6 +153,13 @@ namespace RTT
         return 0;
     }
 
+    inline void Logger::setAutoDrain(bool) {
+    }
+
+    inline bool Logger::isAutoDrainEnabled() const {
+        return false;
+    }
+
     inline std::size_t Logger::droppedLogCount() const {
         return 0;
     }

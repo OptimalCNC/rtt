@@ -57,6 +57,8 @@ namespace
         const std::string code = stripLineComment(line);
         if (code.find("Logger::log(Logger::Info) << payload << Logger::endl") != std::string::npos)
             return false;
+        if (code.find("Logger::log(Logger::Info) << marker << \"_STREAM\" << Logger::endl") != std::string::npos)
+            return false;
         const char* stream_log_starts[] = {
             "log() <<",
             "log(Info) <<",
