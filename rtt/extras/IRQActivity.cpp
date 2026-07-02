@@ -67,7 +67,8 @@ void IRQActivity::setIRQ(int irq) { m_irq = irq; }
 
 #ifndef OROPKG_OS_XENOMAI
 bool IRQActivity::start() {
-    Logger::log() << Logger::Error << "IRQActivity is only usable on Xenomai" << Logger::endl;
+    Logger::log().logf(Logger::Error, "IRQActivity",
+                       "IRQActivity is only usable on Xenomai");
     return false;
 }
 #else
@@ -90,21 +91,25 @@ bool IRQActivity::start()
 
     if (m_irq == -1)
     {
-        Logger::log() << Logger::Error << "no IRQ set for IRQActivity" << Logger::endl;
+        Logger::log().logf(Logger::Error, "IRQActivity",
+                           "no IRQ set for IRQActivity");
         return false;
     }
 
     char name[20];
     if (snprintf(name, 20, "IRQActivity%d", m_irq) >= 20)
     {
-        Logger::log() << Logger::Error << "something is wrong with m_irq. Are you trying to do a buffer overflow ?" << strerror(errno) << Logger::endl;
+        Logger::log().logf(Logger::Error, "IRQActivity",
+                           "something is wrong with m_irq. Are you trying to do a buffer overflow ? %s",
+                           strerror(errno));
         return false;
     }
 
     int ret = rt_intr_create(&m_handle, name, m_irq, 0);
     if (ret != 0)
     {
-        Logger::log() << Logger::Error << "cannot create interrupt object for IRQ " << m_irq << ": " << strerror(-ret) << Logger::endl;
+        Logger::log().logf(Logger::Error, "IRQActivity",
+                           "cannot create interrupt object for IRQ %d: %s", m_irq, strerror(-ret));
         return false;
     }
 
@@ -155,4 +160,3 @@ void IRQActivity::step()
 }
 
 #endif // OS is xenomai
-
