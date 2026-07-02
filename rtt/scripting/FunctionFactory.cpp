@@ -57,6 +57,7 @@
 #include "../internal/DataSourceCommand.hpp"
 #include "../FactoryExceptions.hpp"
 #include "../../Handle.hpp"
+#include "../Logger.hpp"
 
 
 namespace RTT {
@@ -252,12 +253,14 @@ namespace RTT {
                     // Return argument.
                     return args[0];
                 } else {
-                    log(Error) <<"FunctionFactory: Please define your SendHandle with 'var SendHandle' for script functions." <<endlog();
+                    Logger::log().logf(Logger::Error, "FunctionFactory",
+                                        "FunctionFactory: Please define your SendHandle with 'var SendHandle' for script functions.");
                     return 0;
                 }
 
             }
-            log(Error) <<"FunctionFactory: Must provide an argument in produceCollect." <<endlog();
+            Logger::log().logf(Logger::Error, "FunctionFactory",
+                                "FunctionFactory: Must provide an argument in produceCollect.");
             return 0;
         }
 #ifdef ORO_SIGNALLING_OPERATIONS
@@ -268,5 +271,4 @@ namespace RTT {
         }
 #endif
 }
-
 

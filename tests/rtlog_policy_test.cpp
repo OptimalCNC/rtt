@@ -102,6 +102,8 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/SendHandle.hpp",
         "rtt/Service.cpp",
         "rtt/scripting/ParsedStateMachine.cpp",
+        "rtt/scripting/CallFunction.hpp",
+        "rtt/scripting/FunctionFactory.cpp",
         "rtt/scripting/Parser.cpp",
         "rtt/scripting/PeerParser.cpp",
         "rtt/scripting/ProgramGraphParser.cpp",
