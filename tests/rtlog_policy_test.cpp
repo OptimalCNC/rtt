@@ -95,6 +95,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/types/BoostArrayTypeInfo.hpp",
         "rtt/types/CArrayTypeInfo.hpp",
         "rtt/types/SequenceTypeInfoBase.hpp",
+        "rtt/types/StructTypeInfo.hpp",
         "rtt/types/TemplateConstructor.hpp",
         "rtt/types/PropertyComposition.cpp",
         "rtt/types/PropertyDecomposition.cpp",

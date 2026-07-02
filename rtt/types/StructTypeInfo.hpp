@@ -113,7 +113,10 @@ namespace RTT
                     type_discovery in( adata );
                     return in.discoverMember( adata->set(), name );
                 }
-                log(Error) << "Wrong call to type info function " + this->getTypeName() << "'s getMember() can not process "<< item->getTypeName() <<endlog();
+                Logger::log().logf(Logger::Error, "StructTypeInfo",
+                                   "Wrong call to type info function %s's getMember() can not process %s",
+                                   this->getTypeName().c_str(),
+                                   item->getTypeName().c_str());
                 return base::DataSourceBase::shared_ptr();
             }
 
@@ -132,7 +135,10 @@ namespace RTT
                     type_discovery in( adata );
                     return in.referenceMember( ref, adata->set(), name );
                 }
-                log(Error) << "Wrong call to type info function " + this->getTypeName() << "'s getMember() can not process "<< item->getTypeName() <<endlog();
+                Logger::log().logf(Logger::Error, "StructTypeInfo",
+                                   "Wrong call to type info function %s's getMember() can not process %s",
+                                   this->getTypeName().c_str(),
+                                   item->getTypeName().c_str());
                 return false;
             }
 
