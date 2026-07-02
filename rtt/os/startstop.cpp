@@ -86,9 +86,9 @@ int __os_init(int argc, char** argv )
     os_argv_arg = argv;
 
     os::MainThread::Instance();
-    Logger::log() << Logger::Debug << "MainThread started." << Logger::endl;
+    Logger::log().logf(Logger::Debug, "Logger", "MainThread started.");
 
-    Logger::log() << Logger::Debug << "Starting StartStopManager." << Logger::endl;
+    Logger::log().logf(Logger::Debug, "Logger", "Starting StartStopManager.");
     int ret = os::StartStopManager::Instance()->start() ? 0 : 1;
 
 #ifdef OROPKG_OS_THREAD_SCOPE
@@ -101,9 +101,11 @@ int __os_init(int argc, char** argv )
         if ( DigitalOutInterface::nameserver.getObject("ThreadScope") )
             d = DigitalOutInterface::nameserver.getObject("ThreadScope");
         else
-            Logger::log() << Logger::Error<< "Failed to find 'ThreadScope' object in DigitalOutInterface::nameserver." << Logger::endl;
+            Logger::log().logf(Logger::Error, "Logger",
+                               "Failed to find 'ThreadScope' object in DigitalOutInterface::nameserver.");
         if ( d ) {
-            Logger::log() << Logger::Info << "ThreadScope : main thread toggles bit "<< bit << Logger::endl;
+            Logger::log().logf(Logger::Info, "Logger",
+                               "ThreadScope : main thread toggles bit %u", bit);
             d->switchOn( bit );
         }
 #endif
@@ -178,12 +180,12 @@ void __os_exit(void)
 
     types::TypekitRepository::Release();
 
-    Logger::log() << Logger::Debug << "Stopping StartStopManager." << Logger::endl;
+    Logger::log().logf(Logger::Debug, "Logger", "Stopping StartStopManager.");
     os::StartStopManager::Instance()->stop();
     os::StartStopManager::Release();
 
     // This should be the (one but) last message to be logged :
-    Logger::log() << Logger::Debug << "Stopping MainThread." << Logger::endl;
+    Logger::log().logf(Logger::Debug, "Logger", "Stopping MainThread.");
 
     // Stop logging
     Logger::Release();

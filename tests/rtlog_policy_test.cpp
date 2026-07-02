@@ -89,6 +89,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/marsh/TinyDemarshaller.cpp",
         "rtt/Activity.cpp",
         "rtt/os/exceptions.cpp",
+        "rtt/os/startstop.cpp",
         "rtt/os/Thread.cpp",
         "rtt/os/Timer.cpp",
         "rtt/OperationCaller.hpp",
