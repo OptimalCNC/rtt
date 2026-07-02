@@ -114,7 +114,9 @@ namespace RTT
                     // @todo could also return a direct reference to item indx using another DS type that respects updated().
                     return new ArrayPartDataSource<typename T::value_type>( *data->set().c_array(), new ConstantDataSource<unsigned int>(indx), item, T::static_size);
                 } catch(...) {}
-                log(Error) << "BoostArrayTypeInfo: No such part (or invalid index): " << name << endlog();
+                Logger::log().logf(Logger::Error, "BoostArrayTypeInfo",
+                                   "No such part (or invalid index): %s",
+                                   name.c_str());
                 return base::DataSourceBase::shared_ptr();
             }
 
@@ -139,7 +141,14 @@ namespace RTT
                 if ( id_indx ) {
                     return new ArrayPartDataSource<typename T::value_type>( *data->set().c_array(), id_indx, item, T::static_size );
                 }
-                log(Error) << "BoostArrayTypeInfo: No such part (or invalid index): " << id_name->get() << id_indx->get() << endlog();
+                if (id_name) {
+                    Logger::log().logf(Logger::Error, "BoostArrayTypeInfo",
+                                       "No such part (or invalid index): %s",
+                                       id_name->get().c_str());
+                } else {
+                    Logger::log().logf(Logger::Error, "BoostArrayTypeInfo",
+                                       "No such part (or invalid index).");
+                }
                 return base::DataSourceBase::shared_ptr();
             }
 
@@ -164,7 +173,8 @@ namespace RTT
 
                 //result.resize( source.size() );
                 if(result.size() != source.size()) {
-                    log(Error) << "Refusing to compose Boost Arrays from a property list of different size. Use the same number of properties as the C++ boost array size." << endlog();
+                    Logger::log().logf(Logger::Error, "BoostArrayTypeInfo",
+                                       "Refusing to compose Boost Arrays from a property list of different size. Use the same number of properties as the C++ boost array size.");
                     return false;
                 }
                 // recurse into items of this sequence:
