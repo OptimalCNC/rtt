@@ -81,25 +81,31 @@ public:
         int count = ++callBackPeer_count;
 
         if (callBackPeer_step == INITIAL) {
-            log(Info) << "Test resets server." <<endlog();
+            Logger::log().logf(Logger::Info, "CorbaTest", "Test resets server.");
             resetCallBackPeer();
             callBackPeer_step = CALL;
         }
 
-        log(Info) << "Test executes callBackPeer():"<< count <<endlog();
+        Logger::log().logf(Logger::Info, "CorbaTest",
+                           "Test executes callBackPeer():%d", count);
         if (callBackPeer_step == CALL) {
             callBackPeer_step = SEND;
-            log(Info) << "Test calls server:" << count <<endlog();
+            Logger::log().logf(Logger::Info, "CorbaTest",
+                               "Test calls server:%d", count);
             op1(tc, "callBackPeer");
-            log(Info) << "Test finishes server call:"<<count <<endlog();
+            Logger::log().logf(Logger::Info, "CorbaTest",
+                               "Test finishes server call:%d", count);
         }
         else if (callBackPeer_step == SEND) {
             callBackPeer_step = FINAL;
-            log(Info) << "Test sends server:"<<count <<endlog();
+            Logger::log().logf(Logger::Info, "CorbaTest",
+                               "Test sends server:%d", count);
             handle = op1.send(tc, "callBackPeerOwn");
-            log(Info) << "Test finishes server send:"<< count <<endlog();
+            Logger::log().logf(Logger::Info, "CorbaTest",
+                               "Test finishes server send:%d", count);
         }
-        log(Info) << "Test finishes callBackPeer():"<< count <<endlog();
+        Logger::log().logf(Logger::Info, "CorbaTest",
+                           "Test finishes callBackPeer():%d", count);
     }
 
 };

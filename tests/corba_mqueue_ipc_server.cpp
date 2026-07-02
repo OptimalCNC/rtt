@@ -51,7 +51,8 @@ public:
     }
 
     void updateHook(){
-        log(Info) << "Received data on port" <<endlog();
+        Logger::log().logf(Logger::Info, "CorbaMQueueIpcServer",
+                           "Received data on port");
         double d = 123456.789;
         FlowStatus fs = NoData;
         while( (fs = mi1.read(d, false)) == NewData ) {
@@ -95,5 +96,4 @@ int ORO_main(int argc, char** argv)
     corba::TaskContextServer::DestroyOrb();
     return 0;
 }
-
 

@@ -83,25 +83,32 @@ public:
 
         if (callBackPeer_step == INITIAL) callBackPeer_step = CALL;
 
-        log(Info) << "Server executes callBackPeer():"<< count <<endlog();
+        Logger::log().logf(Logger::Info, "CorbaIpcServer",
+                           "Server executes callBackPeer():%d", count);
         if (callBackPeer_step == CALL) {
             callBackPeer_step = SEND;
-            log(Info) << "Server calls back peer:" << count << endlog();
+            Logger::log().logf(Logger::Info, "CorbaIpcServer",
+                               "Server calls back peer:%d", count);
             op1(this, "callBackPeerOwn");
-            log(Info) << "Server finishes call back peer:" << count << endlog();
+            Logger::log().logf(Logger::Info, "CorbaIpcServer",
+                               "Server finishes call back peer:%d", count);
         }
         else if (callBackPeer_step == SEND) {
             callBackPeer_step = FINAL;
-            log(Info) << "Server sends back peer:" << count << endlog();
+            Logger::log().logf(Logger::Info, "CorbaIpcServer",
+                               "Server sends back peer:%d", count);
             SendHandle<void(TaskContext*, string const&)> handle = op1.send(
                                                                        this, "callBackPeer");
-            log(Info) << "Server finishes send back peer:" << count << endlog();
+            Logger::log().logf(Logger::Info, "CorbaIpcServer",
+                               "Server finishes send back peer:%d", count);
         }
-        log(Info) << "Server finishes callBackPeer():" << count << endlog();
+        Logger::log().logf(Logger::Info, "CorbaIpcServer",
+                           "Server finishes callBackPeer():%d", count);
     }
 
     void resetCallBackPeer() {
-        log(Info) << "Server resets callBackPeer state." <<endlog();
+        Logger::log().logf(Logger::Info, "CorbaIpcServer",
+                           "Server resets callBackPeer state.");
         callBackPeer_count = 0;
         callBackPeer_step = INITIAL;
     }
