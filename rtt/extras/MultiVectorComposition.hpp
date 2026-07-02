@@ -120,14 +120,16 @@ namespace RTT
                 Property<int>* dim;
                 v_base = v_bag->get().find("Size");
                 if ( v_base == 0 ) {
-                    Logger::log() << Logger::Error << "In PropertyBag for Property< MultiVector<S,T> > :"
-                                  << result.getName() << " : could not find property \"Size\"."<<Logger::endl;
+                    Logger::log().logf(Logger::Error, "MultiVectorComposition",
+                                       "In PropertyBag for Property< MultiVector<S,T> > :%s : could not find property \"Size\".",
+                                       result.getName().c_str());
                     return false;
                 }
                 dim = dynamic_cast< Property<int>* >(v_base);
                 if ( dim == 0) {
-                    Logger::log() << Logger::Error << "In PropertyBag for Property< MultiVector<S,T> > :"
-                                  << result.getName() << " : Expected \"Size\" to be of type short."<<Logger::endl;
+                    Logger::log().logf(Logger::Error, "MultiVectorComposition",
+                                       "In PropertyBag for Property< MultiVector<S,T> > :%s : Expected \"Size\" to be of type short.",
+                                       result.getName().c_str());
                     return false;
                 }
                 int dimension = dim->get();
@@ -140,18 +142,18 @@ namespace RTT
                         data_name  << i;
                         base::PropertyBase* element = v_bag->get().find( data_name.str() );
                         if ( element == 0 ) {
-                            Logger::log() << Logger::Error << "Aborting composition of Property< MultiVector<S,T> > "<<result.getName()
-                                          << ": Data element "<< data_name.str() <<" not found !"
-                                          <<Logger::endl;
+                            Logger::log().logf(Logger::Error, "MultiVectorComposition",
+                                               "Aborting composition of Property< MultiVector<S,T> > %s: Data element %s not found !",
+                                               result.getName().c_str(), data_name.str().c_str());
                             return false;
                         }
                         comp = dynamic_cast< Property<T>* >( element );
                         if ( comp == 0 ) {
-                            base::DataSourceBase::shared_ptr ds = element->getDataSource();
-                            Logger::log() << Logger::Error << "Aborting composition of Property< MultiVector<S,T> > "<<result.getName()
-                                          << ": Exptected data element "<< data_name.str() << " to be of type "<<internal::DataSource<T>::GetType()
-                                          <<" got type " << element->getType()
-                                          <<Logger::endl;
+                            const std::string expected_type = internal::DataSource<T>::GetType();
+                            Logger::log().logf(Logger::Error, "MultiVectorComposition",
+                                               "Aborting composition of Property< MultiVector<S,T> > %s: Exptected data element %s to be of type %s got type %s",
+                                               result.getName().c_str(), data_name.str().c_str(),
+                                               expected_type.c_str(), element->getType().c_str());
                             return false;
                         }
                         result.value()[i] = comp->get();
@@ -162,14 +164,18 @@ namespace RTT
         else
             {
                 if ( v_bag != 0 ) {
-                    Logger::log() << Logger::Error << "Composing Property< MultiVector<S,T> > :"
-                                  << result.getName() << " : type mismatch, got type '"<< v_bag->get().getType()  <<"'"<<Logger::endl;
+                    Logger::log().logf(Logger::Error, "MultiVectorComposition",
+                                       "Composing Property< MultiVector<S,T> > :%s : type mismatch, got type '%s'",
+                                       result.getName().c_str(), v_bag->get().getType().c_str());
                 } else {
-                    Logger::log() << Logger::Error << "Composing Property< MultiVector<S,T> > :"
-                                  << result.getName() << " : not a PropertyBag."<<Logger::endl;
+                    Logger::log().logf(Logger::Error, "MultiVectorComposition",
+                                       "Composing Property< MultiVector<S,T> > :%s : not a PropertyBag.",
+                                       result.getName().c_str());
                 }
                 // cerr << "\033[1;33mWarning: Bag was empty! \033[0m" << endl;
-                Logger::log() << Logger::Debug << "Could not update Property< MultiVector<S,T> > : "<<result.getName()<<Logger::endl;
+                Logger::log().logf(Logger::Debug, "MultiVectorComposition",
+                                   "Could not update Property< MultiVector<S,T> > : %s",
+                                   result.getName().c_str());
                 return false;
             }
         return true;
