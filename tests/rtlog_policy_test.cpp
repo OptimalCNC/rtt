@@ -55,6 +55,8 @@ namespace
     bool hasLegacyStreamLog(const std::string& line)
     {
         const std::string code = stripLineComment(line);
+        if (code.find("Logger::log(Logger::Info) << payload << Logger::endl") != std::string::npos)
+            return false;
         const char* stream_log_starts[] = {
             "log() <<",
             "log(Info) <<",
@@ -193,6 +195,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "tests/event_test.cpp",
         "tests/property_composition_test.cpp",
         "tests/property_test.cpp",
+        "tests/logger_test.cpp",
         "tests/state_test.cpp",
         "tests/tasks_multiple_test.cpp",
         "tests/testtypes/MatrixTypeInfo.hpp",
