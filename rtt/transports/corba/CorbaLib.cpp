@@ -73,8 +73,9 @@ namespace RTT {
             virtual CORBA::Any* createAny(DataSourceBase::shared_ptr source) const
             {
                 if (warn) {
-                    Logger::In in("CorbaFallBackProtocol");
-                    log(Error) << "Could not send data of type '"<< source->getTypeName()<<"' : data type not known to CORBA Transport." <<Logger::endl;
+                    Logger::log().logf(Logger::Error, "CorbaFallBackProtocol",
+                                       "Could not send data of type '%s' : data type not known to CORBA Transport.",
+                                       source->getTypeName().c_str());
                 }
                 source->evaluate();
                 return new CORBA::Any();
@@ -83,8 +84,9 @@ namespace RTT {
             virtual bool updateAny( base::DataSourceBase::shared_ptr source, CORBA::Any& any) const
             {
                 if (warn) {
-                    Logger::In in("CorbaFallBackProtocol");
-                    log(Error) << "Could not send data of type '"<< source->getTypeName()<<"' : data type not known to CORBA Transport." <<Logger::endl;
+                    Logger::log().logf(Logger::Error, "CorbaFallBackProtocol",
+                                       "Could not send data of type '%s' : data type not known to CORBA Transport.",
+                                       source->getTypeName().c_str());
                 }
                 source->evaluate();
                 return false;
@@ -101,48 +103,56 @@ namespace RTT {
             virtual bool updateFromAny(const CORBA::Any* blob, DataSourceBase::shared_ptr target) const
             {
                 if (warn) {
-                    Logger::In in("CorbaFallBackProtocol");
-                    log(Error) << "Could not update type '"<<target->getTypeName()<<"' with received data : data type not known to CORBA Transport." <<Logger::endl;
+                    Logger::log().logf(Logger::Error, "CorbaFallBackProtocol",
+                                       "Could not update type '%s' with received data : data type not known to CORBA Transport.",
+                                       target->getTypeName().c_str());
                 }
                 return false;
             }
 
             virtual ChannelElementBase::shared_ptr createStream(base::PortInterface* port, const ConnPolicy& policy, bool is_sender) const {
-                Logger::In in("CorbaFallBackProtocol");
-                log(Error) << "Could create Stream for port '"<<port->getName()<<"' : data type not known to CORBA Transport." <<Logger::endl;
+                Logger::log().logf(Logger::Error, "CorbaFallBackProtocol",
+                                   "Could create Stream for port '%s' : data type not known to CORBA Transport.",
+                                   port->getName().c_str());
                 return ChannelElementBase::shared_ptr();
             }
 
             virtual base::ChannelElementBase* buildDataStorage(ConnPolicy const& policy) const { return 0; }
 
             virtual CRemoteChannelElement_i* createChannelElement_i(DataFlowInterface*, ::PortableServer::POA* poa, const ConnPolicy &) const {
-                Logger::In in("CorbaFallBackProtocol");
-                log(Error) << "Could create Channel : data type not known to CORBA Transport." <<Logger::endl;
+                Logger::log().logf(Logger::Error, "CorbaFallBackProtocol",
+                                   "Could create Channel : data type not known to CORBA Transport.");
                 return 0;
             }
 
             virtual base::ChannelElementBase* buildChannelOutput(base::InputPortInterface& port,
                 ConnPolicy const& policy) const {
-                Logger::In in("CorbaFallBackProtocol");
-                log(Error) << "Could create outputHalf for port "<<port.getName()<<": data type not known to CORBA Transport." <<Logger::endl;
+                Logger::log().logf(Logger::Error, "CorbaFallBackProtocol",
+                                   "Could create outputHalf for port %s: data type not known to CORBA Transport.",
+                                   port.getName().c_str());
                 return 0;
             }
 
             virtual base::ChannelElementBase* buildChannelInput(base::OutputPortInterface& port,
                 ConnPolicy const& policy) const {
-                Logger::In in("CorbaFallBackProtocol");
-                log(Error) << "Could create outputHalf for port "<<port.getName()<<": data type not known to CORBA Transport." <<Logger::endl;
+                Logger::log().logf(Logger::Error, "CorbaFallBackProtocol",
+                                   "Could create outputHalf for port %s: data type not known to CORBA Transport.",
+                                   port.getName().c_str());
                 return 0;
             }
           virtual base::DataSourceBase::shared_ptr createPropertyDataSource(CService_ptr serv, const std::string& vname) {
               CORBA::String_var tname = serv->getPropertyTypeName( CORBA::string_dup(vname.c_str()));
-              log(Warning) << "Corba: Remote property '"<< vname << "' has unknown type " << tname.in()  << endlog();
+              Logger::log().logf(Logger::Warning, "CorbaFallBackProtocol",
+                                 "Corba: Remote property '%s' has unknown type %s",
+                                 vname.c_str(), tname.in());
               return base::DataSourceBase::shared_ptr( );
           }
 
           virtual base::DataSourceBase::shared_ptr createAttributeDataSource(CService_ptr serv, const std::string& vname, bool) {
               CORBA::String_var tname = serv->getAttributeTypeName( CORBA::string_dup( vname.c_str()));
-              log(Warning) << "Corba: Remote attribute '"<< vname << "' has unknown type " << tname.in()  << endlog();
+              Logger::log().logf(Logger::Warning, "CorbaFallBackProtocol",
+                                 "Corba: Remote attribute '%s' has unknown type %s",
+                                 vname.c_str(), tname.in());
               return base::DataSourceBase::shared_ptr( );
           }
         };
