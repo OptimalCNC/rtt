@@ -48,6 +48,7 @@
 #include <vector>
 #include <boost/tuple/tuple.hpp>
 #include <iostream>
+#include <sstream>
 
 
 using namespace boost;
@@ -62,15 +63,13 @@ namespace RTT
         TaskContext* tc;
         D() {}
 
-        void printResult( DataSourceBase* ds, bool recurse) {
-            std::string prompt(" = ");
-            // setup prompt :
-            Logger::log() << Logger::Info <<prompt;
-            doPrint( ds, recurse );
-            Logger::log() << Logger::endl;
+        void printResult( DataSourceBase* ds, bool recurse)
+        {
+            const std::string result = doPrint(ds, recurse);
+            Logger::log().logf(Logger::Info, "StatementProcessor", " = %s", result.c_str());
         }
 
-        void doPrint( DataSourceBase* ds, bool recurse) {
+        std::string doPrint( DataSourceBase* ds, bool recurse) {
             // this is needed for ds's that rely on initialision.
             // e.g. eval true once or time measurements.
             // becomes only really handy for 'watches' (todo).
@@ -82,53 +81,61 @@ namespace RTT
             // this method can print some primitive DataSource<>'s.
             DataSource<bool>* dsb = DataSource<bool>::narrow(ds);
             if (dsb) {
-                Logger::log() << dsb->get();
-                return;
+                std::ostringstream out;
+                out << dsb->get();
+                return out.str();
             }
             DataSource<int>* dsi = DataSource<int>::narrow(ds);
             if (dsi) {
-                Logger::log() << dsi->get() ;
-                return;
+                std::ostringstream out;
+                out << dsi->get();
+                return out.str();
             }
 #if 0
             // does not work yet with CORBA layer.
             DataSource<long>* dsl = DataSource<long>::narrow(ds);
             if (dsl) {
-                Logger::log() << dsl->get() ;
-                return;
+                std::ostringstream out;
+                out << dsl->get();
+                return out.str();
             }
 #endif
             DataSource<unsigned int>* dsui = DataSource<unsigned int>::narrow(ds);
             if (dsui) {
-                Logger::log() << dsui->get() ;
-                return;
+                std::ostringstream out;
+                out << dsui->get();
+                return out.str();
             }
             DataSource<std::string>* dss = DataSource<std::string>::narrow(ds);
             if (dss) {
-                Logger::log() <<'"'<< dss->get() << '"' ;
-                return;
+                return "\"" + dss->get() + "\"";
             }
 #if 0
             DataSource<std::vector<double> >* dsvval = DataSource< std::vector<double> >::narrow(ds);
             if (dsvval) {
-                Logger::log()  << dsvval->get() ;
-                return;
+                std::ostringstream out;
+                out << dsvval->get();
+                return out.str();
             }
             DataSource< Double6D >* ds6d = DataSource<Double6D>::narrow(ds);
             if (ds6d) {
-                Logger::log()  << ds6d->get() ;
-                return;
+                std::ostringstream out;
+                out << ds6d->get();
+                return out.str();
             }
 #endif
             DataSource<double>* dsd = DataSource<double>::narrow(ds);
             if (dsd) {
-                Logger::log() << dsd->get() ;
-                return;
+                std::ostringstream out;
+                out << dsd->get();
+                return out.str();
             }
             DataSource<char>* dsc = DataSource<char>::narrow(ds);
             if (dsc) {
-                Logger::log() <<'\''<< dsc->get()<<'\'' ;
-                return;
+                std::string out("'");
+                out += dsc->get();
+                out += "'";
+                return out;
             }
 
             DataSource<PropertyBag>* dspbag = DataSource<PropertyBag>::narrow(ds);
@@ -136,35 +143,39 @@ namespace RTT
                 PropertyBag bag( dspbag->get() );
                 if (!recurse) {
                     int siz = bag.getProperties().size();
-                    Logger::log()  << siz <<" Properties";
+                    std::ostringstream out;
+                    out << siz << " Properties";
+                    return out.str();
                 } else {
                     if ( ! bag.empty() ) {
-                        Logger::log()  <<Logger::nl;
+                        std::string out("\n");
                         for( PropertyBag::iterator it= bag.getProperties().begin(); it!=bag.getProperties().end(); ++it) {
-                            Logger::log()  <<(*it)->getType()<<" "<< (*it)->getName();
+                            if (out.size() != 1)
+                                out += "\n";
+                            out += (*it)->getType() + " " + (*it)->getName();
                             DataSourceBase::shared_ptr propds = (*it)->getDataSource();
-                            this->printResult( propds.get(), false );
-                            Logger::log()  <<" ("<<(*it)->getDescription()<<')' << Logger::nl;
+                            out += " = " + this->doPrint(propds.get(), false);
+                            out += " (" + (*it)->getDescription() + ")";
                         }
+                        return out;
                     } else {
-                        Logger::log()  <<"(empty PropertyBag)";
+                        return "(empty PropertyBag)";
                     }
                 }
-                return;
             }
 
             // Leave void  as last since any DS is convertible to void !
             DataSource<void>* dsvd = DataSource<void>::narrow(ds);
             if (dsvd) {
                 dsvd->get();
-                Logger::log() << "(void)" ;
-                return;
+                return "(void)";
             }
 
             if (ds) {
                 ds->evaluate();
-                Logger::log() << "( result type '"+ds->getType()+"' not known to TaskBrowser )" ;
+                return "( result type '" + ds->getType() + "' not known to TaskBrowser )";
             }
+            return "(null)";
 
         }
 
@@ -183,7 +194,6 @@ namespace RTT
 
     int StatementProcessor::execute(const std::string& comm)
     {
-        Logger::In in("StatementProcessor");
         TaskContext* taskcontext = d->tc;
 
         // Minor hack : also check if it was an attribute of current TC, for example,
@@ -197,39 +207,39 @@ namespace RTT
 
         Parser _parser;
 
-        Logger::log() <<Logger::Debug << "Trying ValueChange...";
+        Logger::log().logf(Logger::Debug, "StatementProcessor", "Trying ValueChange...");
         try {
             // Check if it was a method or datasource :
             DataSourceBase::shared_ptr ds = _parser.parseValueChange( comm, taskcontext );
             // methods and DS'es are processed immediately.
             if ( ds.get() != 0 ) {
-                Logger::log() << "ok" << Logger::endl;
+                Logger::log().logf(Logger::Debug, "StatementProcessor", "ok");
                 d->printResult( ds.get(), false );
                 return 0; // done here
             } else
-                Logger::log() <<Logger::Debug << "no"<<Logger::endl;
+                Logger::log().logf(Logger::Debug, "StatementProcessor", "no");
         } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
             // way to fatal,  must be reported immediately
-            Logger::log() << Logger::Debug << "fatal_semantic_parse_exception: ";
-            Logger::log() << Logger::Error << pe.what() <<Logger::nl;
+            Logger::log().logf(Logger::Error, "StatementProcessor",
+                                "fatal_semantic_parse_exception: %s", pe.what());
             return -1;
         } catch ( syntactic_parse_exception& pe ) { // wrong content after = sign etc..
             // syntactic errors must be reported immediately
-            Logger::log() << Logger::Error << "syntactic_parse_exception: ";
-            Logger::log() << Logger::Error << pe.what() <<Logger::nl;
+            Logger::log().logf(Logger::Error, "StatementProcessor",
+                                "syntactic_parse_exception: %s", pe.what());
             return -1;
         } catch ( parse_exception_parser_fail &pe )
             {
                 // ignore, try next parser
-                Logger::log() << Logger::Debug << "Ignoring ValueChange exception :"<<Logger::nl;
-                Logger::log() << Logger::Debug << pe.what() <<Logger::nl;
+                Logger::log().logf(Logger::Debug, "StatementProcessor",
+                                    "Ignoring ValueChange exception :\n%s", pe.what());
         } catch ( parse_exception& pe ) {
             // syntactic errors must be reported immediately
-            Logger::log() << Logger::Error << "parse_exception :";
-            Logger::log() << Logger::Error << pe.what() <<Logger::nl;
+            Logger::log().logf(Logger::Error, "StatementProcessor",
+                                "parse_exception :%s", pe.what());
             return -1;
         }
-        Logger::log() << Logger::Debug << "Trying Expression..."<<Logger::nl;
+        Logger::log().logf(Logger::Debug, "StatementProcessor", "Trying Expression...");
         try {
             // Check if it was a method or datasource :
             DataSourceBase::shared_ptr ds = _parser.parseExpression( comm, taskcontext );
@@ -238,28 +248,27 @@ namespace RTT
                 d->printResult( ds.get(), true );
                 return 0; // done here
             } else
-                Logger::log() << Logger::Error << "returned zero !"<<Logger::nl;
+                Logger::log().logf(Logger::Error, "StatementProcessor", "returned zero !");
         } catch ( syntactic_parse_exception& pe ) { // missing brace etc
             // syntactic errors must be reported immediately
-            Logger::log() << Logger::Error << "syntactic_parse_exception :";
-            Logger::log() << Logger::Error << pe.what() <<Logger::nl;
+            Logger::log().logf(Logger::Error, "StatementProcessor",
+                                "syntactic_parse_exception :%s", pe.what());
             return -1;
         } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
             // way to fatal,  must be reported immediately
-            Logger::log() << Logger::Error << "fatal_semantic_parse_exception :";
-            Logger::log() << Logger::Error << pe.what() <<Logger::nl;
+            Logger::log().logf(Logger::Error, "StatementProcessor",
+                                "fatal_semantic_parse_exception :%s", pe.what());
             return -1;
         } catch ( parse_exception_parser_fail &pe ) {
                 // ignore, try next parser
-                Logger::log() << Logger::Debug << "Ignoring Expression exception :"<<Logger::nl;
-                Logger::log() << Logger::Debug << pe.what() <<Logger::nl;
+                Logger::log().logf(Logger::Debug, "StatementProcessor",
+                                    "Ignoring Expression exception :\n%s", pe.what());
         } catch ( parse_exception& pe ) {
             // ignore, try next parser
-            Logger::log() << Logger::Debug << "Ignoring Expression parse_exception :"<<Logger::nl;
-            Logger::log() << Logger::Debug << pe.what() <<Logger::nl;
+            Logger::log().logf(Logger::Debug, "StatementProcessor",
+                                "Ignoring Expression parse_exception :\n%s", pe.what());
         }
         return -1;
     }
 
 }}
-
