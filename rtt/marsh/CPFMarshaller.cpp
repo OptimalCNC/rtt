@@ -124,9 +124,13 @@ namespace RTT {
         // 	return introspect( *static_cast<Property<unsigned short>* >(pb) );
         // if (dynamic_cast<Property<short>* >(pb) )
         // 	return introspect( *static_cast<Property<>* >(pb) );
-        log(Error) << "Couldn't write "<< pb->getName() << " to XML file because the " << pb->getType() << " type is not supported by the CPF format." <<endlog();
-        log(Error) << "If your type is a C++ struct or sequence, you can register it with a type info object." <<endlog();
-        log(Error) << "We only support these primitive types: boolean|char|double|float|long|octet|string|ulong." <<endlog();
+        Logger::log().logf(Logger::Error, "CPFMarshaller",
+                           "Couldn't write %s to XML file because the %s type is not supported by the CPF format.",
+                           pb->getName().c_str(), pb->getType().c_str());
+        Logger::log().logf(Logger::Error, "CPFMarshaller",
+                           "If your type is a C++ struct or sequence, you can register it with a type info object.");
+        Logger::log().logf(Logger::Error, "CPFMarshaller",
+                           "We only support these primitive types: boolean|char|double|float|long|octet|string|ulong.");
     }
 
 
@@ -224,7 +228,9 @@ namespace RTT {
     {
         if ( !mfile ) {
             s = 0;
-            log(Error) << "Could not open file for writing: "<<filename <<endlog();
+            Logger::log().logf(Logger::Error, "CPFMarshaller",
+                               "Could not open file for writing: %s",
+                               filename.c_str());
         }
     }
 
@@ -256,4 +262,3 @@ namespace RTT {
             this->s->flush();
     }
 }
-
