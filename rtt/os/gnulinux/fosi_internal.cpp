@@ -156,8 +156,8 @@ namespace RTT
 	    rv = pthread_create(&(task->thread), &(task->attr),
 	    		rtos_posix_thread_wrapper, xcookie);
         if (rv != 0) {
-            log(Error) << "Failed to create thread " << task->name << ": "
-                       << strerror(rv) << endlog();
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "Failed to create thread %s: %s", task->name, strerror(rv));
             return rv;
         }
 
@@ -185,18 +185,21 @@ namespace RTT
             n[MAX_THREAD_NAME_SIZE] = '\0'; // explicitly terminate
             int result = pthread_setname_np(task->thread, &n[0]);
             if (result != 0) {
-                log(Warning) << "Failed to set thread name for " << task->name << ": "
-                             << strerror(result) << endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Failed to set thread name for %s: %s",
+                                   task->name, strerror(result));
             }
         }
 #endif // ORO_HAVE_PTHREAD_SETNAME_NP
 
         if ( cpu_affinity != 0 ) {
-            log(Debug) << "Setting CPU affinity to " << cpu_affinity << endlog();
+            Logger::log().logf(Logger::Debug, "FOSI",
+                               "Setting CPU affinity to %u", cpu_affinity);
             int result = rtos_task_set_cpu_affinity(task, cpu_affinity);
             if (result != 0) {
-                log(Error) << "Failed to set CPU affinity to " << cpu_affinity << " for " << task->name << ": "
-                           << strerror(result) << endlog();
+                Logger::log().logf(Logger::Error, "FOSI",
+                                   "Failed to set CPU affinity to %u for %s: %s",
+                                   cpu_affinity, task->name, strerror(result));
             }
         }
 
@@ -314,8 +317,8 @@ namespace RTT
 	INTERNAL_QUAL void rtos_task_delete(RTOS_TASK* mytask) {
         int ret = pthread_join( mytask->thread, 0);
         if (ret != 0) {
-            log(Error) << "Failed to join thread " << mytask->name << ": "
-                       << strerror(ret) << endlog();
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "Failed to join thread %s: %s", mytask->name, strerror(ret));
             return;
         }
         pthread_attr_destroy( &(mytask->attr) );
@@ -327,7 +330,8 @@ namespace RTT
     {
 #ifdef ORO_OS_LINUX_CAP_NG
         if(capng_get_caps_process()) {
-            log(Error) << "Failed to retrieve capabilities (lowering to SCHED_OTHER)." <<endlog();
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "Failed to retrieve capabilities (lowering to SCHED_OTHER).");
             *scheduler = SCHED_OTHER;
             return -1;
         }
@@ -344,14 +348,16 @@ namespace RTT
             struct rlimit r;
             if ((0 != getrlimit(RLIMIT_RTPRIO, &r)) || (0 == r.rlim_cur))
             {
-                log(Warning) << "Lowering scheduler type to SCHED_OTHER for non-privileged users.." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Lowering scheduler type to SCHED_OTHER for non-privileged users..");
                 *scheduler = SCHED_OTHER;
                 return -1;
             }
         }
 
         if (*scheduler != SCHED_OTHER && *scheduler != SCHED_FIFO && *scheduler != SCHED_RR ) {
-            log(Error) << "Unknown scheduler type." <<endlog();
+            Logger::log().logf(Logger::Error, "FOSI",
+                               "Unknown scheduler type.");
             *scheduler = SCHED_OTHER;
             return -1;
         }
@@ -368,19 +374,25 @@ namespace RTT
         if (*scheduler == SCHED_OTHER) {
             if ( *priority != 0 ) {
                 if (*priority != LowestPriority)
-                    log(Warning) << "Forcing priority ("<<*priority<<") of thread with SCHED_OTHER policy to 0." <<endlog();
+                    Logger::log().logf(Logger::Warning, "FOSI",
+                                       "Forcing priority (%d) of thread with SCHED_OTHER policy to 0.",
+                                       *priority);
                 *priority = 0;
                 ret = -1;
             }
         } else {
             // SCHED_FIFO/SCHED_RR:
             if (*priority <= 0){
-                log(Warning) << "Forcing priority ("<<*priority<<") of thread with !SCHED_OTHER policy to 1." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Forcing priority (%d) of thread with !SCHED_OTHER policy to 1.",
+                                   *priority);
                 *priority = 1;
                 ret = -1;
             }
             if (*priority > 99){
-                log(Warning) << "Forcing priority ("<<*priority<<") of thread with !SCHED_OTHER policy to 99." <<endlog();
+                Logger::log().logf(Logger::Warning, "FOSI",
+                                   "Forcing priority (%d) of thread with !SCHED_OTHER policy to 99.",
+                                   *priority);
                 *priority = 99;
                 ret = -1;
             }
@@ -396,7 +408,9 @@ namespace RTT
                 {
                     if (*priority > (int)r.rlim_cur)
                     {
-                        log(Warning) << "Forcing priority ("<<*priority<<") of thread with !SCHED_OTHER policy to the pam_limit of " << r.rlim_cur <<endlog();
+                        Logger::log().logf(Logger::Warning, "FOSI",
+                                           "Forcing priority (%d) of thread with !SCHED_OTHER policy to the pam_limit of %lu",
+                                           *priority, static_cast<unsigned long>(r.rlim_cur));
                         *priority = r.rlim_cur;
                         ret = -1;
                     }
