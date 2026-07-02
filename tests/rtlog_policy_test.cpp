@@ -126,6 +126,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/transports/corba/CorbaDispatcher.hpp",
         "rtt/transports/corba/CorbaOperationCallerFactory.cpp",
         "rtt/transports/corba/DataSourceProxy.hpp",
+        "rtt/transports/corba/OperationInterfaceI.cpp",
         "rtt/transports/corba/OperationCallerProxy.hpp",
         "rtt/transports/corba/RemoteChannelElement.hpp",
         "rtt/transports/corba/ServiceI.cpp",

@@ -357,9 +357,9 @@ void RTT_corba_COperationInterface_i::checkOperation (
                 if (ds)
                     mc.arg(ds);
                 else {
-                    log(Error) << "Registered transport for type "<< ti->getTypeName()
-                            << " could not create data source from Any (argument "<< i+1
-                            <<"): calling operation '"<< operation <<"' will fail." <<endlog();
+                    Logger::log().logf(Logger::Error, "COperationInterface",
+                                       "Registered transport for type %s could not create data source from Any (argument %u): calling operation '%s' will fail.",
+                                       ti->getTypeName().c_str(), i + 1, operation);
                 }
             } else {
                 throw wrong_types_of_args_exception(i+1,"type known to CORBA", ti->getTypeName());
@@ -402,7 +402,9 @@ void RTT_corba_COperationInterface_i::checkOperation (
             const TypeInfo* ti = ds->getTypeInfo();
             CorbaTypeTransporter* ctt = dynamic_cast<CorbaTypeTransporter*> ( ti->getProtocol(ORO_CORBA_PROTOCOL_ID) );
             if ( !ctt ) {
-                log(Warning) << "Could not return results of call to " << operation << ": unknown return type by CORBA transport."<<endlog();
+                Logger::log().logf(Logger::Warning, "COperationInterface",
+                                   "Could not return results of call to %s: unknown return type by CORBA transport.",
+                                   operation);
                 ds->evaluate(); // equivalent to orig.call()
                 retany = new CORBA::Any();
             } else {
@@ -494,10 +496,14 @@ void RTT_corba_COperationInterface_i::sendOperationOneway (
         ret_i = sendOperationInternal(operation, args);
 
         if (!ret_i || ret_i->checkStatus() == CSendFailure) {
-            log(Error) << "Sending the '" << operation << "'' operation failed (SendFailure)." << endlog();
+            Logger::log().logf(Logger::Error, "COperationInterface",
+                               "Sending the '%s'' operation failed (SendFailure).",
+                               operation);
         }
     } catch(std::exception &e) {
-        log(Error) << "Sending the '" << operation << "'' operation failed:" << e.what() << endlog();
+        Logger::log().logf(Logger::Error, "COperationInterface",
+                           "Sending the '%s'' operation failed:%s",
+                           operation, e.what());
     }
 
     if (ret_i) ret_i->_remove_ref(); // Drop the CSendHandle
