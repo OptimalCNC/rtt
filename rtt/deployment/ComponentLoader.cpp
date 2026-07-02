@@ -279,11 +279,15 @@ namespace {
             if ( !default_comp_path.empty() )
                 component_paths = component_paths + default_delimiter + default_comp_path;
             removeDuplicates( component_paths );
-            log(Info) <<"RTT_COMPONENT_PATH was set to: " << paths << " . Searching in: "<< component_paths<< endlog();
+            Logger::log().logf(Logger::Info, "Logger",
+                               "RTT_COMPONENT_PATH was set to: %s . Searching in: %s",
+                               paths, component_paths.c_str());
         } else {
             component_paths = default_comp_path;
             removeDuplicates( component_paths );
-            log(Info) <<"No RTT_COMPONENT_PATH set. Using default: " << component_paths <<endlog();
+            Logger::log().logf(Logger::Info, "Logger",
+                               "No RTT_COMPONENT_PATH set. Using default: %s",
+                               component_paths.c_str());
         }
         // we set the component path such that we can search for sub-directories/projects lateron
         ComponentLoader::Instance()->setComponentPath(component_paths);
@@ -316,10 +320,11 @@ void ComponentLoader::Release() {
 // imports components and plugins from it.
 bool ComponentLoader::import( std::string const& path_list )
 {
-    RTT::Logger::In in("ComponentLoader::import(path_list)");
+    const char* module = "ComponentLoader::import(path_list)";
 
     if (path_list.empty() ) {
-        log(Error) << "import paths: No paths were given for loading ( path_list = '' )."<<endlog();
+        Logger::log().logf(Logger::Error, module,
+                           "import paths: No paths were given for loading ( path_list = '' ).");
         return false;
     }
 
@@ -335,10 +340,11 @@ bool ComponentLoader::import( std::string const& path_list )
         path p = path(*it);
         if (is_directory(p))
         {
-            log(Info) << "Importing directory " << p.string() << " ..."<<endlog();
+            Logger::log().logf(Logger::Info, module,
+                               "Importing directory %s ...", p.string().c_str());
             for (directory_iterator itr(p); itr != directory_iterator(); ++itr)
             {
-                log(Debug) << "Scanning file " << itr->path().string() << " ...";
+                const std::string filepath = itr->path().string();
                 if (is_regular_file(itr->status()) && isLoadableLibrary(itr->path()) ) {
                     found = true;
                     std::string libname;
@@ -349,7 +355,9 @@ bool ComponentLoader::import( std::string const& path_list )
 #endif
                     if(!isCompatibleComponent(libname))
                     {
-                        log(Debug) << "not a compatible component: ignored."<<endlog();
+                        Logger::log().logf(Logger::Debug, module,
+                                           "Scanning file %s ...not a compatible component: ignored.",
+                                           filepath.c_str());
                     }
                     else
                     {
@@ -358,23 +366,30 @@ bool ComponentLoader::import( std::string const& path_list )
                     }
                 } else {
                     if (!is_regular_file(itr->status()))
-                        log(Debug) << "not a regular file: ignored."<<endlog();
+                        Logger::log().logf(Logger::Debug, module,
+                                           "Scanning file %s ...not a regular file: ignored.",
+                                           filepath.c_str());
                     else
-                        log(Debug) << "not a " + SO_EXT + " library: ignored."<<endlog();
+                        Logger::log().logf(Logger::Debug, module,
+                                           "Scanning file %s ...not a %s library: ignored.",
+                                           filepath.c_str(), SO_EXT.c_str());
                 }
             }
-            log(Debug) << "Looking for plugins or typekits in directory " << p.string() << " ..."<<endlog();
+            Logger::log().logf(Logger::Debug, module,
+                               "Looking for plugins or typekits in directory %s ...",
+                               p.string().c_str());
             try {
                 found = PluginLoader::Instance()->loadTypekits( p.string() ) || found;
                 found = PluginLoader::Instance()->loadPlugins( p.string() ) || found;
             } catch (std::exception& e) {
                 all_good = false;
-                log(Error) << e.what() <<endlog();
+                Logger::log().logf(Logger::Error, module, "%s", e.what());
             }
         }
         else {
             // If the path is not complete (not absolute), look it up in the search directories:
-            log(Debug) << "No such directory: " << p<< endlog();
+            Logger::log().logf(Logger::Debug, module,
+                               "No such directory: %s", p.string().c_str());
         }
     }
     if (!all_good)
@@ -386,7 +401,7 @@ bool ComponentLoader::import( std::string const& path_list )
 // the search path.
 bool ComponentLoader::import( std::string const& package, std::string const& path_list )
 {
-    RTT::Logger::In in("ComponentLoader::import(package, path_list)");
+    const char* module = "ComponentLoader::import(package, path_list)";
 
     // check first for exact match to *file*:
     path arg( package );
@@ -409,12 +424,16 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
         if (ret)
             return true;
         // both failed:
-        log(Error) << "Could not import absolute path '"<<package << "': nothing found."<<endlog();
+        Logger::log().logf(Logger::Error, module,
+                           "Could not import absolute path '%s': nothing found.",
+                           package.c_str());
         return false;
     }
 
     if ( isImported(package) ) {
-        log(Info) <<"Component package '"<< package <<"' already imported." <<endlog();
+        Logger::log().logf(Logger::Info, module,
+                           "Component package '%s' already imported.",
+                           package.c_str());
         return true;
     }
 
@@ -424,7 +443,7 @@ bool ComponentLoader::import( std::string const& package, std::string const& pat
 
 bool ComponentLoader::importInstalledPackage(std::string const& package, std::string const& path_list)
 {
-    RTT::Logger::In in("ComponentLoader::importInstalledPackage(package, path_list)");
+    const char* module = "ComponentLoader::importInstalledPackage(package, path_list)";
 
     string paths;
     string trypaths;
@@ -482,15 +501,20 @@ bool ComponentLoader::importInstalledPackage(std::string const& package, std::st
             loadedPackages.push_back( package );
             return true;
         } else {
-            log(Error) << "Failed to import components, types or plugins from package or directory '"<< package <<"' found in:"<< endlog();
-            log(Error) << paths << endlog();
+            Logger::log().logf(Logger::Error, module,
+                               "Failed to import components, types or plugins from package or directory '%s' found in:",
+                               package.c_str());
+            Logger::log().logf(Logger::Error, module, "%s", paths.c_str());
             return false;
         }
     }
-    log(Error) << "No such package or directory found in search path: " << package << ". Search path is: " << trypaths << endlog();
-    log(Error) << "Directories searched include the following: " << endlog();
+    Logger::log().logf(Logger::Error, module,
+                       "No such package or directory found in search path: %s. Search path is: %s",
+                       package.c_str(), trypaths.c_str());
+    Logger::log().logf(Logger::Error, module,
+                       "Directories searched include the following: ");
     for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
-        log(Error) << " - " << *it << endlog();
+        Logger::log().logf(Logger::Error, module, " - %s", it->c_str());
     return false;
 }
 
@@ -552,9 +576,11 @@ bool ComponentLoader::loadLibrary( std::string const& name )
         if (is_regular_file( p ) && loadInProcess( p.string(), makeShortFilename(file), true ) )
             return true;
     }
-    log(Debug) << "No such library found in path: " << name << ". Tried:"<< endlog();
+    Logger::log().logf(Logger::Debug, "ComponentLoader::loadLibrary",
+                       "No such library found in path: %s. Tried:", name.c_str());
     for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
-        log(Debug) << *it << endlog();
+        Logger::log().logf(Logger::Debug, "ComponentLoader::loadLibrary",
+                           "%s", it->c_str());
     return false;
 }
 
@@ -584,7 +610,9 @@ bool ComponentLoader::reloadInProcess(string file, string libname)
     while (lib != loadedLibs.end()) {
         // We only reload if it's exactly the same file.
         if ( lib->filename == file) {
-            log(Info) <<"Component library "<< lib->filename <<" already loaded... " ;
+            Logger::log().logf(Logger::Info, "ComponentLoader::reloadInProcess",
+                               "Component library %s already loaded... ",
+                               lib->filename.c_str());
 
             bool can_unload = true;
             CompList::iterator cit;
@@ -592,13 +620,16 @@ bool ComponentLoader::reloadInProcess(string file, string libname)
                 for ( cit = comps.begin(); cit != comps.end(); ++cit) {
                     if( (*ctype) == cit->second.type ) {
                         // the type of an allocated component was loaded from this library. it might be unsafe to reload the library
-                        log(Info) << "can NOT reload library because of the instance " << cit->second.type  <<"::"<<cit->first <<endlog();
+                        Logger::log().logf(Logger::Info, "ComponentLoader::reloadInProcess",
+                                           "can NOT reload library because of the instance %s::%s",
+                                           cit->second.type.c_str(), cit->first.c_str());
                         can_unload = false;
                     }
                 }
             }
             if( can_unload ) {
-                log(Info) << "try to RELOAD"<<endlog();
+                Logger::log().logf(Logger::Info, "ComponentLoader::reloadInProcess",
+                                   "try to RELOAD");
                 dlclose(lib->handle);
                 // remove the library info from the vector
                 std::vector<LoadedLib>::iterator lib_un = lib;
@@ -610,7 +641,9 @@ bool ComponentLoader::reloadInProcess(string file, string libname)
         }
         else lib++;
     }
-    log(Error) << "Can't reload Component library "<< file << " since it was not loaded or is not a component library." <<endlog();
+    Logger::log().logf(Logger::Error, "ComponentLoader::reloadInProcess",
+                       "Can't reload Component library %s since it was not loaded or is not a component library.",
+                       file.c_str());
     return false;
 }
 
@@ -625,7 +658,9 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
     if(!isCompatibleComponent(file))
     {
         if(log_error)
-            log(Error) << "Could not load library '"<< p.string() <<"': incompatible." <<endlog();
+            Logger::log().logf(Logger::Error, "ComponentLoader::loadInProcess",
+                               "Could not load library '%s': incompatible.",
+                               p.string().c_str());
         return false;
     }
 
@@ -633,14 +668,19 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
 
     if (!handle) {
         if ( log_error ) {
-            log(Error) << "Could not load library '"<< p.string() <<"':"<<endlog();
-            log(Error) << dlerror() << endlog();
+            const char* error_message = dlerror();
+            Logger::log().logf(Logger::Error, "ComponentLoader::loadInProcess",
+                               "Could not load library '%s':",
+                               p.string().c_str());
+            Logger::log().logf(Logger::Error, "ComponentLoader::loadInProcess",
+                               "%s", error_message ? error_message : "");
         }
         return false;
     }
 
     //------------- if you get here, the library has been loaded -------------
-    log(Debug)<<"Succesfully loaded "<<libname<<endlog();
+    Logger::log().logf(Logger::Debug, "ComponentLoader::loadInProcess",
+                       "Succesfully loaded %s", libname.c_str());
     LoadedLib loading_lib(file, libname, handle);
     dlerror();    /* Clear any existing error */
 
@@ -653,14 +693,16 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
         // symbol found, register factories...
         fmap = (*getfactory)();
         ComponentFactories::Instance().insert( fmap->begin(), fmap->end() );
-        log(Info) << "Loaded multi component library '"<< file <<"'"<<endlog();
+        Logger::log().logf(Logger::Info, "ComponentLoader::loadInProcess",
+                           "Loaded multi component library '%s'", file.c_str());
         getcomponenttypes = (vector<string>(*)(void))(dlsym(handle, "getComponentTypeNames"));
         if ((error = dlerror()) == NULL) {
-            log(Debug) << "Components:";
             vector<string> ctypes = getcomponenttypes();
+            string components = "Components:";
             for (vector<string>::iterator it = ctypes.begin(); it != ctypes.end(); ++it)
-                log(Debug) <<" "<< *it;
-            log(Debug) << endlog();
+                components += " " + *it;
+            Logger::log().logf(Logger::Debug, "ComponentLoader::loadInProcess",
+                               "%s", components.c_str());
         }
         loadedLibs.push_back(loading_lib);
         success = true;
@@ -682,10 +724,13 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
     if ( factory && tname ) {
         std::string cname = (*tname)();
         if ( ComponentFactories::Instance().count(cname) == 1 ) {
-            log(Warning) << "Component type name "<<cname<<" already used: overriding."<<endlog();
+            Logger::log().logf(Logger::Warning, "ComponentLoader::loadInProcess",
+                               "Component type name %s already used: overriding.",
+                               cname.c_str());
         }
         ComponentFactories::Instance()[cname] = factory;
-        log(Info) << "Loaded component type '"<< cname <<"'"<<endlog();
+        Logger::log().logf(Logger::Info, "ComponentLoader::loadInProcess",
+                           "Loaded component type '%s'", cname.c_str());
         loading_lib.components_type.push_back( cname );
         loadedLibs.push_back(loading_lib);
         success = true;
@@ -693,11 +738,15 @@ bool ComponentLoader::loadInProcess(string file, string libname, bool log_error)
 
     if (success) return true;
 
-    log(Error) <<"Unloading "<< loading_lib.filename  <<": not a valid component library:" <<endlog();
+    Logger::log().logf(Logger::Error, "ComponentLoader::loadInProcess",
+                       "Unloading %s: not a valid component library:",
+                       loading_lib.filename.c_str());
     if (!create_error.empty())
-        log(Error) << "   " << create_error << endlog();
+        Logger::log().logf(Logger::Error, "ComponentLoader::loadInProcess",
+                           "   %s", create_error.c_str());
     if (!gettype_error.empty())
-        log(Error) << "   " << gettype_error << endlog();
+        Logger::log().logf(Logger::Error, "ComponentLoader::loadInProcess",
+                           "   %s", gettype_error.c_str());
     dlclose(handle);
     return false;
 }
@@ -728,21 +777,28 @@ RTT::TaskContext *ComponentLoader::loadComponent(const std::string & name, const
 {
     TaskContext* instance = 0;
     RTT::TaskContext* (*factory)(std::string name) = 0;
-    log(Debug) << "Trying to create component "<< name <<" of type "<< type << endlog();
+    Logger::log().logf(Logger::Debug, "ComponentLoader::loadComponent",
+                       "Trying to create component %s of type %s",
+                       name.c_str(), type.c_str());
 
     // First: try loading from imported libraries. (see: import).
     if ( ComponentFactories::Instance().count(type) == 1 ) {
         factory = ComponentFactories::Instance()[ type ];
         if (factory == 0 ) {
-            log(Error) <<"Found empty factory for Component type "<<type<<endlog();
+            Logger::log().logf(Logger::Error, "ComponentLoader::loadComponent",
+                               "Found empty factory for Component type %s",
+                               type.c_str());
             return 0;
         }
     }
 
     if ( factory ) {
-        log(Debug) <<"Found factory for Component type "<<type<<endlog();
+        Logger::log().logf(Logger::Debug, "ComponentLoader::loadComponent",
+                           "Found factory for Component type %s", type.c_str());
     } else {
-        log(Error) << "Unable to create Orocos Component '"<<type<<"': unknown component type." <<endlog();
+        Logger::log().logf(Logger::Error, "ComponentLoader::loadComponent",
+                           "Unable to create Orocos Component '%s': unknown component type.",
+                           type.c_str());
         return 0;
     }
 
@@ -751,11 +807,15 @@ RTT::TaskContext *ComponentLoader::loadComponent(const std::string & name, const
     try {
         comps[name].instance = instance = (*factory)(name);
     } catch(...) {
-        log(Error) <<"The constructor of component type "<<type<<" threw an exception!"<<endlog();
+        Logger::log().logf(Logger::Error, "ComponentLoader::loadComponent",
+                           "The constructor of component type %s threw an exception!",
+                           type.c_str());
     }
 
     if ( instance == 0 ) {
-        log(Error) <<"Failed to load component with name "<<name<<": refused to be created."<<endlog();
+        Logger::log().logf(Logger::Error, "ComponentLoader::loadComponent",
+                           "Failed to load component with name %s: refused to be created.",
+                           name.c_str());
     }
     return instance;
 }
@@ -773,7 +833,8 @@ bool ComponentLoader::unloadComponent( RTT::TaskContext* tc ) {
         comps.erase(it);
         return true;
     }
-    log(Error) <<"Refusing to unload a component I didn't load myself."<<endlog();
+    Logger::log().logf(Logger::Error, "ComponentLoader::unloadComponent",
+                       "Refusing to unload a component I didn't load myself.");
     return false;
 }
 

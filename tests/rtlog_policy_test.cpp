@@ -66,6 +66,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/base/CoreRunnableInterface.cpp",
         "rtt/base/InputPortInterface.cpp",
         "rtt/ConfigurationInterface.cpp",
+        "rtt/deployment/ComponentLoader.cpp",
         "rtt/extras/SlaveActivity.cpp",
         "rtt/internal/BindStorage.hpp",
         "rtt/internal/ConnectionManager.cpp",
