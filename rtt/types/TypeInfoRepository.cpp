@@ -46,6 +46,7 @@
 #include "../internal/mystd.hpp"
 #include "../internal/DataSourceTypeInfo.hpp"
 #include <boost/algorithm/string.hpp>
+#include <cstdio>
 
 namespace RTT
 {
@@ -166,7 +167,9 @@ namespace RTT
             return false;
         MutexLock lock(type_lock);
         if (data.count(t->getTypeName() ) ) {
-            log(Error) << "Can't register a new TypeInfo object for '"<<t->getTypeName() << "': one already exists."<<endlog();
+            Logger::log().logf(Logger::Error, "TypeInfoRepository",
+                               "Can't register a new TypeInfo object for '%s': one already exists.",
+                               t->getTypeName().c_str());
             return false;
         }
 
@@ -184,7 +187,9 @@ namespace RTT
         {
             MutexLock lock(type_lock);
             if (ti && data.count(tname) && data[tname] != ti ) {
-                log(Error) << "Refusing to add type information for '" << tname << "': the name is already in use by another type."<<endlog();
+                Logger::log().logf(Logger::Error, "TypeInfoRepository",
+                                   "Refusing to add type information for '%s': the name is already in use by another type.",
+                                   tname.c_str());
                 return false;
             }
         }
@@ -201,10 +206,15 @@ namespace RTT
         // keep track of this type:
         data[ tname ] = ti;
 
-        log(Debug) << "Registered Type '"<<tname <<"' to the Orocos Type System."<<Logger::endl;
+        Logger::log().logf(Logger::Debug, "TypeInfoRepository",
+                           "Registered Type '%s' to the Orocos Type System.",
+                           tname.c_str());
         for(Transports::iterator it = transports.begin(); it != transports.end(); ++it)
             if ( (*it)->registerTransport( tname, ti) )
-                log(Info) << "Registered new '"<< (*it)->getTransportName()<<"' transport for " << tname <<endlog();
+                Logger::log().logf(Logger::Info, "TypeInfoRepository",
+                                   "Registered new '%s' transport for %s",
+                                   (*it)->getTransportName().c_str(),
+                                   tname.c_str());
         return true;
     }
 
@@ -243,36 +253,58 @@ namespace RTT
         map_t::const_iterator i = data.begin();
         for( ; i != data.end(); ++i )
             if ( tr->registerTransport( i->first , i->second ) )
-                log(Info) << "Registered new '"<< tr->getTransportName()<<"' transport for " << i->first <<endlog();
+                Logger::log().logf(Logger::Info, "TypeInfoRepository",
+                                   "Registered new '%s' transport for %s",
+                                   tr->getTransportName().c_str(),
+                                   i->first.c_str());
         // give chance to register fallback protocol:
         if ( tr->registerTransport("unknown_t", DataSourceTypeInfo<UnknownType>::getTypeInfo() ) == false )
-            log(Debug) << "Transport " << tr->getTransportName() << " did not install a fallback handler for 'unknown_t'." <<endlog();
+            Logger::log().logf(Logger::Debug, "TypeInfoRepository",
+                               "Transport %s did not install a fallback handler for 'unknown_t'.",
+                               tr->getTransportName().c_str());
     }
 
     void TypeInfoRepository::logTypeInfo() const
     {
         // dump the names of all known types
-        log(Debug) << "Types known to the Orocos Type System."<<Logger::endl;
+        Logger::log().logf(Logger::Debug, "TypeInfoRepository",
+                           "Types known to the Orocos Type System.");
         MutexLock lock(type_lock);
         for(map_t::const_iterator it = data.begin(); it != data.end(); ++it)
         {
             std::vector<int>    transports;
             transports = it->second->getTransportNames();
-            log(Debug) << "-- " << it->first
-                          << " (" << (*it).second->getTypeName() << ") protocols [";
+            char protocols[256];
+            int offset = std::snprintf(protocols, sizeof(protocols), "[");
             for (std::vector<int>::const_iterator   iter=transports.begin();
                  iter != transports.end();
                  ++iter)
             {
-                Logger::log() << *iter;
+                if (offset < 0 || offset >= int(sizeof(protocols)))
+                    break;
+                offset += std::snprintf(protocols + offset, sizeof(protocols) - offset,
+                                        "%s%d",
+                                        iter == transports.begin() ? "" : ",",
+                                        *iter);
             }
-            Logger::log() << "]" << Logger::endl;
+            if (offset >= 0 && offset < int(sizeof(protocols)))
+                std::snprintf(protocols + offset, sizeof(protocols) - offset, "]");
+            else
+                protocols[sizeof(protocols) - 1] = 0;
+            Logger::log().logf(Logger::Debug, "TypeInfoRepository",
+                               "-- %s (%s) protocols %s",
+                               it->first.c_str(),
+                               (*it).second->getTypeName().c_str(),
+                               protocols);
         }
         // dump the names of all known transports
-        log(Debug) << "Transports known to the Orocos Type System."<<Logger::endl;
+        Logger::log().logf(Logger::Debug, "TypeInfoRepository",
+                           "Transports known to the Orocos Type System.");
         for(Transports::const_iterator it = transports.begin(); it != transports.end(); ++it)
         {
-            log(Debug) << "-- " << (*it)->getTransportName() << Logger::endl;
+            Logger::log().logf(Logger::Debug, "TypeInfoRepository",
+                               "-- %s",
+                               (*it)->getTransportName().c_str());
         }
     }
 

@@ -51,45 +51,62 @@ namespace RTT {
 
     void TypekitRepository::Import( TypekitPlugin* tkp )
     {
-        Logger::In in("TypekitRepository::Import");
         for( vector<TypekitPlugin*>::iterator it = Typekits.begin(); it != Typekits.end(); ++it ) {
             if ( (*it)->getName() == tkp->getName() ) {
-                log( Debug ) << "Typekit "<<tkp->getName() <<" already loaded: keeping old instance."<<Logger::endl;
+                Logger::log().logf(Logger::Debug, "TypekitRepository::Import",
+                                   "Typekit %s already loaded: keeping old instance.",
+                                   tkp->getName().c_str());
                 delete tkp;
                 return;
             }
         }
 
-        log( Info) << "Loading Typekit "<<tkp->getName() <<"."<<Logger::endl;
+        Logger::log().logf(Logger::Info, "TypekitRepository::Import",
+                           "Loading Typekit %s.",
+                           tkp->getName().c_str());
         Typekits.push_back( tkp );
 
         if ( tkp->loadTypes() == false ) {
-            log( Error) << "Typekit "<<tkp->getName() <<" failed to load types."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "TypekitRepository::Import",
+                               "Typekit %s failed to load types.",
+                               tkp->getName().c_str());
         }
 
         if ( tkp->loadConstructors() == false ) {
-            log( Error) << "Typekit "<<tkp->getName() <<" failed to load type constructors."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "TypekitRepository::Import",
+                               "Typekit %s failed to load type constructors.",
+                               tkp->getName().c_str());
         }
         if ( tkp->loadOperators() == false ) {
-            log( Error) << "Typekit "<<tkp->getName() <<" failed to load type operators."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "TypekitRepository::Import",
+                               "Typekit %s failed to load type operators.",
+                               tkp->getName().c_str());
         }
         if ( tkp->loadGlobals() == false ) {
-            log( Error) << "Typekit "<<tkp->getName() <<" failed to load global variables."<<Logger::endl;
+            Logger::log().logf(Logger::Error, "TypekitRepository::Import",
+                               "Typekit %s failed to load global variables.",
+                               tkp->getName().c_str());
         }
     }
 
     void TypekitRepository::Import( TransportPlugin* trp )
     {
-        Logger::In in("TypekitRepository::Import");
         for( vector<TransportPlugin*>::iterator it = Transports.begin(); it != Transports.end(); ++it ) {
             if ( (*it)->getName() == trp->getName() ) {
-                log(Debug) << "Transport "<<trp->getTransportName() <<"://"<< trp->getTypekitName()<<" already loaded by plugin '"<<(*it)->getName()<<"': keeping old instance."<<Logger::endl;
+                Logger::log().logf(Logger::Debug, "TypekitRepository::Import",
+                                   "Transport %s://%s already loaded by plugin '%s': keeping old instance.",
+                                   trp->getTransportName().c_str(),
+                                   trp->getTypekitName().c_str(),
+                                   (*it)->getName().c_str());
                 delete trp;
                 return;
             }
         }
 
-        log(Info) << "Loading Transport "<<trp->getTransportName() <<"://"<<trp->getTypekitName() <<"."<<Logger::endl;
+        Logger::log().logf(Logger::Info, "TypekitRepository::Import",
+                           "Loading Transport %s://%s.",
+                           trp->getTransportName().c_str(),
+                           trp->getTypekitName().c_str());
         Transports.push_back( trp );
 
         TypeInfoRepository::Instance()->registerTransport( trp );

@@ -90,7 +90,9 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/scripting/ParsedStateMachine.cpp",
         "rtt/scripting/Parser.cpp",
         "rtt/ServiceRequester.cpp",
-        "rtt/types/TemplateConstructor.hpp"
+        "rtt/types/TemplateConstructor.hpp",
+        "rtt/types/TypeInfoRepository.cpp",
+        "rtt/types/TypekitRepository.cpp"
     };
 
     std::vector<std::string> violations;
