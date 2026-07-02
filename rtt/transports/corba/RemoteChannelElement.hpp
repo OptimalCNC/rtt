@@ -150,13 +150,17 @@ namespace RTT {
 #ifdef CORBA_IS_OMNIORB
                     catch(CORBA::SystemException& e)
                     {
-                        log(Error) << "caught CORBA exception while signalling our remote endpoint: " << e._name() << " " << e.NP_minorString() << endlog();
+                        Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                           "caught CORBA exception while signalling our remote endpoint: %s %s",
+                                           e._name(), e.NP_minorString());
                         valid = false;
                     }
 #endif
                     catch(CORBA::Exception& e)
                     {
-                        log(Error) << "caught CORBA exception while signalling our remote endpoint: " << e._name() << endlog();
+                        Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                           "caught CORBA exception while signalling our remote endpoint: %s",
+                                           e._name());
                         valid = false;
                     }
                 } else {
@@ -274,14 +278,18 @@ namespace RTT {
 #ifdef CORBA_IS_OMNIORB
                 catch(CORBA::SystemException& e)
                 {
-                    log(Error) << "caught CORBA exception while reading a remote channel: " << e._name() << " " << e.NP_minorString() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while reading a remote channel: %s %s",
+                                       e._name(), e.NP_minorString());
                     valid = false;
                     return NoData;
                 }
 #endif
                 catch(CORBA::Exception& e)
                 {
-                    log(Error) << "caught CORBA exception while reading a remote channel: " << e._name() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while reading a remote channel: %s",
+                                       e._name());
                     valid = false;
                     return NoData;
                 }
@@ -305,7 +313,9 @@ namespace RTT {
                         return (CFlowStatus)fs;
                     }
                     // this is a programmatic error and should never happen during run-time.
-                    log(Error) << "CORBA Transport failed to create Any for " << value_data_source.getTypeName() << " while it should have!" <<endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "CORBA Transport failed to create Any for %s while it should have!",
+                                       value_data_source.getTypeName().c_str());
                 }
                 // we *must* return something in sample.
                 sample = new CORBA::Any();
@@ -354,13 +364,17 @@ namespace RTT {
 #ifdef CORBA_IS_OMNIORB
                 catch(CORBA::SystemException& e)
                 {
-                    log(Error) << "caught CORBA exception while marshalling: " << e._name() << " " << e.NP_minorString() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while marshalling: %s %s",
+                                       e._name(), e.NP_minorString());
                     return NotConnected;
                 }
 #endif
                 catch(CORBA::Exception& e)
                 {
-                    log(Error) << "caught CORBA exception while marshalling: " << e._name() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while marshalling: %s",
+                                       e._name());
                     return NotConnected;
                 }
             }
@@ -416,13 +430,17 @@ namespace RTT {
 #ifdef CORBA_IS_OMNIORB
                 catch(CORBA::SystemException& e)
                 {
-                    log(Error) << "caught CORBA exception while checking a remote channel: " << e._name() << " " << e.NP_minorString() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while checking a remote channel: %s %s",
+                                       e._name(), e.NP_minorString());
                     return false;
                 }
 #endif
                 catch(CORBA::Exception& e)
                 {
-                    log(Error) << "caught CORBA exception while checking a remote channel: " << e._name() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while checking a remote channel: %s",
+                                       e._name());
                     return false;
                 }
             }
@@ -459,13 +477,17 @@ namespace RTT {
 #ifdef CORBA_IS_OMNIORB
                 catch(CORBA::SystemException& e)
                 {
-                    log(Error) << "caught CORBA exception while marshalling: " << e._name() << " " << e.NP_minorString() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while marshalling: %s %s",
+                                       e._name(), e.NP_minorString());
                     return false;
                 }
 #endif
                 catch(CORBA::Exception& e)
                 {
-                    log(Error) << "caught CORBA exception while marshalling: " << e._name() << endlog();
+                    Logger::log().logf(Logger::Error, "RemoteChannelElement",
+                                       "caught CORBA exception while marshalling: %s",
+                                       e._name());
                     return false;
                 }
             }
@@ -516,4 +538,3 @@ namespace RTT {
 }
 
 #endif
-
