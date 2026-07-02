@@ -81,7 +81,9 @@ namespace RTT
 
     TaskContextProxy::~TaskContextProxy()
     {
-        log(Info) << "Terminating TaskContextProxy for " <<  this->getName() <<endlog();
+        Logger::log().logf(Logger::Info, "TaskContextProxy",
+                           "Terminating TaskContextProxy for %s",
+                           this->getName().c_str());
         if ( this->properties() ) {
             deletePropertyBag( *this->properties() );
         }
@@ -104,7 +106,6 @@ namespace RTT
 
     void TaskContextProxy::initFromURIOrTaskname(string name, bool is_ior)
     {
-        Logger::In in("TaskContextProxy");
         this->clear();
         this->setActivity( new SequentialActivity() );
         try {
@@ -128,10 +129,12 @@ namespace RTT
 
                 if (CORBA::is_nil(rootContext)) {
                     std::string err("TaskContextProxy could not acquire NameService.");
-                    log(Error) << err <<endlog();
+                    Logger::log().logf(Logger::Error, "TaskContextProxy",
+                                       "%s", err.c_str());
                     throw IllegalServer(err);
                 }
-                Logger::log() <<Logger::Debug << "TaskContextProxy found CORBA NameService."<<endlog();
+                Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                                   "TaskContextProxy found CORBA NameService.");
                 CosNaming::Name serverName;
                 serverName.length(2);
                 serverName[0].id = CORBA::string_dup("TaskContexts");
@@ -143,18 +146,22 @@ namespace RTT
             }
             if ( CORBA::is_nil( mtask ) ) {
                 std::string err("Failed to acquire TaskContextServer '"+name+"'.");
-                Logger::log() << Logger::Error << err <<endlog();
+                Logger::log().logf(Logger::Error, "TaskContextProxy",
+                                   "%s", err.c_str());
                 throw IllegalServer(err);
             }
             CORBA::String_var nm = mtask->getName(); // force connect to object.
             std::string newname( nm.in() );
             this->provides()->setName( newname );
-            Logger::log() << Logger::Info << "Successfully connected to TaskContextServer '"+name+"'."<<endlog();
+            Logger::log().logf(Logger::Info, "TaskContextProxy",
+                               "Successfully connected to TaskContextServer '%s'.",
+                               name.c_str());
             proxies[this] = mtask.in();
         }
         catch (CORBA::Exception &e) {
-            log(Error)<< "CORBA exception raised when resolving Object !" << endlog();
-            Logger::log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "CORBA exception raised when resolving Object ! %s",
+                               CORBA_EXCEPTION_INFO(e));
             throw;
         }
         catch (IllegalServer& e) {
@@ -162,7 +169,8 @@ namespace RTT
             throw e;
         }
         catch (...) {
-            log(Error) <<"Unknown Exception in TaskContextProxy construction!"<<endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "Unknown Exception in TaskContextProxy construction!");
             throw;
         }
 
@@ -172,7 +180,6 @@ namespace RTT
     TaskContextProxy::TaskContextProxy( ::RTT::corba::CTaskContext_ptr taskc)
         : TaskContext("CORBAProxy"), mtask( corba::CTaskContext::_duplicate(taskc) )
     {
-        Logger::In in("TaskContextProxy");
         this->clear();
         // We can't use setActivity() since that would check isRunning() first.
         this->forceActivity( new SequentialActivity );
@@ -183,8 +190,9 @@ namespace RTT
             proxies[this] = mtask.in();
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "CORBA exception raised when creating TaskContextProxy!" << Logger::nl;
-            Logger::log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "CORBA exception raised when creating TaskContextProxy!\n%s",
+                               CORBA_EXCEPTION_INFO(e));
         }
         catch (...) {
             throw;
@@ -207,7 +215,8 @@ namespace RTT
         CServiceRequester_var srq = tcd->mainrequester;
         synchronizeRequesters(this->requires(), srq, tcd->mainrequester_description);
 
-        log(Debug) << "All Done."<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                           "All Done.");
     }
 
     void TaskContextProxy::synchronizeRequesters(ServiceRequester::shared_ptr parent, CServiceRequester_ptr csrq, const CServiceRequesterDescription & cdescription)
@@ -215,7 +224,9 @@ namespace RTT
         for ( size_t i=0; i < cdescription.operationcallernames.length(); ++i) {
             if ( parent->getOperationCaller( string(cdescription.operationcallernames[i].in() )))
                 continue; // already added.
-            log(Debug) << "Requiring operation: "<< cdescription.operationcallernames[i].in() <<endlog();
+            Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                               "Requiring operation: %s",
+                               cdescription.operationcallernames[i].in());
             parent->addOperationCaller( * new OperationCallerProxy(string(cdescription.operationcallernames[i].in() ), CServiceRequester::_duplicate(csrq) ));
         }
 
@@ -231,23 +242,29 @@ namespace RTT
 
     void TaskContextProxy::synchronizeServices(Service::shared_ptr parent, CService_ptr serv, const CServiceDescription & cdescription)
     {
-        log(Debug) << "Synchronizing "<<parent->getName()<<" Service:"<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                           "Synchronizing %s Service:",
+                           parent->getName().c_str());
 
         // Fetch ports
         this->synchronizePorts(parent, serv, cdescription);
 
         // load command and method factories.
         // methods:
-        log(Debug) << "Synchronizing Operations."<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                           "Synchronizing Operations.");
         for ( size_t i=0; i < cdescription.operations.length(); ++i) {
             if ( parent->hasMember( string(cdescription.operations[i].name.in() )))
                 continue; // already added.
-            log(Debug) << "Providing operation: "<< cdescription.operations[i].name.in() <<endlog();
+            Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                               "Providing operation: %s",
+                               cdescription.operations[i].name.in());
             parent->add( cdescription.operations[i].name.in(), new CorbaOperationCallerFactory( cdescription.operations[i], serv, ProxyPOA() ) );
         }
 
         // first do properties:
-        log(Debug) << "Synchronizing Properties."<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                           "Synchronizing Properties.");
         for (size_t i=0; i != cdescription.properties.length(); ++i) {
             if ( findProperty( *parent->properties(), string(cdescription.properties[i].name.in()), "." ) )
                 continue; // previously added.
@@ -275,31 +292,45 @@ namespace RTT
                 // data source needs full remote path name
                 DataSourceBase::shared_ptr ds = ctt->createPropertyDataSource( serv, cdescription.properties[i].name.in() );
                 storeProperty( *parent->properties(), prefix, ti->buildProperty( pname, cdescription.properties[i].description.in(), ds));
-                log(Debug) << "Looked up Property " << cdescription.properties[i].type_name.in() << " "<< pname <<": created."<<endlog();
+                Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                                   "Looked up Property %s %s: created.",
+                                   cdescription.properties[i].type_name.in(), pname.c_str());
             }
             else {
                 if ( string("PropertyBag") == cdescription.properties[i].type_name.in() ) {
                     storeProperty(*parent->properties(), prefix, new Property<PropertyBag>( pname, cdescription.properties[i].description.in()) );
-                    log(Debug) << "Looked up PropertyBag " << cdescription.properties[i].type_name.in() << " "<< pname <<": created."<<endlog();
-                } else
-                    log(Error) << "Looked up Property " << cdescription.properties[i].type_name.in() << " "<< pname <<": type not known. Check your RTT_COMPONENT_PATH ( \""<<getenv("RTT_COMPONENT_PATH")<<" \")."<<endlog();
+                    Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                                       "Looked up PropertyBag %s %s: created.",
+                                       cdescription.properties[i].type_name.in(), pname.c_str());
+                } else {
+                    const char* component_path = getenv("RTT_COMPONENT_PATH");
+                    Logger::log().logf(Logger::Error, "TaskContextProxy",
+                                       "Looked up Property %s %s: type not known. Check your RTT_COMPONENT_PATH ( \"%s\" ).",
+                                       cdescription.properties[i].type_name.in(), pname.c_str(),
+                                       component_path ? component_path : "");
+                }
             }
         }
 
-        log(Debug) << "Synchronizing Attributes."<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                           "Synchronizing Attributes.");
         for (size_t i=0; i != cdescription.attributes.length(); ++i) {
             if ( parent->hasAttribute( string(cdescription.attributes[i].name.in()) ) )
                 continue; // previously added.
 #if 0
             if ( !serv->hasAttribute( cdescription.attributes[i].name.in() ) ) {
-                log(Error) <<"Attribute '"<< string(cdescription.attributes[i].name.in()) << "' present in getAttributeList() but not accessible."<<endlog();
+                Logger::log().logf(Logger::Error, "TaskContextProxy",
+                                   "Attribute '%s' present in getAttributeList() but not accessible.",
+                                   cdescription.attributes[i].name.in());
                 continue;
             }
 #endif
             // If the type is known, immediately build the correct attribute and datasource,
             TypeInfo* ti = TypeInfoRepository::Instance()->type( cdescription.attributes[i].type_name.in() );
             if ( ti && ti->hasProtocol(ORO_CORBA_PROTOCOL_ID) ) {
-                log(Debug) << "Looking up Attribute " << cdescription.attributes[i].type_name.in() <<": found!"<<endlog();
+                Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                                   "Looking up Attribute %s: found!",
+                                   cdescription.attributes[i].type_name.in());
                 CorbaTypeTransporter* ctt = dynamic_cast<CorbaTypeTransporter*>(ti->getProtocol(ORO_CORBA_PROTOCOL_ID));
                 assert(ctt);
                 // this function should check itself for const-ness of the remote Attribute:
@@ -309,11 +340,16 @@ namespace RTT
                 else
                     parent->setValue( ti->buildConstant( cdescription.attributes[i].name.in(), ds));
             } else {
-                log(Error) << "Looking up Attribute '" << cdescription.attributes[i].name.in() << "' of type " << cdescription.attributes[i].type_name.in() << ": ";
+                const char* component_path = getenv("RTT_COMPONENT_PATH");
                 if (!ti) {
-                    log() << ": type not known. Check your RTT_COMPONENT_PATH ( \""<<getenv("RTT_COMPONENT_PATH")<<" \")." << endlog();
+                    Logger::log().logf(Logger::Error, "TaskContextProxy",
+                                       "Looking up Attribute '%s' of type %s: : type not known. Check your RTT_COMPONENT_PATH ( \"%s\" ).",
+                                       cdescription.attributes[i].name.in(), cdescription.attributes[i].type_name.in(),
+                                       component_path ? component_path : "");
                 } else {
-                    log() << ": type does not support CORBA (no transport plugin loaded)" << endlog();
+                    Logger::log().logf(Logger::Error, "TaskContextProxy",
+                                       "Looking up Attribute '%s' of type %s: : type does not support CORBA (no transport plugin loaded)",
+                                       cdescription.attributes[i].name.in(), cdescription.attributes[i].type_name.in());
                 }
             }
         }
@@ -331,7 +367,9 @@ namespace RTT
 
     void TaskContextProxy::synchronizePorts(Service::shared_ptr parent, CDataFlowInterface_ptr dfact, const CServiceDescription & cdescription)
     {
-        log(Debug) << "Synchronizing Ports for service "<<parent->getName()<<"."<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextProxy",
+                           "Synchronizing Ports for service %s.",
+                           parent->getName().c_str());
         TypeInfoRepository::shared_ptr type_repo = TypeInfoRepository::Instance();
         if (dfact) {
             for ( size_t i=0; i < cdescription.ports.length(); ++i) {
@@ -341,15 +379,15 @@ namespace RTT
                 TypeInfo const* type_info = type_repo->type(cdescription.ports[i].type_name.in());
                 if (!type_info)
                 {
-                    log(Warning) << "remote port '" << cdescription.ports[i].name << "' "
-                        << " has unknown type " << cdescription.ports[i].type_name << " and cannot be marshalled over CORBA. "
-                        << "It is ignored by TaskContextProxy" << endlog();
+                    Logger::log().logf(Logger::Warning, "TaskContextProxy",
+                                       "remote port '%s'  has unknown type %s and cannot be marshalled over CORBA. It is ignored by TaskContextProxy",
+                                       cdescription.ports[i].name.in(), cdescription.ports[i].type_name.in());
                 }
                 else if (!type_info->hasProtocol(ORO_CORBA_PROTOCOL_ID))
                 {
-                    log(Warning) << "remote port '" << cdescription.ports[i].name << "' "
-                        << " has type " << cdescription.ports[i].type_name << " which cannot be marshalled over CORBA. "
-                        << "It is ignored by TaskContextProxy" << endlog();
+                    Logger::log().logf(Logger::Warning, "TaskContextProxy",
+                                       "remote port '%s'  has type %s which cannot be marshalled over CORBA. It is ignored by TaskContextProxy",
+                                       cdescription.ports[i].name.in(), cdescription.ports[i].type_name.in());
                 }
                 else
                 {
@@ -522,18 +560,22 @@ namespace RTT
         	}
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "Orb Init : CORBA exception raised!" << Logger::nl;
-            Logger::log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "Orb Init : CORBA exception raised!\n%s",
+                               CORBA_EXCEPTION_INFO(e));
         }
     }
 
     TaskContextProxy* TaskContextProxy::Create(std::string name, bool is_ior /*=false*/) {
         if ( CORBA::is_nil(orb) ) {
-            log(Error) << "Won't create a proxy for '"<<name<<"' : orb is nill. Call TaskContextProxy::InitOrb(argc, argv); before TaskContextProxy::Create()." <<endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "Won't create a proxy for '%s' : orb is nill. Call TaskContextProxy::InitOrb(argc, argv); before TaskContextProxy::Create().",
+                               name.c_str());
             return 0;
         }
         if ( name.empty() ) {
-            log(Error) << "Can't create a proxy with an empty name." <<endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "Can't create a proxy with an empty name.");
             return 0;
         }
         // create new:
@@ -542,21 +584,27 @@ namespace RTT
             return ctp;
         }
         catch( IllegalServer& is ) {
-            log(Error) << is.what() << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "%s", is.what());
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "TaskContextProxy::Create: CORBA exception raised!" << Logger::nl << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "TaskContextProxy::Create: CORBA exception raised!\n%s",
+                               CORBA_EXCEPTION_INFO(e));
         }
         return 0;
     }
 
     TaskContextProxy* TaskContextProxy::CreateFromFile(std::string name) {
         if ( CORBA::is_nil(orb) ) {
-            log(Error) << "Won't create a proxy for '"<<name<<"' : orb is nill. Call TaskContextProxy::InitOrb(argc, argv); before TaskContextProxy::Create()." <<endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "Won't create a proxy for '%s' : orb is nill. Call TaskContextProxy::InitOrb(argc, argv); before TaskContextProxy::Create().",
+                               name.c_str());
             return 0;
         }
         if ( name.empty() ) {
-            log(Error) << "Can't create a proxy with an empty file name." <<endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy",
+                               "Can't create a proxy with an empty file name.");
             return 0;
         }
 
@@ -568,13 +616,14 @@ namespace RTT
     }
 
     TaskContext* TaskContextProxy::Create(::RTT::corba::CTaskContext_ptr t, bool force_remote) {
-        Logger::In in("TaskContextProxy::Create");
         if ( CORBA::is_nil(orb) ) {
-            log(Error) << "Can not create proxy when ORB is nill !"<<endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy::Create",
+                               "Can not create proxy when ORB is nill !");
             return 0;
         }
         if ( CORBA::is_nil(t) ) {
-            log(Error) << "Can not create proxy for nill peer !" <<endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy::Create",
+                               "Can not create proxy for nill peer !");
             return 0;
         }
 
@@ -582,7 +631,8 @@ namespace RTT
         // is_equivalent is actually our best try.
         for (PMap::iterator it = proxies.begin(); it != proxies.end(); ++it)
             if ( (it->second)->_is_equivalent( t ) ) {
-                log(Debug) << "Existing proxy found !" <<endlog();
+                Logger::log().logf(Logger::Debug, "TaskContextProxy::Create",
+                                   "Existing proxy found !");
                 return it->first;
             }
 
@@ -591,22 +641,27 @@ namespace RTT
         {
             for (TaskContextServer::ServerMap::iterator it = TaskContextServer::servers.begin(); it != TaskContextServer::servers.end(); ++it)
                 if ( it->second->server()->_is_equivalent( t ) ) {
-                    log(Debug) << "Local server found !" <<endlog();
+                    Logger::log().logf(Logger::Debug, "TaskContextProxy::Create",
+                                       "Local server found !");
                     return it->first;
                 }
         }
 
-        log(Debug) << "No local taskcontext found..." <<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextProxy::Create",
+                           "No local taskcontext found...");
         // create new:
         try {
             TaskContextProxy* ctp = new TaskContextProxy( t );
             return ctp;
         }
         catch( IllegalServer& is ) {
-            log(Error) << is.what() << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy::Create",
+                               "%s", is.what());
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "TaskContextProxy::Create: CORBA exception raised!" << Logger::nl << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "TaskContextProxy::Create",
+                               "TaskContextProxy::Create: CORBA exception raised!\n%s",
+                               CORBA_EXCEPTION_INFO(e));
         }
 
         return 0;
