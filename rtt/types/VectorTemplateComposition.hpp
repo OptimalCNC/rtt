@@ -66,10 +66,11 @@ namespace RTT
                             size_correction += 1;
                             continue;
                         }
-                        Logger::log() << Logger::Error << "Aborting composition of Property< T > "
-                                      << ": Exptected data element "<< i << " to be of type " << internal::DataSourceTypeInfo< typename T::value_type>::getTypeName()
-                                      <<" got type " << element->getType()
-                                      <<Logger::endl;
+                        Logger::log().logf(Logger::Error, "VectorTemplateComposition",
+                                           "Aborting composition of Property< T > : Exptected data element %d to be of type %s got type %s",
+                                           i,
+                                           internal::DataSourceTypeInfo< typename T::value_type>::getTypeName().c_str(),
+                                           element->getType().c_str());
                         return false;
                     }
                     result[ i - size_correction ] = comp->get();
@@ -77,9 +78,10 @@ namespace RTT
                 result.resize( dimension - size_correction );
             }
             else {
-                Logger::log() << Logger::Error << "Composing Property< T > :"
-                              << " type mismatch, got type '"<< bag.getType()
-                              << "', expected 'vector<" <<  internal::DataSourceTypeInfo< typename T::value_type>::getTypeName() <<">'."<<Logger::endl;
+                Logger::log().logf(Logger::Error, "VectorTemplateComposition",
+                                   "Composing Property< T > : type mismatch, got type '%s', expected 'vector<%s>'.",
+                                   bag.getType().c_str(),
+                                   internal::DataSourceTypeInfo< typename T::value_type>::getTypeName().c_str());
                 return false;
             }
             return true;
@@ -88,4 +90,3 @@ namespace RTT
 }
 
 #endif
-

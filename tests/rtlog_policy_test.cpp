@@ -101,7 +101,8 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/types/PropertyDecomposition.cpp",
         "rtt/types/TypeInfo.cpp",
         "rtt/types/TypeInfoRepository.cpp",
-        "rtt/types/TypekitRepository.cpp"
+        "rtt/types/TypekitRepository.cpp",
+        "rtt/types/VectorTemplateComposition.hpp"
     };
 
     std::vector<std::string> violations;
