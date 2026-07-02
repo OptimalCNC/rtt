@@ -122,7 +122,7 @@ namespace RTT
         StateMachine(StateMachinePtr parent, const std::string& name="Default");
 
         /**
-         * Turn log(Debug) messages on or off to track state transitions.
+         * Turn Debug-level messages on or off to track state transitions.
          */
         void trace(bool on_off);
 
