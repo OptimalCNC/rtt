@@ -76,7 +76,9 @@ namespace RTT
                   }
                   return mq;
               } catch(std::exception& e) {
-                  log(Error) << "Failed to create MQueue Channel element: " << e.what() << endlog();
+                  Logger::log().logf(Logger::Error, "MQTemplateProtocolBase",
+                                     "Failed to create MQueue Channel element: %s",
+                                     e.what());
               }
               return base::ChannelElementBase::shared_ptr();
           }

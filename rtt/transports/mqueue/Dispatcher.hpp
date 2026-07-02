@@ -83,8 +83,8 @@ namespace RTT {
               {}
 
             ~Dispatcher() {
-                Logger::In in("Dispatcher");
-                log(Info) << "Dispacher cleans up: no more work."<<endlog();
+                Logger::log().logf(Logger::Info, "Dispatcher",
+                                   "Dispacher cleans up: no more work.");
                 stop();
                 DispatchI = 0;
             }
@@ -140,12 +140,14 @@ namespace RTT {
             }
 
             void addQueue( mqd_t mqdes, base::ChannelElementBase* chan ) {
-                Logger::In in("Dispatcher");
                 if (mqdes < 0) {
-                    log(Error) <<"Invalid mqd_t given to MQueue Dispatcher." <<endlog();
+                    Logger::log().logf(Logger::Error, "Dispatcher",
+                                       "Invalid mqd_t given to MQueue Dispatcher.");
                     return;
                 }
-                log(Debug) <<"Dispatcher is monitoring mqdes "<< mqdes <<endlog();
+                Logger::log().logf(Logger::Debug, "Dispatcher",
+                                   "Dispatcher is monitoring mqdes %d",
+                                   static_cast<int>(mqdes));
                 os::MutexLock lock(maplock);
                 // we add a refcount per channel we monitor.
                 if (mqmap.count(mqdes) == 0)
@@ -154,8 +156,9 @@ namespace RTT {
             }
 
             void removeQueue(mqd_t mqdes) {
-                Logger::In in("Dispatcher");
-                log(Debug) <<"Dispatcher drops mqdes "<< mqdes <<endlog();
+                Logger::log().logf(Logger::Debug, "Dispatcher",
+                                   "Dispatcher drops mqdes %d",
+                                   static_cast<int>(mqdes));
                 os::MutexLock lock(maplock);
                 if (mqmap.count(mqdes)) {
                     mqmap.erase( mqmap.find(mqdes) );
@@ -194,7 +197,9 @@ namespace RTT {
                     if (readsocks < 0) {
                         if (errno != EINTR)
                         {
-                            log(Error) <<"Dispatcher failed to select on message queues. Stopped thread. error: "<<strerror(errno)<<endlog();
+                            Logger::log().logf(Logger::Error, "Dispatcher",
+                                               "Dispatcher failed to select on message queues. Stopped thread. error: %s",
+                                               strerror(errno));
                             return;
                         }
                     }
@@ -215,4 +220,3 @@ namespace RTT {
         };
     }
 }
-

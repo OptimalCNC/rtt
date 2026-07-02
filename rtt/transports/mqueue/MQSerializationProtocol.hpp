@@ -98,7 +98,8 @@ namespace RTT
             virtual unsigned int getSampleSize(base::DataSourceBase::shared_ptr sample, void* cookie) const {
                 typename internal::DataSource<T>::shared_ptr tsample = boost::dynamic_pointer_cast< internal::DataSource<T> >( sample );
                 if ( ! tsample ) {
-                    log(Error) << "getSampleSize: sample has wrong type."<<endlog();
+                    Logger::log().logf(Logger::Error, "MQSerializationProtocol",
+                                       "getSampleSize: sample has wrong type.");
                     return 0;
                 }
                 namespace io = boost::iostreams;

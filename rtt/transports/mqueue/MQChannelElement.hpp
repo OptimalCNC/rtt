@@ -78,7 +78,6 @@ namespace RTT
                 , write_sample(new internal::LateConstReferenceDataSource<T>)
 
             {
-                Logger::In in("MQChannelElement");
                 setupStream(read_sample, port, policy, is_sender);
             }
 
@@ -202,4 +201,3 @@ namespace RTT
 }
 
 #endif
-
