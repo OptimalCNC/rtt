@@ -68,10 +68,14 @@ namespace RTT {
             if ( composeTypeImpl( pb->rvalue(), ads->set() ) )
                 ads->updated();
             else {
-                Logger::log() <<Logger::Debug<<"Failed to compose from "<< source->getTypeName() <<Logger::endl;
+                Logger::log().logf(Logger::Debug, "TemplateCompositionFactory",
+                                   "Failed to compose from %s",
+                                   source->getTypeName().c_str());
                 return false;
             }
-            Logger::log() <<Logger::Debug<<"Successfuly composed type from "<< source->getTypeName() <<Logger::endl;
+            Logger::log().logf(Logger::Debug, "TemplateCompositionFactory",
+                               "Successfuly composed type from %s",
+                               source->getTypeName().c_str());
             return true;
         }
 
