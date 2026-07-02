@@ -90,7 +90,8 @@ RTT::internal::ConnID* RemotePort<BaseClass>::getPortID() const
 template<typename BaseClass>
 bool RemotePort<BaseClass>::createStream( const RTT::ConnPolicy& policy )
 {
-    log(Error) << "Can't create a data stream on a remote port !" <<endlog();
+    Logger::log().logf(Logger::Error, "RemotePort",
+                       "Can't create a data stream on a remote port !");
     return false;
 }
 
@@ -126,7 +127,6 @@ RTT::base::ChannelElementBase::shared_ptr RemoteInputPort::buildRemoteChannelOut
         RTT::ConnPolicy const& policy)
 {
     // This is called by the createConnection()->createRemoteConnection() code of the ConnFactory.
-    Logger::In in("RemoteInputPort::buildRemoteChannelOutput");
 
     // First we delegate this call to the remote side, which will create a corba channel element,
     // buffers and channel output and attach this to the real input port.
@@ -144,8 +144,9 @@ RTT::base::ChannelElementBase::shared_ptr RemoteInputPort::buildRemoteChannelOut
     }
     catch(CORBA::Exception& e)
     {
-        log(Error) << "Caught CORBA exception while creating a remote channel output:" << endlog();
-        log(Error) << CORBA_EXCEPTION_INFO( e ) <<endlog();
+        Logger::log().logf(Logger::Error, "RemoteInputPort::buildRemoteChannelOutput",
+                           "Caught CORBA exception while creating a remote channel output: %s",
+                           CORBA_EXCEPTION_INFO(e));
         return NULL;
     }
 
@@ -170,17 +171,25 @@ RTT::base::ChannelElementBase::shared_ptr RemoteInputPort::buildRemoteChannelOut
         // create alternative path / out of band transport.
         string name =  policy.name_id ;
         if ( type->getProtocol(policy.transport) == 0 ) {
-            log(Error) << "Could not create out-of-band transport for port "<< name << " with transport id " << policy.transport <<endlog();
-            log(Error) << "No such transport registered. Check your policy.transport settings or add the transport for type "<< type->getTypeName() <<endlog();
+            Logger::log().logf(Logger::Error, "RemoteInputPort::buildRemoteChannelOutput",
+                               "Could not create out-of-band transport for port %s with transport id %d",
+                               name.c_str(), policy.transport);
+            Logger::log().logf(Logger::Error, "RemoteInputPort::buildRemoteChannelOutput",
+                               "No such transport registered. Check your policy.transport settings or add the transport for type %s",
+                               type->getTypeName().c_str());
         }
         RTT::base::ChannelElementBase::shared_ptr ceb = type->getProtocol(policy.transport)->createStream(this, policy, /* is_sender = */ true);
         if (ceb) {
             // insertion before corba.
             ceb->connectTo( corba_ceb, policy.mandatory );
             corba_ceb = ceb;
-            log(Info) <<"Redirecting data for port "<<name << " to out-of-band protocol "<< policy.transport << endlog();
+            Logger::log().logf(Logger::Info, "RemoteInputPort::buildRemoteChannelOutput",
+                               "Redirecting data for port %s to out-of-band protocol %d",
+                               name.c_str(), policy.transport);
         } else {
-            log(Error) << "The type transporter for type "<<type->getTypeName()<< " failed to create a dual channel for port " << name<<endlog();
+            Logger::log().logf(Logger::Error, "RemoteInputPort::buildRemoteChannelOutput",
+                               "The type transporter for type %s failed to create a dual channel for port %s",
+                               type->getTypeName().c_str(), name.c_str());
         }
     } else {
         // if no oob present, create a buffer at output port to guarantee RT delivery of data
@@ -199,8 +208,6 @@ RTT::base::ChannelElementBase::shared_ptr RemoteInputPort::buildRemoteChannelOut
 
 bool RemoteInputPort::createConnection( internal::SharedConnectionBase::shared_ptr shared_connection, ConnPolicy const& policy )
 {
-    Logger::In in("RemoteInputPort::createConnection");
-
     try {
         CConnPolicy cpolicy = toCORBA(policy);
         cpolicy.name_id = CORBA::string_dup( shared_connection->getName().c_str() );
@@ -212,13 +219,15 @@ bool RemoteInputPort::createConnection( internal::SharedConnectionBase::shared_p
     }
     catch(CORBA::Exception& e)
     {
-        log(Error) << "Caught CORBA exception while trying to add an input port to an existing connection:" << endlog();
-        log(Error) << CORBA_EXCEPTION_INFO( e ) <<endlog();
+        Logger::log().logf(Logger::Error, "RemoteInputPort::createConnection",
+                           "Caught CORBA exception while trying to add an input port to an existing connection: %s",
+                           CORBA_EXCEPTION_INFO(e));
         return false;
     }
 
-    log(Error) << "Failed to connect remote InputPort '" << getName() << "' to shared connection '" << shared_connection->getName() << "', "
-               << "most likely because you tried to connect input ports in different processes." << endlog();
+    Logger::log().logf(Logger::Error, "RemoteInputPort::createConnection",
+                       "Failed to connect remote InputPort '%s' to shared connection '%s', most likely because you tried to connect input ports in different processes.",
+                       getName().c_str(), shared_connection->getName().c_str());
     return false;
 }
 
@@ -259,10 +268,9 @@ bool RemoteOutputPort::disconnect(PortInterface* port)
 
     //if not a remote port, we can not handle at the moment!
     if(portI == NULL){
-        Logger::In in("RemoteOutputPort::disconnect(PortInterface& port)");
-        log(Error) << "Port: " << port->getName() << " could not be disconnected from: " << this->getName()
-                   << " because it could not be casted to a RemoteInputPort type!" << nlog()
-                   << "Only disconnect of two remote ports supported by corba layer, yet!" << endlog();
+        Logger::log().logf(Logger::Error, "RemoteOutputPort::disconnect",
+                           "Port: %s could not be disconnected from: %s because it could not be casted to a RemoteInputPort type!\nOnly disconnect of two remote ports supported by corba layer, yet!",
+                           port->getName().c_str(), this->getName().c_str());
         return false;
 
     }
@@ -290,7 +298,9 @@ bool RemoteOutputPort::createConnection( RTT::base::InputPortInterface& sink, RT
         // !!! only if sink is local:
         // this dynamic CDataFlowInterface lookup is tricky, we re/ab-use the DataFlowInterface pointer of sink !
         if(sink.getInterface() == 0){
-            log(Error)<<"RemotePort connection is only possible if the local port '"<<sink.getName()<<"' is added to a DataFlowInterface. Use addPort for this."<<endlog();
+            Logger::log().logf(Logger::Error, "RemoteOutputPort::createConnection",
+                               "RemotePort connection is only possible if the local port '%s' is added to a DataFlowInterface. Use addPort for this.",
+                               sink.getName().c_str());
             return false;
         }
         CDataFlowInterface_ptr cdfi = CDataFlowInterface_i::getRemoteInterface( sink.getInterface(), mpoa.in() );
@@ -302,8 +312,9 @@ bool RemoteOutputPort::createConnection( RTT::base::InputPortInterface& sink, RT
     }
     catch(CORBA::Exception& e)
     {
-        log(Error) <<"Remote call to "<< getName() <<".createConnection() failed with a CORBA exception: aborting connection."<<endlog();
-        log(Error) << CORBA_EXCEPTION_INFO( e ) <<endlog();
+        Logger::log().logf(Logger::Error, "RemoteOutputPort::createConnection",
+                           "Remote call to %s.createConnection() failed with a CORBA exception: aborting connection. %s",
+                           getName().c_str(), CORBA_EXCEPTION_INFO(e));
         return false;
     }
 	return false;
@@ -314,4 +325,3 @@ RTT::base::PortInterface* RemoteOutputPort::clone() const
 
 RTT::base::PortInterface* RemoteOutputPort::antiClone() const
 { return type_info->inputPort(getName()); }
-
