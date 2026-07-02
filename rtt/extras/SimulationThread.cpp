@@ -89,10 +89,10 @@ namespace RTT {
                       period),
           beat( TimeService::Instance() ), maxsteps_(0), sim_running(false)
     {
-        Logger::In in("SimulationThread");
         this->setScheduler(ORO_SCHED_OTHER);
-        Logger::log() << Logger::Info << this->getName() <<" created with "<< this->getPeriod() <<"s periodicity";
-        Logger::log() << Logger::Info << " and priority " << this->getPriority() << Logger::endl;
+        Logger::log().logf(Logger::Info, "SimulationThread",
+                           "%s created with %fs periodicity and priority %d",
+                           this->getName(), this->getPeriod(), this->getPriority());
     }
 
     SimulationThread::~SimulationThread()
@@ -140,9 +140,8 @@ namespace RTT {
 
     bool SimulationThread::initialize()
     {
-        Logger::In in("SimulationThread");
-        Logger::log() << Logger::Info << "SimulationThread takes over system time."<<Logger::nl;
-        Logger::log() << Logger::Info << "System time will increase significantly faster."<<Logger::endl;
+        Logger::log().logf(Logger::Info, "SimulationThread",
+                           "SimulationThread takes over system time. System time will increase significantly faster.");
 
         // we will update the clock in step()
         beat->enableSystemClock( false );
@@ -154,8 +153,8 @@ namespace RTT {
 
     void SimulationThread::finalize()
     {
-        Logger::In in("SimulationThread");
-        Logger::log() << Logger::Info << "SimulationThread releases system time."<<Logger::endl;
+        Logger::log().logf(Logger::Info, "SimulationThread",
+                           "SimulationThread releases system time.");
         // release systemclock again.
         beat->enableSystemClock( true );
 
