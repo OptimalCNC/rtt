@@ -85,11 +85,13 @@ boost::unit_test::test_suite* init_unit_test_suite(int argc, char** const argv)
 
 
     // disable logging of errors or warnings if no ORO_LOGLEVEL was set.
-    if ( log().getLogLevel() == Logger::Warning ) {
-        log(Info) << "Lowering LogLevel to Critical." << endlog();
-        log().setLogLevel(Logger::Critical);
+    if ( Logger::log().getLogLevel() == Logger::Warning ) {
+        Logger::log().logf(Logger::Info, "test-runner-corba",
+                           "Lowering LogLevel to Critical.");
+        Logger::log().setLogLevel(Logger::Critical);
     } else {
-        log(Info) << "LogLevel unaltered by test-runner." << endlog();
+        Logger::log().logf(Logger::Info, "test-runner-corba",
+                           "LogLevel unaltered by test-runner.");
     }
 
     return 0;

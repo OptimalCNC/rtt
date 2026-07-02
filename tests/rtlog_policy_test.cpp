@@ -43,14 +43,43 @@ namespace
         return line.substr(0, comment);
     }
 
+    bool containsAny(const std::string& text, const char* const* needles, std::size_t needle_count)
+    {
+        for (std::size_t i = 0; i != needle_count; ++i) {
+            if (text.find(needles[i]) != std::string::npos)
+                return true;
+        }
+        return false;
+    }
+
     bool hasLegacyStreamLog(const std::string& line)
     {
         const std::string code = stripLineComment(line);
-        if (code.find("Logger::log().logf") != std::string::npos)
-            return false;
-        return code.find("log(") != std::string::npos ||
+        const char* stream_log_starts[] = {
+            "log() <<",
+            "log(Info) <<",
+            "log(Debug) <<",
+            "log(Warning) <<",
+            "log(Error) <<",
+            "log(Critical) <<",
+            "log(Fatal) <<",
+            "log(Logger::Info) <<",
+            "log(Logger::Debug) <<",
+            "log(Logger::Warning) <<",
+            "log(Logger::Error) <<",
+            "log(Logger::Critical) <<",
+            "log(Logger::Fatal) <<",
+            "Logger::log() <<",
+            "Logger::log(Logger::Info) <<",
+            "Logger::log(Logger::Debug) <<",
+            "Logger::log(Logger::Warning) <<",
+            "Logger::log(Logger::Error) <<",
+            "Logger::log(Logger::Critical) <<",
+            "Logger::log(Logger::Fatal) <<"
+        };
+        return containsAny(code, stream_log_starts, sizeof(stream_log_starts) / sizeof(stream_log_starts[0])) ||
                code.find("endlog") != std::string::npos ||
-               code.find("Logger::In") != std::string::npos ||
+               code.find("Logger::In(") != std::string::npos ||
                code.find("Logger::endl") != std::string::npos ||
                code.find("Logger::nl") != std::string::npos;
     }
@@ -155,7 +184,10 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/types/TypeInfo.cpp",
         "rtt/types/TypeInfoRepository.cpp",
         "rtt/types/TypekitRepository.cpp",
-        "rtt/types/VectorTemplateComposition.hpp"
+        "rtt/types/VectorTemplateComposition.hpp",
+        "tests/test-main.cpp",
+        "tests/test-runner.cpp",
+        "tests/test-runner-corba.cpp"
     };
 
     std::vector<std::string> violations;

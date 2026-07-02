@@ -22,6 +22,7 @@
 
 int ORO_main(int argc, char** argv)
 {
-    RTT::log(RTT::Info) << "Hello ORO_main()" << RTT::endlog();
+    RTT::Logger::log().logf(RTT::Logger::Info, "test-main",
+                            "Hello ORO_main()");
     return 0;
 }
