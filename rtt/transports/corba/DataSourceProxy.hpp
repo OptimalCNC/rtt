@@ -115,7 +115,8 @@ namespace RTT
                 internal::ReferenceDataSource<T> rds(last_value);
                 rds.ref();
                 if ( ctp->updateFromAny(&res.in(),&rds ) == false)
-                    Logger::log() <<Logger::Error << "Could not update DataSourceProxy from remote value!"<<Logger::endl;
+                    Logger::log().logf(Logger::Error, "DataSourceProxy",
+                                       "Could not update DataSourceProxy from remote value!");
                 return last_value;
             }
 
@@ -188,7 +189,8 @@ namespace RTT
                 internal::ReferenceDataSource<T> rds( storage->set() );
                 rds.ref();
                 if ( ctp->updateFromAny(&res.in(), &rds ) == false)
-                    Logger::log() <<Logger::Error << "Could not update ValueDataSourceProxy from remote value!"<<Logger::endl;
+                    Logger::log().logf(Logger::Error, "DataSourceProxy",
+                                       "Could not update ValueDataSourceProxy from remote value!");
                 return storage->rvalue();
             }
 

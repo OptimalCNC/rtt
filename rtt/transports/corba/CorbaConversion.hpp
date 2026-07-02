@@ -101,7 +101,9 @@ namespace RTT {
       * @return true if the cb was convertible to tp.
       */
       static bool toStdType(StdType& tp, const CorbaType& cb) {
-        Logger::log() << Logger::Error << "Failing conversion of CorbaType to type "<<internal::DataSourceTypeInfo<StdType>::getType()<<"." <<Logger::endl;
+        Logger::log().logf(Logger::Error, "CorbaConversion",
+                           "Failing conversion of CorbaType to type %s.",
+                           internal::DataSourceTypeInfo<StdType>::getType().c_str());
         return false;
       }
 
@@ -113,7 +115,9 @@ namespace RTT {
       * @return true if the tp was convertible to cb.
       */
       static bool toCorbaType(CorbaType& cb, const StdType& tp) {
-        Logger::log() << Logger::Error << "Failing conversion of  type "<<internal::DataSourceTypeInfo<StdType>::getType()<<"to a CorbaType." <<Logger::endl;
+        Logger::log().logf(Logger::Error, "CorbaConversion",
+                           "Failing conversion of  type %sto a CorbaType.",
+                           internal::DataSourceTypeInfo<StdType>::getType().c_str());
         return false;
       }
 
@@ -125,7 +129,9 @@ namespace RTT {
       * @return true if the any was convertible to tp.
       */
       static bool update(const CORBA::Any& any, StdType tp) {
-        Logger::log() << Logger::Error << "Failing conversion of type "<<internal::DataSourceTypeInfo<StdType>::getType()<<"." <<Logger::endl;
+        Logger::log().logf(Logger::Error, "CorbaConversion",
+                           "Failing conversion of type %s.",
+                           internal::DataSourceTypeInfo<StdType>::getType().c_str());
         return false;
       }
 
@@ -136,7 +142,9 @@ namespace RTT {
       * empty Any object if the conversion was not possible.
       */
       static CORBA::Any_ptr createAny( StdType tp ) {
-        Logger::log() << Logger::Error << "Failing corba::Any creation of type "<<internal::DataSourceTypeInfo<StdType>::getType()<<"." <<Logger::endl;
+        Logger::log().logf(Logger::Error, "CorbaConversion",
+                           "Failing corba::Any creation of type %s.",
+                           internal::DataSourceTypeInfo<StdType>::getType().c_str());
         return new CORBA::Any();
       }
 
@@ -148,7 +156,9 @@ namespace RTT {
       * @return false if no conversion could be made
       */
       static bool updateAny( StdType tp, CORBA::Any& any ) {
-        Logger::log() << Logger::Error << "Failing corba::Any updating of type "<<internal::DataSourceTypeInfo<StdType>::getType()<<"." <<Logger::endl;
+        Logger::log().logf(Logger::Error, "CorbaConversion",
+                           "Failing corba::Any updating of type %s.",
+                           internal::DataSourceTypeInfo<StdType>::getType().c_str());
         return false;
       }
     };
