@@ -278,11 +278,15 @@ namespace {
             if ( !default_plugin_path.empty() )
                 plugin_paths = plugin_paths + default_delimiter + default_plugin_path;
             removeDuplicates( plugin_paths );
-            log(Info) <<"RTT_COMPONENT_PATH was set to: " << paths << " . Searching in: "<< plugin_paths<< endlog();
+            Logger::log().logf(Logger::Info, "Logger",
+                               "RTT_COMPONENT_PATH was set to: %s . Searching in: %s",
+                               paths, plugin_paths.c_str());
         } else {
             plugin_paths = default_plugin_path;
             removeDuplicates( plugin_paths );
-            log(Info) <<"No RTT_COMPONENT_PATH set. Using default: " << plugin_paths <<endlog();
+            Logger::log().logf(Logger::Info, "Logger",
+                               "No RTT_COMPONENT_PATH set. Using default: %s",
+                               plugin_paths.c_str());
         }
         // we set the plugin path such that we can search for sub-directories/projects lateron
         PluginLoader::Instance()->setPluginPath(plugin_paths);
@@ -291,8 +295,10 @@ namespace {
             PluginLoader::Instance()->loadPlugin("rtt", plugin_paths);
             PluginLoader::Instance()->loadTypekit("rtt", plugin_paths);
         } catch(std::exception& e) {
-            log(Warning) << e.what() <<endlog();
-            log(Warning) << "Corrupted files found in '" << plugin_paths << "'. Fix or remove these plugins."<<endlog();
+            Logger::log().logf(Logger::Warning, "Logger", "%s", e.what());
+            Logger::log().logf(Logger::Warning, "Logger",
+                               "Corrupted files found in '%s'. Fix or remove these plugins.",
+                               plugin_paths.c_str());
         }
         return 0;
     }
@@ -349,15 +355,22 @@ bool PluginLoader::loadService(string const& servicename, TaskContext* tc) {
     for(vector<LoadedLib>::iterator it= loadedLibs.begin(); it != loadedLibs.end(); ++it) {
         if (it->filename == servicename || it->plugname == servicename || it->shortname == servicename) {
             if (tc) {
-                log(Info) << "Loading Service or Plugin " << servicename << " in TaskContext " << tc->getName() <<endlog();
+                Logger::log().logf(Logger::Info, "Logger",
+                                   "Loading Service or Plugin %s in TaskContext %s",
+                                   servicename.c_str(), tc->getName().c_str());
                 try {
                     return it->loadPlugin( tc );
                 } catch(std::exception& e) {
-                    log(Error) << "Service or Plugin "<< servicename <<" threw an exception during loading in " << tc->getName() << endlog();
-                    log(Error) << "Exception: "<< e.what() << endlog();
+                    Logger::log().logf(Logger::Error, "Logger",
+                                       "Service or Plugin %s threw an exception during loading in %s",
+                                       servicename.c_str(), tc->getName().c_str());
+                    Logger::log().logf(Logger::Error, "Logger",
+                                       "Exception: %s", e.what());
                     return false;
                 } catch(...) {
-                    log(Error) << "Service or Plugin "<< servicename <<" threw an unknown exception during loading in " << tc->getName() << endlog();
+                    Logger::log().logf(Logger::Error, "Logger",
+                                       "Service or Plugin %s threw an unknown exception during loading in %s",
+                                       servicename.c_str(), tc->getName().c_str());
                     return false;
                 }
             } else {
@@ -368,26 +381,37 @@ bool PluginLoader::loadService(string const& servicename, TaskContext* tc) {
                         if (service) {
                             return internal::GlobalService::Instance()->addService( service );
                         } else {
-                            log(Error) << "Service " << servicename << " cannot be loaded into the global service." << endlog();
+                            Logger::log().logf(Logger::Error, "Logger",
+                                               "Service %s cannot be loaded into the global service.",
+                                               servicename.c_str());
                             return false;
                         }
                     } catch(std::exception& e) {
-                        log(Error) << "Service "<< servicename <<" threw an exception during loading in global service." << endlog();
-                        log(Error) << "Exception: "<< e.what() << endlog();
+                        Logger::log().logf(Logger::Error, "Logger",
+                                           "Service %s threw an exception during loading in global service.",
+                                           servicename.c_str());
+                        Logger::log().logf(Logger::Error, "Logger",
+                                           "Exception: %s", e.what());
                         return false;
                     } catch(...) {
-                        log(Error) << "Service "<< servicename <<" threw an unknown exception during loading in global service. " << endlog();
+                        Logger::log().logf(Logger::Error, "Logger",
+                                           "Service %s threw an unknown exception during loading in global service. ",
+                                           servicename.c_str());
                         return false;
                     }
                 } else {
-                    log(Error) << "Plugin "<< servicename << " was found, but it's not a Service." <<endlog();
+                    Logger::log().logf(Logger::Error, "Logger",
+                                       "Plugin %s was found, but it's not a Service.",
+                                       servicename.c_str());
                     return false;
                 }
             }
         }
     }
 
-    log(Error) << "No such service or plugin: '"<< servicename << "'"<< endlog();
+    Logger::log().logf(Logger::Error, "Logger",
+                       "No such service or plugin: '%s'",
+                       servicename.c_str());
     return false;
 }
 
@@ -403,8 +427,8 @@ bool PluginLoader::loadPluginsInternal( std::string const& path_list, std::strin
         if ( loadInProcess(arg.string(), makeShortFilename(arg.filename()), kind, true) == false)
 #endif
             throw std::runtime_error("The plugin "+path_list+" was found but could not be loaded !");
-        log(Warning) << "You supplied a filename to 'loadPlugins(path)' or 'loadTypekits(path)'."<< nlog();
-        log(Warning) << "Please use 'loadLibrary(filename)' instead since the function you use will only scan directories in future releases."<<endlog();
+        Logger::log().logf(Logger::Warning, "Logger",
+                           "You supplied a filename to 'loadPlugins(path)' or 'loadTypekits(path)'.\nPlease use 'loadLibrary(filename)' instead since the function you use will only scan directories in future releases.");
         return true;
     }
 
@@ -423,10 +447,12 @@ bool PluginLoader::loadPluginsInternal( std::string const& path_list, std::strin
         path p = path(*it) / subdir;
         if (is_directory(p))
         {
-            log(Info) << "Loading "<<kind<<" libraries from directory " << p.string() << " ..."<<endlog();
+            Logger::log().logf(Logger::Info, "Logger",
+                               "Loading %s libraries from directory %s ...",
+                               kind.c_str(), p.string().c_str());
             for (directory_iterator itr(p); itr != directory_iterator(); ++itr)
             {
-                log(Debug) << "Scanning file " << itr->path().string() << " ...";
+                const std::string filepath = itr->path().string();
                 if (is_regular_file(itr->status()) && isLoadableLibrary(itr->path()) ) {
                     found = true;
                     std::string libname;
@@ -437,7 +463,9 @@ bool PluginLoader::loadPluginsInternal( std::string const& path_list, std::strin
 #endif
                     if(!isCompatiblePlugin(libname))
                     {
-                        log(Debug) << "not a compatible plugin: ignored."<<endlog();
+                        Logger::log().logf(Logger::Debug, "Logger",
+                                           "Scanning file %s ...not a compatible plugin: ignored.",
+                                           filepath.c_str());
                     }
                     else
                     {
@@ -446,14 +474,19 @@ bool PluginLoader::loadPluginsInternal( std::string const& path_list, std::strin
                     }
                 } else {
                     if (!is_regular_file(itr->status()))
-                        log(Debug) << "not a regular file: ignored."<<endlog();
+                        Logger::log().logf(Logger::Debug, "Logger",
+                                           "Scanning file %s ...not a regular file: ignored.",
+                                           filepath.c_str());
                     else
-                        log(Debug) << "not a " + SO_EXT + " library: ignored."<<endlog();
+                        Logger::log().logf(Logger::Debug, "Logger",
+                                           "Scanning file %s ...not a %s library: ignored.",
+                                           filepath.c_str(), SO_EXT.c_str());
                 }
             }
         }
         else
-            log(Debug) << "No such directory: " << p << endlog();
+            Logger::log().logf(Logger::Debug, "Logger",
+                               "No such directory: %s", p.string().c_str());
     }
     if (!all_good)
         throw std::runtime_error("Some found plugins could not be loaded !");
@@ -482,7 +515,9 @@ bool PluginLoader::loadLibrary( std::string const& name )
 #endif
             if(!isCompatiblePlugin(libname))
             {
-                log(Error) << "The " << kind << " " << name << " was found but is incompatible." << endlog();
+                Logger::log().logf(Logger::Error, "Logger",
+                                   "The %s %s was found but is incompatible.",
+                                   kind.c_str(), name.c_str());
                 return false;
             }
 
@@ -495,7 +530,9 @@ bool PluginLoader::loadLibrary( std::string const& name )
             return true;
         }
 
-        log(Error) << "refusing to load " << name << " as I could not autodetect its type (name=" << name << ", path=" << arg.string() << ", subdir=" << subdir << ")" << endlog();
+        Logger::log().logf(Logger::Error, "Logger",
+                           "refusing to load %s as I could not autodetect its type (name=%s, path=%s, subdir=%s)",
+                           name.c_str(), name.c_str(), arg.string().c_str(), subdir.c_str());
         // file exists but not typekit or plugin:
         return false;
     }
@@ -542,9 +579,11 @@ bool PluginLoader::loadLibrary( std::string const& name )
         subdir = "types";
         kind   = "typekit";
     }
-    log(Debug) << "No such "<< kind << " found in path: " << name << ". Tried:"<< endlog();
+    Logger::log().logf(Logger::Debug, "Logger",
+                       "No such %s found in path: %s. Tried:",
+                       kind.c_str(), name.c_str());
     for(vector<string>::iterator it=tryouts.begin(); it != tryouts.end(); ++it)
-        log(Debug) << *it << endlog();
+        Logger::log().logf(Logger::Debug, "Logger", "%s", it->c_str());
 
     return false;
 }
@@ -554,16 +593,20 @@ bool PluginLoader::loadPluginInternal( std::string const& name, std::string cons
 	// If exact match, load it directly:
     // special case for ourselves, rtt plugins are not in an 'rtt' subdir:
     if (name != "rtt" && loadLibrary(name)) {
-        log(Warning) << "You supplied a filename as first argument to 'loadPlugin(name,path)' or 'loadTypekit(name,path)'."<<nlog();
-        log(Warning) << "Please use 'loadLibrary(filename)' instead since the function you use will only interprete 'name' as a directory name in future releases."<<endlog();
+        Logger::log().logf(Logger::Warning, "Logger",
+                           "You supplied a filename as first argument to 'loadPlugin(name,path)' or 'loadTypekit(name,path)'.\nPlease use 'loadLibrary(filename)' instead since the function you use will only interprete 'name' as a directory name in future releases.");
         return true;
     }
 
     if ( isLoadedInternal(name) ) {
-        log(Debug) <<kind << " '"<< name <<"' already loaded. Not reloading it." <<endlog();
+        Logger::log().logf(Logger::Debug, "Logger",
+                           "%s '%s' already loaded. Not reloading it.",
+                           kind.c_str(), name.c_str());
         return true;
     } else {
-        log(Info) << kind << " '"<< name <<"' not loaded before." <<endlog();
+        Logger::log().logf(Logger::Info, "Logger",
+                           "%s '%s' not loaded before.",
+                           kind.c_str(), name.c_str());
     }
 
     string paths, trypaths;
@@ -609,13 +652,18 @@ bool PluginLoader::loadPluginInternal( std::string const& name, std::string cons
         paths.erase( paths.size() - 1 ); // remove trailing delimiter ';'
         return loadPluginsInternal(paths,subdir,kind);
     }
-    log(Error) << "No such "<< kind << " found in path: " << name << ". Looked for these directories: "<< endlog();
+    Logger::log().logf(Logger::Error, "Logger",
+                       "No such %s found in path: %s. Looked for these directories: ",
+                       kind.c_str(), name.c_str());
     if ( !paths.empty() )
-        log(Error) << "Exist, but don't contain it: " << paths << endlog();
+        Logger::log().logf(Logger::Error, "Logger",
+                           "Exist, but don't contain it: %s", paths.c_str());
     else
-        log(Error) << "None of the search paths exist !" << endlog();
+        Logger::log().logf(Logger::Error, "Logger",
+                           "None of the search paths exist !");
     if ( !trypaths.empty() )
-        log(Error) << "Don't exist: " << trypaths << endlog();
+        Logger::log().logf(Logger::Error, "Logger",
+                           "Don't exist: %s", trypaths.c_str());
     return false;
 }
 
@@ -646,7 +694,9 @@ bool PluginLoader::loadInProcess(string file, string shortname, string kind, boo
     void* handle;
 
     if ( isLoadedInternal(shortname) || isLoadedInternal(file) ) {
-        log(Debug) <<"plugin '"<< file <<"' already loaded. Not reloading it." <<endlog() ;
+        Logger::log().logf(Logger::Debug, "Logger",
+                           "plugin '%s' already loaded. Not reloading it.",
+                           file.c_str());
         return true;
     }
 
@@ -654,7 +704,9 @@ bool PluginLoader::loadInProcess(string file, string shortname, string kind, boo
     if(!isCompatiblePlugin(file))
     {
         if(log_error)
-            log(Error) << "could not load library '"<< p.string() <<"': incompatible." <<endlog();
+            Logger::log().logf(Logger::Error, "Logger",
+                               "could not load library '%s': incompatible.",
+                               p.string().c_str());
         return false;
     }
 
@@ -663,9 +715,9 @@ bool PluginLoader::loadInProcess(string file, string shortname, string kind, boo
     if (!handle) {
         string e( dlerror() );
         if (log_error)
-            log(Error) << "could not load library '"<< p.string() <<"': "<< e <<endlog();
-        else
-            endlog();
+            Logger::log().logf(Logger::Error, "Logger",
+                               "could not load library '%s': %s",
+                               p.string().c_str(), e.c_str());
         return false;
     }
 
@@ -675,7 +727,8 @@ bool PluginLoader::loadInProcess(string file, string shortname, string kind, boo
 #else
     string libname = p.filename();
 #endif
-    log(Debug)<<"Found library "<<libname<<endlog();
+    Logger::log().logf(Logger::Debug, "Logger",
+                       "Found library %s", libname.c_str());
     LoadedLib loading_lib(libname,shortname,handle);
     dlerror();    /* Clear any existing error */
 
@@ -698,8 +751,9 @@ bool PluginLoader::loadInProcess(string file, string shortname, string kind, boo
             targetname  = OROCOS_TARGET_NAME;
         }
         if ( targetname != OROCOS_TARGET_NAME ) {
-            log(Error) << "Plugin "<< plugname <<" reports to be compiled for OROCOS_TARGET "<< targetname
-                    << " while we are running on target "<< OROCOS_TARGET_NAME <<". Unloading."<<endlog();
+            Logger::log().logf(Logger::Error, "Logger",
+                               "Plugin %s reports to be compiled for OROCOS_TARGET %s while we are running on target %s. Unloading.",
+                               plugname.c_str(), targetname.c_str(), OROCOS_TARGET_NAME);
             dlclose(handle);
             return false;
         }
@@ -715,33 +769,45 @@ bool PluginLoader::loadInProcess(string file, string shortname, string kind, boo
             // Load into process (TaskContext* == 0):
             success = (*loading_lib.loadPlugin)( 0 );
         } catch(std::exception& e) {
-            log(Error) << "Loading "<< plugname <<" threw an exception: "<< e.what() << endlog();
+            Logger::log().logf(Logger::Error, "Logger",
+                               "Loading %s threw an exception: %s",
+                               plugname.c_str(), e.what());
         } catch(...) {
-            log(Error) << "Unexpected exception in loadRTTPlugin !"<<endlog();
+            Logger::log().logf(Logger::Error, "Logger",
+                               "Unexpected exception in loadRTTPlugin !");
         }
 
         if ( !success ) {
-            log(Error) << "Failed to load RTT Plugin '" <<plugname<<"': plugin refused to load into this process. Unloading." <<endlog();
+            Logger::log().logf(Logger::Error, "Logger",
+                               "Failed to load RTT Plugin '%s': plugin refused to load into this process. Unloading.",
+                               plugname.c_str());
             dlclose(handle);
             return false;
         }
         if (kind == "typekit") {
-            log(Info) << "Loaded RTT TypeKit/Transport '" + plugname + "' from '" + shortname +"'"<<endlog();
+            Logger::log().logf(Logger::Info, "Logger",
+                               "Loaded RTT TypeKit/Transport '%s' from '%s'",
+                               plugname.c_str(), shortname.c_str());
             loading_lib.is_typekit = true;
         } else {
             loading_lib.is_typekit = false;
             if ( loading_lib.is_service ) {
-                log(Info) << "Loaded RTT Service '" + plugname + "' from '" + shortname +"'"<<endlog();
+                Logger::log().logf(Logger::Info, "Logger",
+                                   "Loaded RTT Service '%s' from '%s'",
+                                   plugname.c_str(), shortname.c_str());
             }
             else {
-                log(Info) << "Loaded RTT Plugin '" + plugname + "' from '" + shortname +"'"<<endlog();
+                Logger::log().logf(Logger::Info, "Logger",
+                                   "Loaded RTT Plugin '%s' from '%s'",
+                                   plugname.c_str(), shortname.c_str());
             }
         }
         loadedLibs.push_back(loading_lib);
         return true;
     } else {
         if (log_error)
-            log(Error) <<"Not a plugin: " << error << endlog();
+            Logger::log().logf(Logger::Error, "Logger",
+                               "Not a plugin: %s", error);
     }
     dlclose(handle);
     return false;

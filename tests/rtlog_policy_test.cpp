@@ -95,6 +95,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/os/Thread.cpp",
         "rtt/os/Timer.cpp",
         "rtt/OperationCaller.hpp",
+        "rtt/plugin/PluginLoader.cpp",
         "rtt/PropertyBag.cpp",
         "rtt/Property.hpp",
         "rtt/SendHandle.hpp",
