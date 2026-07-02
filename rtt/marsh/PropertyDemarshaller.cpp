@@ -54,15 +54,16 @@ namespace RTT
     PropertyDemarshaller::PropertyDemarshaller( const std::string& filename )
         : d( 0 )
     {
-        Logger::In in("PropertyDemarshaller");
 #ifdef ORODAT_CORELIB_PROPERTIES_DEMARSHALLING_INCLUDE
         try {
             d = new OROCLS_CORELIB_PROPERTIES_DEMARSHALLING_DRIVER(filename);
         } catch(...) {
-            log(Error) << "Could not open file: " << filename <<  endlog();
+            Logger::log().logf(Logger::Error, "PropertyDemarshaller",
+                               "Could not open file: %s", filename.c_str());
         }
 #else
-        log(Error) << "Orocos RTT was configured without Property Marshalling support !"<<endlog();
+        Logger::log().logf(Logger::Error, "PropertyDemarshaller",
+                           "Orocos RTT was configured without Property Marshalling support !");
 #endif
     }
 
@@ -73,10 +74,8 @@ namespace RTT
 
     bool PropertyDemarshaller::deserialize( PropertyBag &v )
     {
-        Logger::In in("PropertyDemarshaller");
         if (d)
             return d->deserialize(v);
         return false;
     }
 }
-
