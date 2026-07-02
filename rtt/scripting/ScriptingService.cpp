@@ -92,36 +92,40 @@ namespace RTT {
     void ScriptingService::clear() {
         while ( !states.empty() ) {
             // try to unload all
-            Logger::log() << Logger::Info << "ScriptingService unloads StateMachine "<< states.begin()->first << "..."<<Logger::endl;
+            Logger::log().logf(Logger::Info, "ScriptingService",
+                                "ScriptingService unloads StateMachine %s...",
+                                states.begin()->first.c_str());
 #ifndef ORO_EMBEDDED
             try {
                 this->unloadStateMachine( states.begin()->first );
             }
             catch ( program_load_exception& ple) {
-                Logger::log() << Logger::Error << ple.what() <<Logger::endl;
+                Logger::log().logf(Logger::Error, "ScriptingService", "%s", ple.what());
                 states.erase( states.begin() ); // plainly remove it to avoid endless loop.
             }
 #else
             if (this->unloadStateMachine( states.begin()->first ) == false) {
-                Logger::log() << Logger::Error << "Error during unload !" <<Logger::endl;
+                Logger::log().logf(Logger::Error, "ScriptingService", "Error during unload !");
                 states.erase( states.begin() ); // plainly remove it to avoid endless loop.
             }
 #endif
         }
         while ( !programs.empty() ) {
             // try to unload all
-            Logger::log() << Logger::Info << "ScriptingService unloads Program "<< programs.begin()->first << "..."<<Logger::endl;
+            Logger::log().logf(Logger::Info, "ScriptingService",
+                                "ScriptingService unloads Program %s...",
+                                programs.begin()->first.c_str());
 #ifndef ORO_EMBEDDED
             try {
                 this->unloadProgram( programs.begin()->first );
             }
             catch ( program_load_exception& ple) {
-                Logger::log() << Logger::Error << ple.what() <<Logger::endl;
+                Logger::log().logf(Logger::Error, "ScriptingService", "%s", ple.what());
                 programs.erase( programs.begin() ); // plainly remove it to avoid endless loop.
             }
 #else
             if (this->unloadProgram( programs.begin()->first ) == false) {
-                Logger::log(Error) << "Error during unload !" <<Logger::endl;
+                Logger::log().logf(Logger::Error, "ScriptingService", "Error during unload !");
                 programs.erase( programs.begin() ); // plainly remove it to avoid endless loop.
             }
 #endif
@@ -196,11 +200,9 @@ namespace RTT {
             return false; // throws load_exception
 
         if ( getOwner()->getPeriod() == 0 && ZeroPeriodWarning) {
-            log(Warning) << "Loading StateMachine "<< sc->getName()
-            << " in a TaskContext with getPeriod() == 0."
-            << " Use setPeriod(period) in order to setup execution of scripts."
-            << " If you know what you are doing, you may disable this warning using scripting.ZeroPeriodWarning=false"
-            <<endlog();
+            Logger::log().logf(Logger::Warning, "ScriptingService",
+                                "Loading StateMachine %s in a TaskContext with getPeriod() == 0. Use setPeriod(period) in order to setup execution of scripts. If you know what you are doing, you may disable this warning using scripting.ZeroPeriodWarning=false",
+                                sc->getName().c_str());
         }
 
         this->recursiveLoadStateMachine( sc );
@@ -360,21 +362,23 @@ namespace RTT {
    bool ScriptingService::loadProgram(ProgramInterfacePtr pi)
    {
        if ( programs.find(pi->getName()) != programs.end() ) {
-           log(Error) << "Could not load Program "<< pi->getName() << " in ScriptingService: name already in use."<<endlog();
+           Logger::log().logf(Logger::Error, "ScriptingService",
+                               "Could not load Program %s in ScriptingService: name already in use.",
+                               pi->getName().c_str());
            return false;
        }
        if ( getOwner()->getPeriod() == 0 && ZeroPeriodWarning ) {
-           log(Warning) << "Loading program " << pi->getName()
-			   << " in a TaskContext with getPeriod() == 0."
-			   << " Use setPeriod(period) in order to setup execution of scripts."
-			   << " If you know what you are doing, you may disable this warning using scripting.ZeroPeriodWarning=false"
-			   << endlog();
+           Logger::log().logf(Logger::Warning, "ScriptingService",
+                               "Loading program %s in a TaskContext with getPeriod() == 0. Use setPeriod(period) in order to setup execution of scripts. If you know what you are doing, you may disable this warning using scripting.ZeroPeriodWarning=false",
+                               pi->getName().c_str());
        }
        programs[pi->getName()] = pi;
        pi->reset();
        if ( mowner->engine()->runFunction( pi.get() ) == false) {
            programs.erase(pi->getName());
-           log(Error) << "Could not load Program "<< pi->getName() << " in ExecutionEngine."<<endlog();
+           Logger::log().logf(Logger::Error, "ScriptingService",
+                               "Could not load Program %s in ExecutionEngine.",
+                               pi->getName().c_str());
            return false;
        }
        return true;
@@ -523,8 +527,8 @@ namespace RTT {
     {
       ifstream inputfile(file.c_str());
       if ( !inputfile ) {
-          Logger::In in("ScriptingService::loadFunctions");
-          Logger::log() << Logger::Error << "Script "+file+" does not exist." << Logger::endl;
+          Logger::log().logf(Logger::Error, "ScriptingService::loadFunctions",
+                              "Script %s does not exist.", file.c_str());
           return Functions();
       }
       string text;
@@ -538,18 +542,19 @@ namespace RTT {
     ScriptingService::Functions  ScriptingService::loadFunctions( const string& code, const string& filename, bool mrethrow )
     {
 
-      Logger::In in("ScriptingService::loadFunctions");
       Parser p(mowner->engine());
       Functions exec;
       Functions ret;
       try {
-          Logger::log() << Logger::Info << "Parsing file "<<filename << Logger::endl;
+          Logger::log().logf(Logger::Info, "ScriptingService::loadFunctions",
+                              "Parsing file %s", filename.c_str());
           ret = p.parseFunction(code, mowner, filename);
       }
       catch( const file_parse_exception& exc )
           {
 #ifndef ORO_EMBEDDED
-              Logger::log() << Logger::Error << filename<<" :"<< exc.what() << Logger::endl;
+              Logger::log().logf(Logger::Error, "ScriptingService::loadFunctions",
+                                  "%s :%s", filename.c_str(), exc.what());
               if ( mrethrow )
                   throw;
 #endif
@@ -557,16 +562,20 @@ namespace RTT {
           }
       if ( ret.empty() )
           {
-              Logger::log() << Logger::Debug << "No Functions executed from "<< filename << Logger::endl;
-              Logger::log() << Logger::Info << filename <<" : Successfully parsed." << Logger::endl;
+              Logger::log().logf(Logger::Debug, "ScriptingService::loadFunctions",
+                                  "No Functions executed from %s", filename.c_str());
+              Logger::log().logf(Logger::Info, "ScriptingService::loadFunctions",
+                                  "%s : Successfully parsed.", filename.c_str());
               return Functions();
           } else {
               // Load all listed functions in the TaskContext's Processor:
               for( Parser::ParsedFunctions::iterator it = ret.begin(); it != ret.end(); ++it) {
-                  Logger::log() << "Queueing Function "<< (*it)->getName() << Logger::endl;
+                  Logger::log().logf(Logger::Info, "ScriptingService::loadFunctions",
+                                      "Queueing Function %s", (*it)->getName().c_str());
                   if ( mowner->engine()->runFunction( it->get() ) == false) {
-                      Logger::log() << Logger::Error << "Could not run Function '"<< (*it)->getName() <<"' :" << Logger::nl;
-                      Logger::log() << "Processor not accepting or function queue is full." << Logger::endl;
+                      Logger::log().logf(Logger::Error, "ScriptingService::loadFunctions",
+                                          "Could not run Function '%s' :\nProcessor not accepting or function queue is full.",
+                                          (*it)->getName().c_str());
                   } else
                       exec.push_back( *it ); // is being executed.
               }
@@ -579,8 +588,8 @@ namespace RTT {
     {
         ifstream inputfile(file.c_str());
         if ( !inputfile ) {
-            Logger::In in("ScriptingService::runScript");
-            Logger::log() << Logger::Error << "Script "+file+" does not exist." << Logger::endl;
+            Logger::log().logf(Logger::Error, "ScriptingService::runScript",
+                                "Script %s does not exist.", file.c_str());
             return false;
         }
         string text;
@@ -589,7 +598,8 @@ namespace RTT {
         istream_iterator<char> streamend;
         std::copy( streambegin, streamend, back_inserter( text ) );
 
-        log(Info) << "Running Script "<< file <<" ..." << Logger::endl;
+        Logger::log().logf(Logger::Info, "ScriptingService::runScript",
+                            "Running Script %s ...", file.c_str());
         return evalInternal( file, text );
     }
 
@@ -599,14 +609,14 @@ namespace RTT {
 
     bool ScriptingService::evalInternal(const string& filename, const string& code )
     {
-        Logger::In in("ScriptingService");
         Parser parser( GlobalEngine::Instance() );
         try {
             parser.runScript(code, mowner, this, filename );
         }
         catch( const file_parse_exception& exc )
         {
-            log(Error) <<filename<<" :"<< exc.what() << endlog();
+            Logger::log().logf(Logger::Error, "ScriptingService",
+                                "%s :%s", filename.c_str(), exc.what());
             return false;
         }
         return true;
@@ -616,8 +626,8 @@ namespace RTT {
     {
         ifstream inputfile(file.c_str());
         if ( !inputfile ) {
-            Logger::In in("ScriptingService::loadProgram");
-            Logger::log() << Logger::Error << "Script "+file+" does not exist." << Logger::endl;
+            Logger::log().logf(Logger::Error, "ScriptingService::loadProgram",
+                                "Script %s does not exist.", file.c_str());
             return false;
         }
         string text;
@@ -630,17 +640,18 @@ namespace RTT {
 
     bool ScriptingService::loadPrograms( const string& code, const string& filename, bool mrethrow ){
 
-      Logger::In in("ProgramLoader::loadProgram");
       Parser parser(mowner->engine());
       Parser::ParsedPrograms pg_list;
       try {
-          Logger::log() << Logger::Info << "Parsing file "<<filename << Logger::endl;
+          Logger::log().logf(Logger::Info, "ProgramLoader::loadProgram",
+                              "Parsing file %s", filename.c_str());
           pg_list = parser.parseProgram(code, mowner, filename );
       }
       catch( const file_parse_exception& exc )
           {
 #ifndef ORO_EMBEDDED
-              Logger::log() << Logger::Error <<filename<<" :"<< exc.what() << Logger::endl;
+              Logger::log().logf(Logger::Error, "ProgramLoader::loadProgram",
+                                  "%s :%s", filename.c_str(), exc.what());
               if ( mrethrow )
                   throw;
 #endif
@@ -648,7 +659,8 @@ namespace RTT {
           }
       if ( pg_list.empty() )
           {
-              Logger::log() << Logger::Info << filename <<" : Successfully parsed." << Logger::endl;
+              Logger::log().logf(Logger::Info, "ProgramLoader::loadProgram",
+                                  "%s : Successfully parsed.", filename.c_str());
               return true;
           } else {
               // Load all listed programs in the TaskContext's Processor:
@@ -656,15 +668,21 @@ namespace RTT {
               string errors;
               for( Parser::ParsedPrograms::iterator it = pg_list.begin(); it != pg_list.end(); ++it) {
                   try {
-                      Logger::log() << Logger::Info << "Loading Program '"<< (*it)->getName() <<"'" <<Logger::endl;
+                      Logger::log().logf(Logger::Info, "ProgramLoader::loadProgram",
+                                          "Loading Program '%s'", (*it)->getName().c_str());
                       if (this->loadProgram( *it ) == false)
                           error = true;
                   } catch (program_load_exception& e ) {
-                      Logger::log() << Logger::Error << "Could not load Program '"<< (*it)->getName() <<"' :" << Logger::nl;
 #ifndef ORO_EMBEDDED
-                      Logger::log() << e.what() << Logger::endl;
+                      Logger::log().logf(Logger::Error, "ProgramLoader::loadProgram",
+                                          "Could not load Program '%s' :\n%s",
+                                          (*it)->getName().c_str(), e.what());
                       if ( mrethrow )
                           errors += "Could not load Program '"+ (*it)->getName() +"' :\n"+e.what()+'\n';
+#else
+                      Logger::log().logf(Logger::Error, "ProgramLoader::loadProgram",
+                                          "Could not load Program '%s' :",
+                                          (*it)->getName().c_str());
 #endif
                       error = true;
                   }
@@ -679,17 +697,20 @@ namespace RTT {
     }
 
     bool ScriptingService::unloadProgram( const string& name, bool do_throw ){
-        Logger::In in("ScriptingService::unloadProgram");
         try {
-            Logger::log() << Logger::Info << "Unloading Program '"<< name <<"'"<< Logger::endl;
+            Logger::log().logf(Logger::Info, "ScriptingService::unloadProgram",
+                                "Unloading Program '%s'", name.c_str());
             if (this->unloadProgram(name) == false)
                 return false;
         } catch (program_unload_exception& e ) {
-            Logger::log() << Logger::Error << "Could not unload Program '"<< name <<"' :" << Logger::nl;
 #ifndef ORO_EMBEDDED
-            Logger::log() << e.what() << Logger::endl;
+            Logger::log().logf(Logger::Error, "ScriptingService::unloadProgram",
+                                "Could not unload Program '%s' :\n%s", name.c_str(), e.what());
             if ( do_throw )
                 throw;
+#else
+            Logger::log().logf(Logger::Error, "ScriptingService::unloadProgram",
+                                "Could not unload Program '%s' :", name.c_str());
 #endif
             return false;
         }
@@ -701,8 +722,8 @@ namespace RTT {
     {
         ifstream inputfile(file.c_str());
         if ( !inputfile ) {
-            Logger::In in("ScriptingService::loadStateMachine");
-          Logger::log() << Logger::Error << "Script "+file+" does not exist." << Logger::endl;
+          Logger::log().logf(Logger::Error, "ScriptingService::loadStateMachine",
+                              "Script %s does not exist.", file.c_str());
           return false;
         }
         string text;
@@ -715,17 +736,18 @@ namespace RTT {
 
     bool ScriptingService::loadStateMachines( const string& code, const string& filename, bool mrethrow )
     {
-        Logger::In in("ScriptingService::loadStateMachine");
         Parser parser(mowner->engine());
         Parser::ParsedStateMachines pg_list;
         try {
-            Logger::log() << Logger::Info << "Parsing file "<<filename << Logger::endl;
+            Logger::log().logf(Logger::Info, "ScriptingService::loadStateMachine",
+                                "Parsing file %s", filename.c_str());
             pg_list = parser.parseStateMachine( code, mowner, filename );
         }
         catch( const file_parse_exception& exc )
             {
 #ifndef ORO_EMBEDDED
-                Logger::log() << Logger::Error <<filename<<" :"<< exc.what() << Logger::endl;
+                Logger::log().logf(Logger::Error, "ScriptingService::loadStateMachine",
+                                    "%s :%s", filename.c_str(), exc.what());
                 if ( mrethrow )
                     throw;
 #endif
@@ -733,7 +755,8 @@ namespace RTT {
             }
         if ( pg_list.empty() )
             {
-                Logger::log() << Logger::Error << "No StateMachines instantiated in "<< filename << Logger::endl;
+                Logger::log().logf(Logger::Error, "ScriptingService::loadStateMachine",
+                                    "No StateMachines instantiated in %s", filename.c_str());
                 return false;
             } else {
                 bool error = false;
@@ -741,15 +764,21 @@ namespace RTT {
                 // Load all listed stateMachines in the TaskContext's Processor:
                 for( Parser::ParsedStateMachines::iterator it = pg_list.begin(); it != pg_list.end(); ++it) {
                     try {
-                        Logger::log() << Logger::Info << "Loading StateMachine '"<< (*it)->getName()<<"'" << Logger::endl;
+                        Logger::log().logf(Logger::Info, "ScriptingService::loadStateMachine",
+                                            "Loading StateMachine '%s'", (*it)->getName().c_str());
                         if (this->loadStateMachine( *it ) == false)
                             return false;
                     } catch (program_load_exception& e ) {
-                        Logger::log() << Logger::Error << "Could not load StateMachine '"<< (*it)->getName()<<"' :" << Logger::nl;
 #ifndef ORO_EMBEDDED
-                        Logger::log() << e.what() << Logger::endl;
+                        Logger::log().logf(Logger::Error, "ScriptingService::loadStateMachine",
+                                            "Could not load StateMachine '%s' :\n%s",
+                                            (*it)->getName().c_str(), e.what());
                         if ( mrethrow )
                             errors += "Could not load Program '"+ (*it)->getName() +"' :\n"+e.what()+'\n';
+#else
+                        Logger::log().logf(Logger::Error, "ScriptingService::loadStateMachine",
+                                            "Could not load StateMachine '%s' :",
+                                            (*it)->getName().c_str());
 #endif
                         error = true;
                     }
@@ -765,17 +794,20 @@ namespace RTT {
     }
 
     bool ScriptingService::unloadStateMachine( const string& name, bool do_throw ) {
-        Logger::In in("ScriptingService::unloadStateMachine");
         try {
-            Logger::log() << Logger::Info << "Unloading StateMachine '"<< name <<"'"<< Logger::endl;
+            Logger::log().logf(Logger::Info, "ScriptingService::unloadStateMachine",
+                                "Unloading StateMachine '%s'", name.c_str());
             if (this->unloadStateMachine(name) == false)
                 return false;
         } catch (program_unload_exception& e ) {
-            Logger::log() << Logger::Error << "Could not unload StateMachine '"<< name <<"' :" << Logger::nl;
 #ifndef ORO_EMBEDDED
-            Logger::log() << e.what() << Logger::endl;
+            Logger::log().logf(Logger::Error, "ScriptingService::unloadStateMachine",
+                                "Could not unload StateMachine '%s' :\n%s", name.c_str(), e.what());
             if ( do_throw )
                 throw;
+#else
+            Logger::log().logf(Logger::Error, "ScriptingService::unloadStateMachine",
+                                "Could not unload StateMachine '%s' :", name.c_str());
 #endif
             return false;
         }
