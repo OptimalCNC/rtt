@@ -181,10 +181,14 @@ namespace RTT
                 // 3. 'refresh' it with the composed children of step 1.
                 if ( composePropertyBag(source, target) && composeTemplateProperty(target, result ) ){
                     ads->updated();
-                    Logger::log() <<Logger::Debug<<"Successfuly composed Sequence from "<< source.getType() <<Logger::endl;
+                    Logger::log().logf(Logger::Debug, "SequenceTypeInfo",
+                                       "Successfuly composed Sequence from %s",
+                                       source.getType().c_str());
                     return true;
                 } else 
-                    Logger::log() <<Logger::Debug<<"Failed to composed Sequence from "<< source.getType() <<Logger::endl;
+                    Logger::log().logf(Logger::Debug, "SequenceTypeInfo",
+                                       "Failed to composed Sequence from %s",
+                                       source.getType().c_str());
 
                 return false;
             }
@@ -244,13 +248,21 @@ namespace RTT
                     } catch(...) {}
                 }
                 if (id_name) {
-                    log(Error) << "SequenceTypeInfo: No such member : " << id_name->get() << endlog();
+                    Logger::log().logf(Logger::Error, "SequenceTypeInfo",
+                                       "No such member : %s",
+                                       id_name->get().c_str());
                 }
                 if (id_indx) {
-                    log(Error) << "SequenceTypeInfo: Invalid index : " << id_indx->get() <<":"<< id_indx->getTypeName() << endlog();
+                    Logger::log().logf(Logger::Error, "SequenceTypeInfo",
+                                       "Invalid index : %d:%s",
+                                       id_indx->get(),
+                                       id_indx->getTypeName().c_str());
                 }
                 if ( !id_name && ! id_indx)
-                    log(Error) << "SequenceTypeInfo: Not a member or index : " << id <<":"<< id->getTypeName() << endlog();
+                    Logger::log().logf(Logger::Error, "SequenceTypeInfo",
+                                       "Not a member or index : %p:%s",
+                                       id.get(),
+                                       id->getTypeName().c_str());
                 return base::DataSourceBase::shared_ptr();
             }
         };
