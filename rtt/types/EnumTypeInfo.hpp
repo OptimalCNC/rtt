@@ -84,7 +84,8 @@ namespace RTT
                 assert(mthis);
 
                 if (!Types()->type("int")) {
-                    log(Error) << "Failed to register enum <-> int conversion because type int is not known in type system."<<endlog();
+                    Logger::log().logf(Logger::Error, "EnumTypeInfo",
+                                       "Failed to register enum <-> int conversion because type int is not known in type system.");
                     return false;
                 } else {
                     TemplateTypeInfo<T,false>::installTypeInfoObject(ti);
