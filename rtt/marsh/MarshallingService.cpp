@@ -53,6 +53,17 @@ ORO_SERVICE_NAMED_PLUGIN(RTT::marsh::MarshallingService, "marshalling")
 namespace RTT {
     using namespace detail;
 
+    namespace {
+        bool reportMissingService(const Service* service, const std::string& servicename)
+        {
+            Logger::log().logf(Logger::Error, service->getName().c_str(),
+                               "%s does not have a service called %s",
+                               service->getParent()->getName().c_str(),
+                               servicename.c_str());
+            return false;
+        }
+    }
+
     MarshallingService::shared_ptr MarshallingService::Create(TaskContext* parent){
         shared_ptr sp(new MarshallingService(parent));
         parent->provides()->addService( sp );
@@ -175,83 +186,59 @@ namespace RTT {
 
     bool MarshallingService::loadServiceProperties(const std::string& filename, const std::string& servicename) const
     {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.load( filename );
     }
 
     bool MarshallingService::storeServiceProperties(const std::string& filename, const std::string& servicename) const
     {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.store( filename );
     }
 
     bool MarshallingService::readServiceProperties(const std::string& filename, const std::string& servicename) const
     {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.configure( filename, true); // all
     }
     bool MarshallingService::updateServiceProperties(const std::string& filename, const std::string& servicename) const
     {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.configure( filename, false); // not all
     }
     bool MarshallingService::writeServiceProperties(const std::string& filename, const std::string& servicename) const
     {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.save( filename, true);
     }
     bool MarshallingService::updateServiceFile(const std::string& filename, const std::string& servicename) const
     {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.save( filename, false);
     }
 
     bool MarshallingService::readServiceProperty(const std::string& name, const std::string& filename, const std::string& servicename) {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.configure(filename, name);
     }
 
     bool MarshallingService::writeServiceProperty(const std::string& name, const std::string& filename, const std::string& servicename) {
-        if(!this->getParent()->hasService(servicename)){
-            Logger::In(this->getName());
-            log(Error)<<this->getParent()->getName()<<" does not have a service called "<<servicename<<endlog();
-            return false;
-        }
+        if(!this->getParent()->hasService(servicename))
+            return reportMissingService(this, servicename);
         PropertyLoader pl(this->getParent()->provides(servicename).get());
         return pl.save(filename, name);
     }
