@@ -90,8 +90,11 @@ namespace RTT
             if ( !callqueue.empty() ) {
                 std::string name = callqueue.front();
                 if ( (name == "states" || name == "programs") && _peer->provides()->hasService(name) == 0) {
-                    log(Warning) << "'"<<name<<"' peer not found. The use of '"<<name<<"' has been deprecated."<<endlog();
-                    log(Warning) << "Modify your script to use the program's or state machine's name directly."<<endlog();
+                    Logger::log().logf(Logger::Warning, "PeerParser",
+                                       "'%s' peer not found. The use of '%s' has been deprecated.",
+                                       name.c_str(), name.c_str());
+                    Logger::log().logf(Logger::Warning, "PeerParser",
+                                       "Modify your script to use the program's or state machine's name directly.");
                     callqueue.pop();
                 }
             }
@@ -194,8 +197,11 @@ namespace RTT
             mfoundpath = true;
         } else {
             if ( name == "states" || name == "programs") {
-                log(Warning) << "'"<<name<<"' peer not found. The use of '"<<name<<"' has been deprecated."<<endlog();
-                log(Warning) << "Modify your script to use the program's or state machine's name directly."<<endlog();
+                Logger::log().logf(Logger::Warning, "PeerParser",
+                                   "'%s' peer not found. The use of '%s' has been deprecated.",
+                                   name.c_str(), name.c_str());
+                Logger::log().logf(Logger::Warning, "PeerParser",
+                                   "Modify your script to use the program's or state machine's name directly.");
                 advance_on_error += end.base() - begin.base();
                 return;
             }
@@ -242,4 +248,3 @@ namespace RTT
         return mfoundpath;
     }
 }
-

@@ -103,6 +103,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/Service.cpp",
         "rtt/scripting/ParsedStateMachine.cpp",
         "rtt/scripting/Parser.cpp",
+        "rtt/scripting/PeerParser.cpp",
         "rtt/ServiceRequester.cpp",
         "rtt/TaskContext.cpp",
         "rtt/types/BoostArrayTypeInfo.hpp",
