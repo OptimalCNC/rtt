@@ -161,7 +161,8 @@ namespace RTT
               mname(), mcaller(caller)
         {
             if ( !this->impl && implementation ) {
-                log(Error) << "Tried to construct OperationCaller from incompatible local operation."<< endlog();
+                Logger::log().logf(Logger::Error, "OperationCaller",
+                                   "Tried to construct OperationCaller from incompatible local operation.");
             } else {
                 if (this->impl) {
                     this->impl.reset( this->impl->cloneI(mcaller) );
@@ -236,7 +237,8 @@ namespace RTT
         OperationCaller& operator=(OperationInterfacePart* part)
         {
             if (part == 0) {
-                log(Warning) << "Assigning OperationCaller from null part."<<endlog();
+                Logger::log().logf(Logger::Warning, "OperationCaller",
+                                   "Assigning OperationCaller from null part.");
                 this->impl.reset();
             }
             if (this->impl && this->impl == part->getLocalOperation() )
@@ -256,11 +258,14 @@ namespace RTT
         OperationCaller& operator=(ServicePtr service)
         {
             if ( !service ) {
-                log(Warning) << "Assigning OperationCaller from null service."<<endlog();
+                Logger::log().logf(Logger::Warning, "OperationCaller",
+                                   "Assigning OperationCaller from null service.");
                 this->impl.reset();
             }
             if (this->mname.empty()) {
-                log(Error) << "Can't initialise unnamed OperationCaller from service '"<<service->getName() <<"'."<<endlog();
+                Logger::log().logf(Logger::Error, "OperationCaller",
+                                   "Can't initialise unnamed OperationCaller from service '%s'.",
+                                   service->getName().c_str());
                 return *this;
             }
             OperationCaller<Signature> tmp(mname, service, mcaller);
@@ -387,18 +392,27 @@ namespace RTT
                 try {
                     this->impl.reset( new internal::RemoteOperationCaller<Signature>( part, mname, mcaller ));
                 } catch( std::exception& e ) {
-                    log(Error) << "Constructing RemoteOperationCaller for "<< mname <<" was not possible."<<endlog();
-                    log(Error) << "Probable cause: " << e.what() <<endlog();
+                    Logger::log().logf(Logger::Error, "OperationCaller",
+                                       "Constructing RemoteOperationCaller for %s was not possible.",
+                                       mname.c_str());
+                    Logger::log().logf(Logger::Error, "OperationCaller",
+                                       "Probable cause: %s",
+                                       e.what());
                     return;
                 }
                 if (this->impl->ready()) {
-                    log(Debug) << "Constructed OperationCaller from remote implementation '"<< mname<<"'."<< endlog();
+                    Logger::log().logf(Logger::Debug, "OperationCaller",
+                                       "Constructed OperationCaller from remote implementation '%s'.",
+                                       mname.c_str());
                 } else {
                     this->impl.reset(); // clean up.
-                    log(Error) << "Tried to construct OperationCaller from incompatible operation '"<< mname<<"'."<< endlog();
+                    Logger::log().logf(Logger::Error, "OperationCaller",
+                                       "Tried to construct OperationCaller from incompatible operation '%s'.",
+                                       mname.c_str());
                 }
 #else
-                log(Error) << "Tried to construct remote OperationCaller but ORO_REMOTING was disabled."<< endlog();
+                Logger::log().logf(Logger::Error, "OperationCaller",
+                                   "Tried to construct remote OperationCaller but ORO_REMOTING was disabled.");
 #endif
             } else {
                 // finally clone and set caller on clone.
