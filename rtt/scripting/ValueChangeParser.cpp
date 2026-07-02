@@ -185,9 +185,9 @@ namespace RTT
                  +". Initialization expressions are evaluated once at parse time !" );
         }
         if ( i->get() == 0 ) {
-            Logger::log() << Logger::Warning <<
-                "Attempt to initialize "<<typen<<" "<<valuename<<" with an expression leading to zero (0)"
-                          <<". Initialization expressions are evaluated once at parse time !" << Logger::endl;
+            Logger::log().logf(Logger::Warning, "ValueChangeParser",
+                               "Attempt to initialize %s %s with an expression leading to zero (0). Initialization expressions are evaluated once at parse time !",
+                               typen.c_str(), valuename.c_str());
         }
         sizehint = i->get();
     }
@@ -205,7 +205,7 @@ namespace RTT
         }
         if ( var == 0 ) // bad assignment.
             {
-                Logger::log() << " failed !"<<Logger::endl;
+                Logger::log().logf(Logger::Info, "ValueChangeParser", " failed !");
                 this->cleanup();
                 throw parse_exception_semantic_error
                     ("Attempt to initialize a const "+type->getTypeName()+" with a "+expr->getTypeName()+"." );
