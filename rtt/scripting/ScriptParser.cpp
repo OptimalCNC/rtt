@@ -58,6 +58,8 @@
 #include "../internal/GlobalEngine.hpp"
 #include "ParsedStateMachine.hpp"
 
+#include <Logger.hpp>
+
 namespace RTT
 {
     using namespace boost;
@@ -131,16 +133,15 @@ namespace RTT
         {
             if (ret->inError())
             {
-                log(Error)
-                        << "Script encountered an error during execution of line "
-                        << ret->getLineNumber() << endlog();
+                Logger::log().logf(Logger::Error, "ScriptParser",
+                                    "Script encountered an error during execution of line %d",
+                                    ret->getLineNumber());
             }
             ++steps;
             if (steps > 10000)
             {
-                log(Error)
-                        << "Parser refuses to execute more than 10000 yield statements. Fix your program."
-                        << endlog();
+                Logger::log().logf(Logger::Error, "ScriptParser",
+                                    "Parser refuses to execute more than 10000 yield statements. Fix your program.");
                 break;
             }
         }
@@ -161,12 +162,14 @@ namespace RTT
             FunctionGraphPtr func = dynamic_pointer_cast<FunctionGraph>(ret);
             if (func)
                 func->setText(program_text);
-            log(Info) << "Loading Program '"<< ret->getName() <<"'" <<endlog();
+            Logger::log().logf(Logger::Info, "ScriptParser",
+                                "Loading Program '%s'", ret->getName().c_str());
             if ( ss->loadProgram( ret ) == false)
                 throw program_load_exception( "Could not load Program '"+ ret->getName() +"' :\n failed to load in ScriptingService.\n");
         } catch (program_load_exception& e ) {
-            log(Error) << "Could not load Program '"<< ret->getName() <<"' :" << endlog();
-            log(Error) << e.what() << endlog();
+            Logger::log().logf(Logger::Error, "ScriptParser",
+                                "Could not load Program '%s' :", ret->getName().c_str());
+            Logger::log().logf(Logger::Error, "ScriptParser", "%s", e.what());
             throw;
         }
         programparser->initBodyParser("script", storage, 0);
@@ -190,11 +193,13 @@ namespace RTT
         ParsedStateMachinePtr ret = stateparser->getParserResult();
         if (ret) {
             try {
-                log(Info) << "Loading StateMachine '"<< ret->getName() <<"'" <<endlog();
+                Logger::log().logf(Logger::Info, "ScriptParser",
+                                    "Loading StateMachine '%s'", ret->getName().c_str());
                 ss->loadStateMachine( ret ); // throws load_exception
             } catch (program_load_exception& e ) {
-                log(Error) << "Could not load StateMachine'"<< ret->getName() <<"' :" << endlog();
-                log(Error) << e.what() << endlog();
+                Logger::log().logf(Logger::Error, "ScriptParser",
+                                    "Could not load StateMachine'%s' :", ret->getName().c_str());
+                Logger::log().logf(Logger::Error, "ScriptParser", "%s", e.what());
                 throw;
             }
         }
