@@ -108,7 +108,9 @@ const TypeInfo* CorbaOperationCallerFactory::getArgumentType(unsigned int i) con
             assert(false);
         }
         catch ( CWrongArgumentException& wae){
-            log(Error) << "CorbaOperationCallerFactory::getArgumentType: Wrong arg nbr: " << wae.which_arg <<" max is " << wae.max_arg <<endlog();
+            Logger::log().logf(Logger::Error, "CorbaOperationCallerFactory",
+                               "CorbaOperationCallerFactory::getArgumentType: Wrong arg nbr: %d max is %d",
+                               wae.which_arg, wae.max_arg);
         }
     }
 
@@ -118,9 +120,13 @@ const TypeInfo* CorbaOperationCallerFactory::getArgumentType(unsigned int i) con
         return Types()->type( tname );
     // locally unknown type:
     if (i == 0)
-        log(Warning) << "CorbaOperationCallerFactory: remote operation's "<< method <<" return type " << tname << " is unknown in this process." << endlog();
+        Logger::log().logf(Logger::Warning, "CorbaOperationCallerFactory",
+                           "CorbaOperationCallerFactory: remote operation's %s return type %s is unknown in this process.",
+                           method.c_str(), tname.c_str());
     else
-        log(Warning) << "CorbaOperationCallerFactory: remote operation's "<< method <<" argument "<< i <<" of type " << tname << " is unknown in this process." << endlog();
+        Logger::log().logf(Logger::Warning, "CorbaOperationCallerFactory",
+                           "CorbaOperationCallerFactory: remote operation's %s argument %u of type %s is unknown in this process.",
+                           method.c_str(), i, tname.c_str());
 
     return 0;
 }
@@ -500,7 +506,9 @@ base::DataSourceBase::shared_ptr CorbaOperationCallerFactory::produceCollect(con
 
 #ifdef ORO_SIGNALLING_OPERATIONS
 Handle CorbaOperationCallerFactory::produceSignal(base::ActionInterface* func, const std::vector<base::DataSourceBase::shared_ptr>& args, ExecutionEngine* subscriber) const {
-    log(Error) << "Can not attach Signal to remote Corba Operation '"<<method <<"'" <<endlog();
+    Logger::log().logf(Logger::Error, "CorbaOperationCallerFactory",
+                       "Can not attach Signal to remote Corba Operation '%s'",
+                       method.c_str());
     return Handle();
 }
 #endif

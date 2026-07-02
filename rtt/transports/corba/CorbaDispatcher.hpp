@@ -200,7 +200,8 @@ namespace RTT {
             }
 
             bool initialize() {
-                log(Info) <<"Started " << this->getName() << "." <<endlog();
+                Logger::log().logf(Logger::Info, "CorbaDispatcher",
+                                   "Started %s.", this->getName());
                 do_exit = false;
                 return true;
             }

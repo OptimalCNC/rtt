@@ -82,7 +82,8 @@ namespace RTT
                 CORBA::PolicyManager_var policy_manager = CORBA::PolicyManager::_narrow (obj.in());
                 policy_manager->set_policy_overrides (policies, CORBA::SET_OVERRIDE);
 #else
-                log(Error) << "Ignoring ORB timeout setting in non-TAO/Messaging build." <<endlog();
+                Logger::log().logf(Logger::Error, "ApplicationServer",
+                                   "Ignoring ORB timeout setting in non-TAO/Messaging build.");
 #endif // CORBA_IS_TAO
             }
             // Also activate the POA Manager, since we may get call-backs !
@@ -97,8 +98,9 @@ namespace RTT
             return true;
         }
         catch (CORBA::Exception &e) {
-            log(Error) << "Orb Init : CORBA exception raised!" << Logger::nl;
-            Logger::log() << CORBA_EXCEPTION_INFO(e) << endlog();
+            Logger::log().logf(Logger::Error, "ApplicationServer",
+                               "Orb Init : CORBA exception raised!\n%s",
+                               CORBA_EXCEPTION_INFO(e));
         }
         return false;
     }

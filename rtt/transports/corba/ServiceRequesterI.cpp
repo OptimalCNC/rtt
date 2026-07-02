@@ -125,7 +125,8 @@ char * RTT_corba_CServiceRequester_i::getRequestName (
 
     // Creates service requester
     if ( mrequests.find(svc) == mrequests.end() ) {
-        log(Debug) << "Creating CServiceRequester for "<< service_name <<endlog();
+        Logger::log().logf(Logger::Debug, "ServiceRequesterI",
+                           "Creating CServiceRequester for %s", service_name);
         RTT_corba_CServiceRequester_i* mserv;
         mserv = new RTT_corba_CServiceRequester_i( requester, mpoa );
         CServiceRequester_ptr request = mserv->activate_this();
@@ -153,19 +154,23 @@ char * RTT_corba_CServiceRequester_i::getRequestName (
 }
 
 ::CORBA::Boolean RTT_corba_CServiceRequester_i::connectCallerTo (
-      const char * name,
+    const char * name,
       ::RTT::corba::CService_ptr svc)
 {
     std::string oname(name);
     if ( mservice->getOperationCaller(oname) == 0) {
-        log(Error) << "No such OperationCaller: " << oname << " in "<< mservice->getRequestName()<<endlog();
+        Logger::log().logf(Logger::Error, "ServiceRequesterI",
+                           "No such OperationCaller: %s in %s",
+                           oname.c_str(), mservice->getRequestName().c_str());
         return false;
     }
     try {
         (void) svc->getArity(oname.c_str());
     } catch( ::RTT::corba::CNoSuchNameException& ) {
         CORBA::String_var svcname = svc->getName();
-        log(Error) << "No such Operation: " << oname << " in "<< svcname.in() << endlog();
+        Logger::log().logf(Logger::Error, "ServiceRequesterI",
+                           "No such Operation: %s in %s",
+                           oname.c_str(), svcname.in());
         return false;
     }
 
@@ -179,7 +184,9 @@ char * RTT_corba_CServiceRequester_i::getRequestName (
 {
     std::string oname(name);
     if ( mservice->getOperationCaller(oname) == 0) {
-        log(Error) << "No such OperationCaller: " << oname << " in "<< mservice->getRequestName()<<endlog();
+        Logger::log().logf(Logger::Error, "ServiceRequesterI",
+                           "No such OperationCaller: %s in %s",
+                           oname.c_str(), mservice->getRequestName().c_str());
         return false;
     }
     // disconnects.
@@ -192,7 +199,9 @@ char * RTT_corba_CServiceRequester_i::getRequestName (
 {
     std::string oname(name);
     if ( mservice->getOperationCaller(oname) == 0) {
-        log(Error) << "No such OperationCaller: " << oname << " in "<< mservice->getRequestName()<<endlog();
+        Logger::log().logf(Logger::Error, "ServiceRequesterI",
+                           "No such OperationCaller: %s in %s",
+                           oname.c_str(), mservice->getRequestName().c_str());
         return false;
     }
     // disconnects.

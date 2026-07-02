@@ -210,7 +210,8 @@ char * RTT_corba_CTaskContext_i::getDescription (
         return CService::_nil();
     // Creates Service for "this"
     if ( CORBA::is_nil( mService ) ) {
-        log(Debug) << "Creating CService for "<< mtask->getName()<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextI",
+                           "Creating CService for %s", mtask->getName().c_str());
         RTT_corba_CService_i* mserv;
         mService_i = mserv = new RTT_corba_CService_i( mtask->provides(), mpoa );
         mService = mserv->activate_this();
@@ -231,7 +232,8 @@ char * RTT_corba_CTaskContext_i::getDescription (
         return CServiceRequester::_nil();
     // Creates service requester for "this"
     if ( CORBA::is_nil( mRequest ) ) {
-        log(Debug) << "Creating CServiceRequester for "<< mtask->getName()<<endlog();
+        Logger::log().logf(Logger::Debug, "TaskContextI",
+                           "Creating CServiceRequester for %s", mtask->getName().c_str());
         RTT_corba_CServiceRequester_i* mserv;
         mRequest_i = mserv = new RTT_corba_CServiceRequester_i( mtask->requires(), mpoa );
         mRequest = mserv->activate_this();
@@ -337,4 +339,3 @@ char * RTT_corba_CTaskContext_i::getDescription (
 
     return d._retn();
 }
-

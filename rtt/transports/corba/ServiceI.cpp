@@ -132,7 +132,8 @@ char * RTT_corba_CService_i::getServiceDescription (
 
     // Creates service requester
     if ( mservs.find(svc) == mservs.end() ) {
-        log(Debug) << "Creating CService for "<< service_name <<endlog();
+        Logger::log().logf(Logger::Debug, "ServiceI",
+                           "Creating CService for %s", service_name);
 
         RTT_corba_CService_i* serv_i;
         RTT::corba::CService_ptr serv;

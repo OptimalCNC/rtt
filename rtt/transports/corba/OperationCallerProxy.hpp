@@ -80,8 +80,10 @@ namespace RTT
                     return msrq->connectCallerTo(mname.c_str(), cocf->getService() );
                 } else {
                     // bad: we need to create or lookup
-                    log(Error) <<"Can't connect an operation caller proxy directly to a local service."<<endlog();
-                    log(Error) <<"Use CServiceRequester::connectTo() or CServiceRequester::connectCallerTo(). "<<endlog();
+                    Logger::log().logf(Logger::Error, "OperationCallerProxy",
+                                       "Can't connect an operation caller proxy directly to a local service.");
+                    Logger::log().logf(Logger::Error, "OperationCallerProxy",
+                                       "Use CServiceRequester::connectTo() or CServiceRequester::connectCallerTo(). ");
                 }
                 return false;
             }
