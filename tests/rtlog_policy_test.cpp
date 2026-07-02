@@ -63,6 +63,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
     const std::string root = sourceRoot();
     const char* files[] = {
         "rtt/base/TaskCore.cpp",
+        "rtt/ConfigurationInterface.cpp",
         "rtt/internal/BindStorage.hpp",
         "rtt/internal/ConnectionManager.cpp",
         "rtt/internal/ConnFactory.cpp",
