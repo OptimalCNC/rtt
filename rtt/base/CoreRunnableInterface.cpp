@@ -46,10 +46,8 @@ namespace RTT {
 
     RunnableInterface::~RunnableInterface() {
         if ( this->owner_act && this->owner_act->isRunning() ) {
-            Logger::In in("~RunnableInterface()");
-            log(Critical)
-            <<"Activity still running, but RunnableInterface destroyed! Stop the task"
-            " before deleting this object. Crash may be imminent."<<endlog();
+            Logger::log().logf(Logger::Critical, "~RunnableInterface()",
+                               "Activity still running, but RunnableInterface destroyed! Stop the task before deleting this object. Crash may be imminent.");
         }
         if ( this->owner_act )
             this->owner_act->disableRun(this);

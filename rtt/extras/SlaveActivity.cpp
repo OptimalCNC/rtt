@@ -149,12 +149,14 @@ namespace RTT {
     {
         if (mmaster && !mmaster->isActive())
         {
-            Logger::log() << Logger::Error << "Unable to start slave as master activity is not running" << Logger::endl;
+            Logger::log().logf(Logger::Error, "SlaveActivity",
+                               "Unable to start slave as master activity is not running");
             return false;
         }
         if ( active == true )
         {
-            Logger::log() << Logger::Error  << "Unable to start slave as it is already started" << Logger::endl;
+            Logger::log().logf(Logger::Error, "SlaveActivity",
+                               "Unable to start slave as it is already started");
             return false;
         }
 

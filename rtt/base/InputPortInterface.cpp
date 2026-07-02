@@ -87,7 +87,9 @@ bool InputPortInterface::connectTo(PortInterface* other, ConnPolicy const& polic
 {
     OutputPortInterface* output = dynamic_cast<OutputPortInterface*>(other);
     if (! output) {
-        log(Error) << "InputPort "<< getName() <<" could not connect to "<< other->getName() << ": not an Output port." <<endlog();
+        Logger::log().logf(Logger::Error, "InputPortInterface",
+                           "InputPort %s could not connect to %s: not an Output port.",
+                           getName().c_str(), other->getName().c_str());
         return false;
     }
     return output->createConnection(*this, policy);
