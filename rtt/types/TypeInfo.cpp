@@ -139,7 +139,10 @@ namespace RTT
         if (transporters.size() < static_cast<size_t>(protocol_id + 1))
             transporters.resize(protocol_id + 1);
         if ( transporters[protocol_id] ) {
-            log(Debug) << "A protocol with id "<<protocol_id<<" was already added for type "<< getTypeName()<<endlog();
+            Logger::log().logf(Logger::Debug, "TypeInfo",
+                               "A protocol with id %d was already added for type %s",
+                               protocol_id,
+                               getTypeName().c_str());
             delete tt;
             return false;
         }
@@ -157,8 +160,12 @@ namespace RTT
             if ( DataSourceTypeInfo<UnknownType>::getTypeInfo() != this )
                 return DataSourceTypeInfo<UnknownType>::getTypeInfo()->getProtocol( protocol_id );
             else {
-                log(Warning) << "The protocol with id "<<protocol_id<<" did not register a fall-back handler for unknown types!"<<endlog();
-                log(Warning) << "  triggered by: "<< getTypeName() << " which does not have a transport."<<endlog();
+                Logger::log().logf(Logger::Warning, "TypeInfo",
+                                   "The protocol with id %d did not register a fall-back handler for unknown types!",
+                                   protocol_id);
+                Logger::log().logf(Logger::Warning, "TypeInfo",
+                                   "  triggered by: %s which does not have a transport.",
+                                   getTypeName().c_str());
                 return 0; // That transport did not register a fall-back !
             }
         }

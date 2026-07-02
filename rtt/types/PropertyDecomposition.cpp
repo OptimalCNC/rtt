@@ -96,7 +96,9 @@ bool typeDecomposition( base::DataSourceBase::shared_ptr dsb, PropertyBag& targe
 
     vector<string> parts = dsb->getMemberNames();
     if ( parts.empty() ) {
-        log(Debug) << "propertyDecomposition: "<<  dsb->getTypeName() << " does not have any members." << endlog();
+        Logger::log().logf(Logger::Debug, "PropertyDecomposition",
+                           "propertyDecomposition: %s does not have any members.",
+                           dsb->getTypeName().c_str());
         return false;
     }
 
@@ -109,18 +111,26 @@ bool typeDecomposition( base::DataSourceBase::shared_ptr dsb, PropertyBag& targe
     for(vector<string>::iterator it = parts.begin(); it != parts.end(); ++it ) {
         DataSourceBase::shared_ptr part = dsb->getMember( *it );
         if (!part) {
-            log(Error) <<"propertyDecomposition: Inconsistent type info for "<< dsb->getTypeName() << ": reported to have part '"<<*it<<"' but failed to return it."<<endlog();
+            Logger::log().logf(Logger::Error, "PropertyDecomposition",
+                               "propertyDecomposition: Inconsistent type info for %s: reported to have part '%s' but failed to return it.",
+                               dsb->getTypeName().c_str(),
+                               it->c_str());
             continue;
         }
         if ( !part->isAssignable() ) {
             // For example: the case for size() and capacity() in SequenceTypeInfo
-            log(Debug)<<"propertyDecomposition: Part "<< *it << ":"<< part->getTypeName() << " is not changeable."<<endlog();
+            Logger::log().logf(Logger::Debug, "PropertyDecomposition",
+                               "propertyDecomposition: Part %s:%s is not changeable.",
+                               it->c_str(),
+                               part->getTypeName().c_str());
             continue;
         }
         // finally recurse or add it to the target bag:
         PropertyBase* newpb = part->getTypeInfo()->buildProperty(*it,"Part",part);
         if ( !newpb ) {
-            log(Error)<< "Decomposition failed because Part '"<<*it<<"' is not known to type system."<<endlog();
+            Logger::log().logf(Logger::Error, "PropertyDecomposition",
+                               "Decomposition failed because Part '%s' is not known to type system.",
+                               it->c_str());
             continue;
         }
         if ( !recurse )
@@ -160,7 +170,10 @@ bool typeDecomposition( base::DataSourceBase::shared_ptr dsb, PropertyBag& targe
             if (item) {
                 if ( !item->isAssignable() ) {
                     // For example: the case for size() and capacity() in SequenceTypeInfo
-                    log(Warning)<<"propertyDecomposition: Item '"<< indx << "' of type "<< dsb->getTypeName() << " is not changeable."<<endlog();
+                    Logger::log().logf(Logger::Warning, "PropertyDecomposition",
+                                       "propertyDecomposition: Item '%s' of type %s is not changeable.",
+                                       indx.c_str(),
+                                       dsb->getTypeName().c_str());
                     continue;
                 }
                 // finally recurse or add it to the target bag:
@@ -178,7 +191,9 @@ bool typeDecomposition( base::DataSourceBase::shared_ptr dsb, PropertyBag& targe
         }
     }
     if (targetbag.empty() )
-        log(Debug) << "propertyDecomposition: "<<  dsb->getTypeName() << " returns an empty property bag." << endlog();
+        Logger::log().logf(Logger::Debug, "PropertyDecomposition",
+                           "propertyDecomposition: %s returns an empty property bag.",
+                           dsb->getTypeName().c_str());
     return true;
 }
 

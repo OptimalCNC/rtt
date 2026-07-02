@@ -48,7 +48,8 @@ using namespace RTT::detail;
 bool RTT::types::composePropertyBag( PropertyBag const& sourcebag, PropertyBag& target )
 {
     if ( !target.empty() ) {
-        log(Error) <<"composePropertyBag: target bag must be empty."<< endlog();
+        Logger::log().logf(Logger::Error, "PropertyComposition",
+                           "composePropertyBag: target bag must be empty.");
         return false;
     }
     bool has_error = false;
@@ -61,16 +62,23 @@ bool RTT::types::composePropertyBag( PropertyBag const& sourcebag, PropertyBag& 
             // typed property bag, need to compose it.
             TypeInfo* ti = Types()->type( isbag.value().getType() );
             if ( ti == 0) {
-                log(Error) <<"Could not compose unknown type '" << isbag.value().getType() <<"'." <<endlog();
+                Logger::log().logf(Logger::Error, "PropertyComposition",
+                                   "Could not compose unknown type '%s'.",
+                                   isbag.value().getType().c_str());
                 has_error = true;
                 continue;
             }
             PropertyBase* tgtprop = ti->buildProperty(isbag.getName(), isbag.getDescription());
             if ( ti->composeType(isbag.getDataSource(), tgtprop->getDataSource()) ) {
-                log(Debug) << "Used user's composition function for " << tgtprop->getName() <<":"<<tgtprop->getType()<<endlog();
+                Logger::log().logf(Logger::Debug, "PropertyComposition",
+                                   "Used user's composition function for %s:%s",
+                                   tgtprop->getName().c_str(),
+                                   tgtprop->getType().c_str());
                 target.ownProperty(tgtprop);
             } else {
-                log(Error) <<"The type '" << isbag.value().getType() <<"' did not provide a type composition function, but I need one to compose it from a PropertyBag." <<endlog();
+                Logger::log().logf(Logger::Error, "PropertyComposition",
+                                   "The type '%s' did not provide a type composition function, but I need one to compose it from a PropertyBag.",
+                                   isbag.value().getType().c_str());
                 delete tgtprop;
                 has_error = true;
                 continue;
@@ -98,7 +106,8 @@ bool RTT::types::composePropertyBag( PropertyBag const& sourcebag, PropertyBag& 
 bool RTT::types::decomposePropertyBag( PropertyBag const& sourcebag, PropertyBag&  target)
 {
     if ( !target.empty() ) {
-        log(Error) <<"decomposePropertyBag: target bag must be empty."<< endlog();
+        Logger::log().logf(Logger::Error, "PropertyComposition",
+                           "decomposePropertyBag: target bag must be empty.");
         return false;
     }
     PropertyBag::const_iterator sit = sourcebag.begin();
@@ -116,7 +125,9 @@ bool RTT::types::decomposePropertyBag( PropertyBag const& sourcebag, PropertyBag
             }
         } else {
             // decompose non-bag type:
-            log(Debug) << "Checking for decompose "<< (*sit)->getName() <<endlog();
+            Logger::log().logf(Logger::Debug, "PropertyComposition",
+                               "Checking for decompose %s",
+                               (*sit)->getName().c_str());
 
             // Try decomposeType() first because this is the user's implementation of decomposition:
             DataSourceBase::shared_ptr dsb = (*sit)->getTypeInfo()->decomposeType( (*sit)->getDataSource() );
@@ -140,7 +151,9 @@ bool RTT::types::decomposePropertyBag( PropertyBag const& sourcebag, PropertyBag
                         // other type ? -> add
                         base::PropertyBase* p = dsb->getTypeInfo()->buildProperty((*sit)->getName(), (*sit)->getDescription(), dsb);
                         if ( target.ownProperty( p ) == false)
-                            log(Error) <<"Failed to create a property of decomposed data of type "<<(*sit)->getType() <<endlog();
+                            Logger::log().logf(Logger::Error, "PropertyComposition",
+                                               "Failed to create a property of decomposed data of type %s",
+                                               (*sit)->getType().c_str());
                     }
                 }
             } else {
