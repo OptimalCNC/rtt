@@ -56,9 +56,6 @@
 #  include <ostream>
 #  ifdef OROSEM_FILE_LOGGING
 #   include <fstream>
-#   ifdef  OROSEM_LOG4CPP_LOGGING
-#    include <log4cpp/Category.hh>
-#   endif
 #  endif
 #  ifdef OROSEM_REMOTE_LOGGING
 #   include "base/BufferLockFree.hpp"
@@ -96,31 +93,6 @@ namespace RTT
     }
 
 #ifndef OROBLD_DISABLE_LOGGING
-
-#ifdef  OROSEM_LOG4CPP_LOGGING
-
-    const std::string Logger::log4cppCategoryName = "org.orocos.rtt";
-
-    log4cpp::Priority::Value level2Priority(const int logLevel)
-    {
-        log4cpp::Priority::Value value = log4cpp::Priority::NOTSET;
-        switch (logLevel)
-        {
-            case Never:     value = log4cpp::Priority::NOTSET; break;
-            case Fatal:     value = log4cpp::Priority::FATAL;  break;
-            case Critical:  value = log4cpp::Priority::CRIT;   break;
-            case Error:     value = log4cpp::Priority::ERROR;  break;
-            case Warning:   value = log4cpp::Priority::WARN;   break;
-            case Info:      value = log4cpp::Priority::INFO;   break;
-            case Debug:     value = log4cpp::Priority::DEBUG;  break;
-                // best we can do!?
-            case RealTime:  value = log4cpp::Priority::DEBUG;  break;
-            default:        value = log4cpp::Priority::NOTSET; break;
-        }
-        return value;
-    }
-
-#endif
 
     namespace {
         struct RtLogData {
@@ -199,9 +171,7 @@ namespace RTT
               remotestring(ORONUM_LOGGING_BUFSIZE,std::string(), true),
 #endif
 #if     defined(OROSEM_FILE_LOGGING)
-#if     defined(OROSEM_LOG4CPP_LOGGING)
-              category(log4cpp::Category::getInstance(RTT::Logger::log4cppCategoryName)),
-#elif   !defined(OROSEM_PRINTF_LOGGING)
+#if     !defined(OROSEM_PRINTF_LOGGING)
               logfile(logfile_name ? logfile_name : "orocos.log"),
 #endif
 #endif
@@ -214,7 +184,7 @@ namespace RTT
               mlogStdOut(true), mlogFile(true),
               moduleptr("Logger")
         {
-#if defined(OROSEM_FILE_LOGGING) && !defined(OROSEM_LOG4CPP_LOGGING) && defined(OROSEM_PRINTF_LOGGING)
+#if defined(OROSEM_FILE_LOGGING) && defined(OROSEM_PRINTF_LOGGING)
             logfile = fopen(logfile_name ? logfile_name : "orocos.log","w");
 #endif
         }
@@ -343,9 +313,7 @@ namespace RTT
 
             if (data.to_file) {
 #ifdef OROSEM_FILE_LOGGING
-#if     defined(OROSEM_LOG4CPP_LOGGING)
-                category.log(level2Priority(data.level), line);
-#elif   !defined(OROSEM_PRINTF_LOGGING)
+#if     !defined(OROSEM_PRINTF_LOGGING)
                 logfile << line << pf;
 #else
                 fprintf(logfile, "%s\n", line.c_str());
@@ -367,9 +335,6 @@ namespace RTT
         base::BufferLockFree<std::string> remotestring;
 #endif
 #if defined(OROSEM_FILE_LOGGING)
-#if     defined(OROSEM_LOG4CPP_LOGGING)
-        log4cpp::Category&   category;
-#endif
 # ifndef OROSEM_PRINTF_LOGGING
         std::ofstream logfile;
 # else
@@ -786,9 +751,6 @@ namespace RTT
 
     void Logger::setLogLevel( LogLevel ll ) {
         d->outloglevel = ll;
-#if defined(OROSEM_LOG4CPP_LOGGING)
-        d->category.setPriority(level2Priority(ll));
-#endif
     }
 
     Logger::LogLevel Logger::getLogLevel() const {
