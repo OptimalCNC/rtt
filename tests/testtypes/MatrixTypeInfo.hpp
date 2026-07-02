@@ -43,6 +43,7 @@
 #include "types/MemberFactory.hpp"
 #include "types/type_discovery.hpp"
 #include "internal/DataSourceGenerator.hpp"
+#include "Logger.hpp"
 #include <boost/lexical_cast.hpp>
 
 namespace RTT
@@ -122,7 +123,9 @@ namespace RTT
                 // if a sizehint is given
                 T t_init(size_rows, size_columns, typename T::value_type() );
 
-                log(Debug) << "Building variable '"<<name <<"' of type " << this->getTypeName() <<" and number of rows "<< size << " and number of columns " << size <<Logger::endl;
+                Logger::log().logf(Logger::Debug, "MatrixTypeInfo",
+                                   "Building variable '%s' of type %s and number of rows %d and number of columns %d",
+                                   name.c_str(), this->getTypeName().c_str(), size, size);
                 return new Attribute<T>( name, new internal::UnboundDataSource<internal::ValueDataSource<T> >( t_init ) );
             }
 
@@ -151,12 +154,14 @@ namespace RTT
                         out << i;
                         Property<PropertyBag>* row_bag =  bag.getProperty<PropertyBag>(out.str());
                         if(row_bag==NULL){
-                            log(Error)<<"Could not read row "<<i<<endlog();
+                            Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                               "Could not read row %u", i);
                             return false;
                         }
                         Property<RowVector> row_p(row_bag->getName(),row_bag->getDescription());
                         if(!(row_p.getDataSource()->composeType(row_bag->getDataSource()))){
-                            log(Error)<<"Could not decompose row "<<i<<endlog();
+                            Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                               "Could not decompose row %u", i);
                             return false;
                         }
                         if(row_p.ready()){
@@ -165,21 +170,23 @@ namespace RTT
                                 result.resize(rows,cols);
                             } else
                                 if(row_p.get().size()!=cols){
-                                    log(Error)<<"Row "<<i+1<<" size does not match matrix columns"<<endlog();
+                                    Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                                       "Row %u size does not match matrix columns", i + 1);
                                     return false;
                                 }
                             for ( unsigned int j=1; j <= row_p.get().size() ; j++){
                                 result(i,j)=row_p.get()(j);
                             }
                         }else{
-                            log(Error)<<"Property of Row "<<i<<"was not ready for use"<<endlog();
+                            Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                               "Property of Row %u was not ready for use", i);
                             return false;
                         }
                     }
                 }else {
-                    log(Error) << "Composing Property< Matrix > :"
-                               << " type mismatch, got type '"<< bag.getType()
-                               << "', expected type "<<"Matrix."<<endlog();
+                    Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                       "Composing Property< Matrix > : type mismatch, got type '%s', expected type Matrix.",
+                                       bag.getType().c_str());
                     return false;
                 }
                 return true;
@@ -230,9 +237,13 @@ namespace RTT
                 typename internal::AssignableDataSource<T>::shared_ptr data = boost::dynamic_pointer_cast< internal::AssignableDataSource<T> >( item );
                 if ( !data ) {
                     if ( !item->isAssignable() )
-                        log(Error) << "Can't return reference to members of type "<< this->getTypeName() <<" since given object is not assignable." <<endlog();
+                        Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                           "Can't return reference to members of type %s since given object is not assignable.",
+                                           this->getTypeName().c_str());
                     else
-                        log(Error) << "Consistency error: TypeInfo of type "<< this->getTypeName() <<" can't handle types of type "<< item->getType() <<endlog();
+                        Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                           "Consistency error: TypeInfo of type %s can't handle types of type %s",
+                                           this->getTypeName().c_str(), item->getType().c_str());
                     return base::DataSourceBase::shared_ptr();
                 }
 
@@ -258,10 +269,13 @@ namespace RTT
                     } catch(...) {}
                 }
                 if (id_name) {
-                    log(Error) << "MatrixTypeInfo: No such part : " << id_name->get() << endlog();
+                    Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                       "MatrixTypeInfo: No such part : %s", id_name->get().c_str());
                 }
                 if (id_indx) {
-                    log(Error) << "MatrixTypeInfo: Invalid index : " << id_indx->get() <<":"<< id_indx->getTypeName() << endlog();
+                    Logger::log().logf(Logger::Error, "MatrixTypeInfo",
+                                       "MatrixTypeInfo: Invalid index : %d:%s",
+                                       id_indx->get(), id_indx->getTypeName().c_str());
                 }
                 return base::DataSourceBase::shared_ptr();
             }

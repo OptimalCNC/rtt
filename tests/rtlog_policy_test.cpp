@@ -194,6 +194,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "tests/property_test.cpp",
         "tests/state_test.cpp",
         "tests/tasks_multiple_test.cpp",
+        "tests/testtypes/MatrixTypeInfo.hpp",
         "tests/test-runner.cpp",
         "tests/test-runner-corba.cpp"
     };
