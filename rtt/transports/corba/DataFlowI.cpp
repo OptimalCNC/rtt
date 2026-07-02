@@ -91,7 +91,8 @@ void CDataFlowInterface_i::deregisterServant(RTT::DataFlowInterface* obj)
     {
         if (it->getDataFlowInterface() == obj)
         {
-            log(Debug) << "deregistered servant for data flow interface" << endlog();
+            Logger::log().logf(Logger::Debug, "CDataFlowInterface",
+                               "deregistered servant for data flow interface");
             CDataFlowInterface_i* servant = it->servant;
             PortableServer::ObjectId_var oid = servant->mpoa->servant_to_id(it->servant);
             servant->mpoa->deactivate_object(oid);
@@ -176,7 +177,9 @@ CDataFlowInterface::CPortDescriptions* CDataFlowInterface_i::getPortDescriptions
         TypeInfo const* type_info = port->getTypeInfo();
         if (!type_info || !type_info->getProtocol(ORO_CORBA_PROTOCOL_ID))
         {
-            log(Warning) << "the type of port " << ports[i] << " is not registered into the Orocos type system. It is ignored by the CORBA layer." << endlog();
+            Logger::log().logf(Logger::Warning, "CDataFlowInterface",
+                               "the type of port %s is not registered into the Orocos type system. It is ignored by the CORBA layer.",
+                               ports[i].c_str());
             continue;
         }
 
@@ -247,7 +250,8 @@ void CDataFlowInterface_i::disconnectPort(const char * port_name) ACE_THROW_SPEC
 {
     PortInterface* p = mdf->getPort(port_name);
     if (p == 0) {
-        log(Error) << "disconnectPort: No such port: "<< port_name <<endlog();
+        Logger::log().logf(Logger::Error, "CDataFlowInterface",
+                           "disconnectPort: No such port: %s", port_name);
         throw corba::CNoSuchPortException();
     }
     CORBA_CHECK_THREAD();
@@ -264,11 +268,13 @@ bool CDataFlowInterface_i::removeConnection(
     PortInterface* port = mdf->getPort(local_port);
     // CORBA does not support disconnecting from the input port
     if (port == 0) {
-        log(Error) << "disconnectPort: No such port: "<< local_port <<endlog();
+        Logger::log().logf(Logger::Error, "CDataFlowInterface",
+                           "disconnectPort: No such port: %s", local_port);
         throw corba::CNoSuchPortException();
     }
     if (dynamic_cast<OutputPortInterface*>(port) == 0) {
-        log(Error) << "disconnectPort: "<< local_port << " is an input port" << endlog();
+        Logger::log().logf(Logger::Error, "CDataFlowInterface",
+                           "disconnectPort: %s is an input port", local_port);
         throw corba::CNoSuchPortException();
     }
 
@@ -300,7 +306,8 @@ bool CDataFlowInterface_i::removeConnection(
 {
     PortInterface* p = mdf->getPort(port);
     if (p == 0) {
-        log(Error) << "createStream: No such port: "<< p->getName() <<endlog();
+        Logger::log().logf(Logger::Error, "CDataFlowInterface",
+                           "createStream: No such port: %s", port);
         throw corba::CNoSuchPortException();
     }
 
@@ -320,7 +327,8 @@ void CDataFlowInterface_i::removeStream( const char* port, const char* stream_na
 {
     PortInterface* p = mdf->getPort(port);
     if (p == 0) {
-        log(Error) << "createStream: No such port: "<< p->getName() <<endlog();
+        Logger::log().logf(Logger::Error, "CDataFlowInterface",
+                           "createStream: No such port: %s", port);
         throw corba::CNoSuchPortException();
     }
     CORBA_CHECK_THREAD();
@@ -337,7 +345,6 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelOutput(
           ,::RTT::corba::CInvalidArgument
         ))
 {
-    Logger::In in("CDataFlowInterface_i::buildChannelOutput");
     InputPortInterface* port = dynamic_cast<InputPortInterface*>(mdf->getPort(port_name));
     if (port == 0)
         throw CNoSuchPortException();
@@ -394,8 +401,12 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelOutput(
         // prepare out-of-band transport for this port.
         // if user supplied name, use that one.
         if ( type_info->getProtocol(corba_policy.transport) == 0 ) {
-            log(Error) << "Could not create out-of-band transport for port "<< port_name << " with transport id " << corba_policy.transport <<endlog();
-            log(Error) << "No such transport registered. Check your corba_policy.transport settings or add the transport for type "<< type_info->getTypeName() <<endlog();
+            Logger::log().logf(Logger::Error, "CDataFlowInterface_i::buildChannelOutput",
+                               "Could not create out-of-band transport for port %s with transport id %d",
+                               port_name, corba_policy.transport);
+            Logger::log().logf(Logger::Error, "CDataFlowInterface_i::buildChannelOutput",
+                               "No such transport registered. Check your corba_policy.transport settings or add the transport for type %s",
+                               type_info->getTypeName().c_str());
             return RTT::corba::CChannelElement::_nil();
         }
         RTT::base::ChannelElementBase::shared_ptr ceb = type_info->getProtocol(corba_policy.transport)->createStream(port, policy2, /* is_sender = */ false);
@@ -407,9 +418,13 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelOutput(
             // override, insert oob element between corba and endpoint and add a buffer between oob and endpoint.
             dynamic_cast<ChannelElementBase*>(this_element)->connectTo(ceb, policy2.mandatory);
             ceb->getOutputEndPoint()->connectTo(end, policy2.mandatory);
-            log(Info) <<"Receiving data for port "<< policy2.name_id << " from out-of-band protocol "<< corba_policy.transport <<endlog();
+            Logger::log().logf(Logger::Info, "CDataFlowInterface_i::buildChannelOutput",
+                               "Receiving data for port %s from out-of-band protocol %d",
+                               policy2.name_id.c_str(), corba_policy.transport);
         } else {
-            log(Error) << "The type transporter for type "<<type_info->getTypeName()<< " failed to create an out-of-band endpoint for port " << port_name<<endlog();
+            Logger::log().logf(Logger::Error, "CDataFlowInterface_i::buildChannelOutput",
+                               "The type transporter for type %s failed to create an out-of-band endpoint for port %s",
+                               type_info->getTypeName().c_str(), port_name);
             return RTT::corba::CChannelElement::_nil();
         }
         //
@@ -440,7 +455,6 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelInput(
           ,::RTT::corba::CInvalidArgument
         ))
 {
-    Logger::In in("CDataFlowInterface_i::buildChannelInput");
     // First check validity of user input...
     OutputPortInterface* port = dynamic_cast<OutputPortInterface*>(mdf->getPort(port_name));
     if (port == 0)
@@ -481,8 +495,12 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelInput(
         // prepare out-of-band transport for this port.
         // if user supplied name, use that one.
         if ( type_info->getProtocol(corba_policy.transport) == 0 ) {
-            log(Error) << "Could not create out-of-band transport for port "<< port_name << " with transport id " << corba_policy.transport <<endlog();
-            log(Error) << "No such transport registered. Check your corba_policy.transport settings or add the transport for type "<< type_info->getTypeName() <<endlog();
+            Logger::log().logf(Logger::Error, "CDataFlowInterface_i::buildChannelInput",
+                               "Could not create out-of-band transport for port %s with transport id %d",
+                               port_name, corba_policy.transport);
+            Logger::log().logf(Logger::Error, "CDataFlowInterface_i::buildChannelInput",
+                               "No such transport registered. Check your corba_policy.transport settings or add the transport for type %s",
+                               type_info->getTypeName().c_str());
             throw CNoCorbaTransport();
         }
         RTT::base::ChannelElementBase::shared_ptr ceb = type_info->getProtocol(corba_policy.transport)->createStream(port, policy2, /* is_sender = */ true);
@@ -494,9 +512,13 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelInput(
             // OOB is added to end of chain.
             start->connectTo( dynamic_cast<ChannelElementBase*>(this_element), policy2.mandatory );
             dynamic_cast<ChannelElementBase*>(this_element)->connectTo( ceb );
-            log(Info) <<"Sending data from port "<< policy2.name_id << " to out-of-band protocol "<< corba_policy.transport <<endlog();
+            Logger::log().logf(Logger::Info, "CDataFlowInterface_i::buildChannelInput",
+                               "Sending data from port %s to out-of-band protocol %d",
+                               policy2.name_id.c_str(), corba_policy.transport);
         } else {
-            log(Error) << "The type transporter for type "<<type_info->getTypeName()<< " failed to create an out-of-band endpoint for port " << port_name<<endlog();
+            Logger::log().logf(Logger::Error, "CDataFlowInterface_i::buildChannelInput",
+                               "The type transporter for type %s failed to create an out-of-band endpoint for port %s",
+                               type_info->getTypeName().c_str(), port_name);
             throw CNoCorbaTransport();
         }
 
@@ -528,7 +550,6 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelInput(
           ,::RTT::corba::CInvalidArgument
         ))
 {
-    Logger::In in("CDataFlowInterface_i::createSharedConnection");
     InputPortInterface* port = dynamic_cast<InputPortInterface*>(mdf->getPort(port_name));
     if (port == 0)
         throw CNoSuchPortException();
@@ -565,7 +586,6 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelInput(
           ,::RTT::corba::CNoSuchPortException
         ))
 {
-    Logger::In in("CDataFlowInterface_i::createConnection");
     OutputPortInterface* writer = dynamic_cast<OutputPortInterface*>(mdf->getPort(writer_port));
     if (writer == 0)
         throw CNoSuchPortException();
@@ -580,22 +600,27 @@ CChannelElement_ptr CDataFlowInterface_i::buildChannelInput(
             dynamic_cast<InputPortInterface*>(local_interface->getPort(reader_port));
         if (!reader)
         {
-            log(Warning) << "CORBA: createConnection() target is not an input port" << endlog();
+            Logger::log().logf(Logger::Warning, "CDataFlowInterface_i::createConnection",
+                               "CORBA: createConnection() target is not an input port");
             throw CNoSuchPortException();
             return false;
         }
 
-        log(Debug) << "CORBA: createConnection() is creating a LOCAL connection between " <<
-           writer_port << " and " << reader_port << endlog();
+        Logger::log().logf(Logger::Debug, "CDataFlowInterface_i::createConnection",
+                           "CORBA: createConnection() is creating a LOCAL connection between %s and %s",
+                           writer_port, reader_port);
         return writer->createConnection(*reader, toRTT(policy));
     }
     else
-        log(Debug) << "CORBA: createConnection() is creating a REMOTE connection between " <<
-           writer_port << " and " << reader_port << endlog();
+        Logger::log().logf(Logger::Debug, "CDataFlowInterface_i::createConnection",
+                           "CORBA: createConnection() is creating a REMOTE connection between %s and %s",
+                           writer_port, reader_port);
 
     try {
         if (reader_interface->getPortType(reader_port) != corba::CInput) {
-            log(Error) << "Could not create connection: " << reader_port <<" is not an input port."<<endlog();
+            Logger::log().logf(Logger::Error, "CDataFlowInterface_i::createConnection",
+                               "Could not create connection: %s is not an input port.",
+                               reader_port);
             throw CNoSuchPortException();
             return false;
         }
