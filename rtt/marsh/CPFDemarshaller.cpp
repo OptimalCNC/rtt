@@ -81,7 +81,8 @@ namespace RTT
             XMLString::release( &chholder );
             return true;
         }
-        log(Error) << "Could not transcode XMLCh* !" <<endlog();
+        Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                           "Could not transcode XMLCh* !");
         return false;
     }
 
@@ -95,7 +96,8 @@ namespace RTT
             XMLString::release( &chholder );
             return res;
         }
-        log(Error) << "Could not transcode XMLCh* !" <<endlog();
+        Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                           "Could not transcode XMLCh* !");
         return res;
     }
 
@@ -338,7 +340,9 @@ namespace RTT
                                     if ( ln == "value"  )
                                         tag_stack.push( TAG_VALUE );
                                     else {
-                                        log(Warning) << "Unrecognised XML tag :"<< ln <<": ignoring." << endlog();
+                                        Logger::log().logf(Logger::Warning, "SAX2CPFHandler",
+                                                           "Unrecognised XML tag :%s: ignoring.",
+                                                           ln.c_str());
                                         tag_stack.push( TAG_UNKNOWN );
                                     }
             }
@@ -347,13 +351,20 @@ namespace RTT
             {
                 std::string warn;
                 XMLChToStdString( exception.getMessage(), warn);
-                Logger::log() << Logger::Warning << "SAX2CPFHandler Parsing: " << warn <<Logger::nl;
+                Logger::log().logf(Logger::Warning, "SAX2CPFHandler",
+                                   "SAX2CPFHandler Parsing: %s",
+                                   warn.c_str());
                 if ( exception.getPublicId() )
                     {
                         XMLChToStdString( exception.getPublicId(), warn);
-                        Logger::log() << " At entity "<< warn <<Logger::nl;
+                        Logger::log().logf(Logger::Warning, "SAX2CPFHandler",
+                                           " At entity %s",
+                                           warn.c_str());
                     }
-                Logger::log() << " Column "<< exception.getColumnNumber()<< " Line " <<exception.getLineNumber()<<Logger::endl;
+                Logger::log().logf(Logger::Warning, "SAX2CPFHandler",
+                                   " Column %llu Line %llu",
+                                   static_cast<unsigned long long>(exception.getColumnNumber()),
+                                   static_cast<unsigned long long>(exception.getLineNumber()));
                 // to not throw.
             }
 
@@ -396,7 +407,6 @@ namespace RTT
     CPFDemarshaller::CPFDemarshaller( const std::string& filename )
         : name(0), fis(0)
     {
-        Logger::In in("CPFDemarshaller");
         try
             {
                 XMLPlatformUtils::Initialize();
@@ -405,12 +415,14 @@ namespace RTT
             {
                 std::string error;
                 XMLChToStdString(toCatch.getMessage(), error);
-                Logger::log() << Logger::Error << "XML Initialization : "
-                              << error << Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "XML Initialization : %s",
+                                   error.c_str());
             }
         catch ( ... )
             {
-                Logger::log() << Logger::Error << "XML Init: General System Exception !" << Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "XML Init: General System Exception !");
             }
 
         try {
@@ -419,14 +431,18 @@ namespace RTT
         }
         catch ( XMLException& xe )
             {
-                Logger::log() << Logger::Error << "Failed to open file " <<filename << Logger::endl;
-                Logger::log() << Logger::Error << xe.getMessage() << Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "Failed to open file %s",
+                                   filename.c_str());
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "%s", XMLgetString(xe.getMessage()).c_str());
 
                 fis = 0;
             }
         catch ( ... )
             {
-                Logger::log() << Logger::Error << "Opening file: General System Exception !" << Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "Opening file: General System Exception !");
             }
         XMLString::release( &name );
     }
@@ -449,13 +465,12 @@ namespace RTT
         }
         catch ( ... )
             {
-                Logger::log() << Logger::Error << "SAX2XMLReader System Exception !" << Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "SAX2XMLReader System Exception !");
                 XMLPlatformUtils::Terminate();
                 return false;
             }
 
-
-        Logger::In in("CPFDemarshaller");
 
         try
             {
@@ -491,39 +506,54 @@ namespace RTT
             }
         catch ( const XMLException & toCatch )
             {
-                Logger::log() << Logger::Error << "An XML parsing error occurred processing file " <<Logger::nl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "An XML parsing error occurred processing file ");
                 if ( toCatch.getSrcFile() ) {
-                    Logger::log() <<  toCatch.getSrcFile() << " parsing line " << toCatch.getSrcLine()<<Logger::nl ;
+                    Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                       "%s parsing line %llu",
+                                       toCatch.getSrcFile(),
+                                       static_cast<unsigned long long>(toCatch.getSrcLine()));
                 }
-                Logger::log()  << XMLgetString(toCatch.getMessage()) <<Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "%s", XMLgetString(toCatch.getMessage()).c_str());
                 delete parser;
                 XMLPlatformUtils::Terminate();
                 return false;
             }
         catch ( const SAXParseException & toCatch )
             {
-                Logger::log() << Logger::Error << "An XML SAX parsing error occurred processing file " <<Logger::nl;
-                Logger::log()  << XMLgetString(toCatch.getMessage()) <<Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "An XML SAX parsing error occurred processing file ");
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "%s", XMLgetString(toCatch.getMessage()).c_str());
                 if ( toCatch.getPublicId() )
                     {
-                        Logger::log() << " At entity "<< XMLgetString(toCatch.getPublicId()) <<Logger::nl;
+                        Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                           " At entity %s",
+                                           XMLgetString(toCatch.getPublicId()).c_str());
                     }
-                Logger::log() << " Column "<< toCatch.getColumnNumber()<< " Line " <<toCatch.getLineNumber()<<Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   " Column %llu Line %llu",
+                                   static_cast<unsigned long long>(toCatch.getColumnNumber()),
+                                   static_cast<unsigned long long>(toCatch.getLineNumber()));
                 delete parser;
                 XMLPlatformUtils::Terminate();
                 return false;
             }
         catch ( const SAXException & toCatch )
             {
-                Logger::log() << Logger::Error << "An XML SAX exception occurred processing file " <<Logger::nl;
-                Logger::log()  << XMLgetString(toCatch.getMessage()) <<Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "An XML SAX exception occurred processing file ");
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "%s", XMLgetString(toCatch.getMessage()).c_str());
                 delete parser;
                 XMLPlatformUtils::Terminate();
                 return false;
             }
         catch ( ... )
             {
-                Logger::log() << Logger::Error << "General System Exception !" << Logger::endl;
+                Logger::log().logf(Logger::Error, "CPFDemarshaller",
+                                   "General System Exception !");
                 delete parser;
                 XMLPlatformUtils::Terminate();
                 return false;
@@ -533,4 +563,3 @@ namespace RTT
 }
 
 #endif
-
