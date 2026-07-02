@@ -145,11 +145,16 @@ namespace RTT
             if ( source ) {
                 base::DataSourceBase::shared_ptr dsb = source->getDataSource();
                 if ( !setDataSource(dsb) ) {
-                     log(Error) << "Cannot initialize Property from " << source->getName() << ": ";
                      if ( dsb ) {
-                         log() << "incompatible type ( destination type: " << getType() << ", source type: " << dsb->getTypeName() << ")." << endlog();
+                         Logger::log().logf(Logger::Error, "Property",
+                                            "Cannot initialize Property from %s: incompatible type ( destination type: %s, source type: %s ).",
+                                            source->getName().c_str(),
+                                            getType().c_str(),
+                                            dsb->getTypeName().c_str());
                      } else {
-                         log() << "source Property was not ready." << endlog();
+                         Logger::log().logf(Logger::Error, "Property",
+                                            "Cannot initialize Property from %s: source Property was not ready.",
+                                            source->getName().c_str());
                      }
                 }
             }
@@ -409,8 +414,10 @@ namespace RTT
                     = internal::AssignableDataSource<DataSourceType>::narrow( datasource.get() );
             Property<T>* prop = new Property<T>( _name, _description, value );
             if ( datasource && !prop->ready() ) {
-                log(Error) << "Cannot initialize Property: "
-                           << "incompatible type ( destination type: " << getType() << ", source type: " << datasource->getTypeName() << ")." << endlog();
+                Logger::log().logf(Logger::Error, "Property",
+                                   "Cannot initialize Property: incompatible type ( destination type: %s, source type: %s ).",
+                                   getType().c_str(),
+                                   datasource->getTypeName().c_str());
             }
             return prop;
         }

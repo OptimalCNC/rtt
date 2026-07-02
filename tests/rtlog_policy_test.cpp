@@ -88,6 +88,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/os/Thread.cpp",
         "rtt/os/Timer.cpp",
         "rtt/OperationCaller.hpp",
+        "rtt/Property.hpp",
         "rtt/scripting/ParsedStateMachine.cpp",
         "rtt/scripting/Parser.cpp",
         "rtt/ServiceRequester.cpp",
