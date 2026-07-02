@@ -186,6 +186,8 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/types/TypekitRepository.cpp",
         "rtt/types/VectorTemplateComposition.hpp",
         "tests/test-main.cpp",
+        "tests/property_composition_test.cpp",
+        "tests/property_test.cpp",
         "tests/test-runner.cpp",
         "tests/test-runner-corba.cpp"
     };

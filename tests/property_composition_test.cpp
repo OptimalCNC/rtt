@@ -27,13 +27,16 @@ public:
 bool operator==(const std::vector<double>& a, const std::vector<double>& b)
 {
     if ( a.size() != b.size() ) {
-        log(Error) << "Wrong vector sizes : " << a.size() <<" "<< b.size()<<endlog();
+        Logger::log().logf(Logger::Error, "property_composition_test",
+                           "Wrong vector sizes : %zu %zu", a.size(), b.size());
         return false;
     }
     for(unsigned int i =0; i != a.size(); ++i)
         {
             if (a[i] != b[i]) {
-                log(Error) << "Wrong vector element: "<<a[i]<<" != "<<b[i]<<" i:" << i<<endlog();
+                Logger::log().logf(Logger::Error, "property_composition_test",
+                                   "Wrong vector element: %g != %g i:%u",
+                                   a[i], b[i], i);
                 return false;
             }
         }
