@@ -76,6 +76,7 @@ BOOST_AUTO_TEST_CASE(testRealtimeSensitiveFilesUseBoundedLogger)
         "rtt/internal/SendHandleC.cpp",
         "rtt/internal/SharedConnection.cpp",
         "rtt/ExecutionEngine.cpp",
+        "rtt/extras/FileDescriptorActivity.cpp",
         "rtt/marsh/CPFDemarshaller.cpp",
         "rtt/marsh/CPFMarshaller.cpp",
         "rtt/marsh/MarshallingService.cpp",

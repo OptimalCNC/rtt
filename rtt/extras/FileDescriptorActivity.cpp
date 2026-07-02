@@ -186,14 +186,16 @@ void FileDescriptorActivity::setTimeout_us(int timeout_us)
 	}
 	else
 	{
-        log(Error) << "Ignoring invalid timeout (" << timeout_us << ")" << endlog();
+        Logger::log().logf(Logger::Error, "FileDescriptorActivity",
+                           "Ignoring invalid timeout (%d)", timeout_us);
     }
 }
 void FileDescriptorActivity::watch(int fd)
 { RTT::os::MutexLock lock(m_lock);
     if (fd < 0)
     {
-        log(Error) << "negative file descriptor given to FileDescriptorActivity::watch" << endlog();
+        Logger::log().logf(Logger::Error, "FileDescriptorActivity",
+                           "negative file descriptor given to FileDescriptorActivity::watch");
         return;
     }
 
@@ -237,7 +239,8 @@ bool FileDescriptorActivity::start()
 
     if (pipe(m_interrupt_pipe) == -1)
     {
-        log(Error) << "FileDescriptorActivity: cannot create control pipe" << endlog();
+        Logger::log().logf(Logger::Error, "FileDescriptorActivity",
+                           "FileDescriptorActivity: cannot create control pipe");
         return false;
     }
 
@@ -252,7 +255,8 @@ bool FileDescriptorActivity::start()
         close(m_interrupt_pipe[0]);
         close(m_interrupt_pipe[1]);
         m_interrupt_pipe[0] = m_interrupt_pipe[1] = -1;
-        log(Error) << "FileDescriptorActivity: could not set the control pipe to non-blocking mode" << endlog();
+        Logger::log().logf(Logger::Error, "FileDescriptorActivity",
+                           "FileDescriptorActivity: could not set the control pipe to non-blocking mode");
         return false;
     }
 #endif
@@ -268,7 +272,8 @@ bool FileDescriptorActivity::start()
         close(m_interrupt_pipe[0]);
         close(m_interrupt_pipe[1]);
         m_interrupt_pipe[0] = m_interrupt_pipe[1] = -1;
-        log(Error) << "FileDescriptorActivity: Activity::start() failed" << endlog();
+        Logger::log().logf(Logger::Error, "FileDescriptorActivity",
+                           "FileDescriptorActivity: Activity::start() failed");
         return false;
     }
     return true;
@@ -347,8 +352,8 @@ void FileDescriptorActivity::loop()
         m_has_timeout = false;
         if (ret == -1)
         {
-            log(Error) << "FileDescriptorActivity: error in select(), errno = "
-                       << errno << endlog();
+            Logger::log().logf(Logger::Error, "FileDescriptorActivity",
+                               "FileDescriptorActivity: error in select(), errno = %d", errno);
             m_has_error = true;
         }
         else if (ret == 0)
@@ -483,4 +488,3 @@ bool FileDescriptorActivity::stop()
     }
     return false;
 }
-
