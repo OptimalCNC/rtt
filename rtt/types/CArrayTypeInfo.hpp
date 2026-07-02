@@ -127,7 +127,9 @@ namespace RTT
                     // @todo could also return a direct reference to item indx using another DS type that respects updated().
                     return new ArrayPartDataSource<typename T::value_type>( *adata->set().address(), new ConstantDataSource<unsigned int>(indx), item, data->rvalue().count() );
                 } catch(...) {}
-                log(Error) << "CArrayTypeInfo: No such part (or invalid index): " << name << endlog();
+                Logger::log().logf(Logger::Error, "CArrayTypeInfo",
+                                   "No such part (or invalid index): %s",
+                                   name.c_str());
                 return base::DataSourceBase::shared_ptr();
             }
 
@@ -146,14 +148,18 @@ namespace RTT
                     if (id_name->get() == "size" || id_name->get() == "capacity") {
                         return new ConstantDataSource<int>( data->rvalue().count() );
                     } else {
-                        log(Error) << "CArrayTypeInfo: No such part : " << id_name->get() << endlog();
+                        Logger::log().logf(Logger::Error, "CArrayTypeInfo",
+                                           "No such part : %s",
+                                           id_name->get().c_str());
                         return base::DataSourceBase::shared_ptr();
                     }
                 }
 
                 typename AssignableDataSource<T>::shared_ptr adata = boost::dynamic_pointer_cast< AssignableDataSource<T> >( item );
                 if ( !adata ) {
-                    log(Error) << "CArrayTypeInfo: need assignable data type for indexing " << this->getTypeName() << endlog();
+                    Logger::log().logf(Logger::Error, "CArrayTypeInfo",
+                                       "need assignable data type for indexing %s",
+                                       this->getTypeName().c_str());
                     return base::DataSourceBase::shared_ptr();
                 }
 
@@ -161,7 +167,9 @@ namespace RTT
                 if ( id_indx ) {
                     return new ArrayPartDataSource<typename T::value_type>( *adata->set().address(), id_indx, item, data->rvalue().count() );
                 }
-                log(Error) << "CArrayTypeInfo: Invalid index) for type " << this->getTypeName() << endlog();
+                Logger::log().logf(Logger::Error, "CArrayTypeInfo",
+                                   "Invalid index) for type %s",
+                                   this->getTypeName().c_str());
                 return base::DataSourceBase::shared_ptr();
             }
 
@@ -186,7 +194,8 @@ namespace RTT
 
                 //result.resize( source.size() );
                 if(result.count() != source.size()) {
-                    log(Error) << "Refusing to compose C Arrays from a property list of different size. Use the same number of properties as the C array size." << endlog();
+                    Logger::log().logf(Logger::Error, "CArrayTypeInfo",
+                                       "Refusing to compose C Arrays from a property list of different size. Use the same number of properties as the C array size.");
                     return false;
                 }
                 // recurse into items of this sequence:
