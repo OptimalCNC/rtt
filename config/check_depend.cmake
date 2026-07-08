@@ -177,6 +177,8 @@ if(OROCOS_TARGET STREQUAL "xenomai")
   add_definitions( -Wall )
 
   if(XENOMAI_FOUND)
+    add_definitions(${XENOMAI_CFLAGS_LIST})
+
     # Input for .pc and .cmake generated files:
     list(APPEND OROCOS-RTT_INCLUDE_DIRS ${XENOMAI_INCLUDE_DIRS} ${PTHREAD_INCLUDE_DIRS})
     list(APPEND OROCOS-RTT_LIBRARIES ${XENOMAI_LIBRARIES} ${PTHREAD_LIBRARIES} dl) 
@@ -373,4 +375,3 @@ ENDIF ( DOXYGEN_EXECUTABLE )
 # Detect CORBA using user's CORBA_IMPLEMENTATION
 #
 find_package(Corba REQUIRED)
-

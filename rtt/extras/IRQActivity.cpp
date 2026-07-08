@@ -65,10 +65,10 @@ IRQActivity::~IRQActivity()
 int  IRQActivity::getIRQ() const { return m_irq; }
 void IRQActivity::setIRQ(int irq) { m_irq = irq; }
 
-#ifndef OROPKG_OS_XENOMAI
+#ifndef ORO_XENO_HAS_NATIVE_INTR
 bool IRQActivity::start() {
     Logger::log().logf(Logger::Error, "IRQActivity",
-                       "IRQActivity is only usable on Xenomai");
+                       "IRQActivity is only usable with Xenomai native interrupts");
     return false;
 }
 #else
@@ -159,4 +159,4 @@ void IRQActivity::step()
         m_runner->step();
 }
 
-#endif // OS is xenomai
+#endif // ORO_XENO_HAS_NATIVE_INTR

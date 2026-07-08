@@ -29,30 +29,47 @@ if ( XenomaiPosix_FIND_REQUIRED )
   set( XENOMAI_POSIX_FIND_REQUIRED "REQUIRED")
 endif()
 
-# Header files to find
-set(header_NAME    pthread.h)
-
-# Libraries to find
-set(XENOMAI_POSIX_NAME   pthread_rt)
-
 # Find headers and libraries
 if(XENOMAI_ROOT_DIR)
   # Use location specified by environment variable
   find_program(XENOMAI_XENO_CONFIG NAMES xeno-config  PATHS ${XENOMAI_ROOT_DIR}/bin NO_DEFAULT_PATH)
-  find_path(XENOMAI_POSIX_INCLUDE_DIR        NAMES ${header_NAME}        PATHS ${XENOMAI_ROOT_DIR}/include PATH_SUFFIXES xenomai/posix NO_DEFAULT_PATH)
-  find_library(XENOMAI_POSIX_LIBRARY         NAMES ${XENOMAI_POSIX_NAME}       PATHS ${XENOMAI_ROOT_DIR}/lib     NO_DEFAULT_PATH)
 else()
   # Use default CMake search process
   find_program(XENOMAI_XENO_CONFIG NAMES xeno-config )
-  find_path(XENOMAI_POSIX_INCLUDE_DIR       NAMES ${header_NAME} PATH_SUFFIXES xenomai )
-  find_library(XENOMAI_POSIX_LIBRARY        NAMES ${XENOMAI_POSIX_NAME})
 endif()
 
-if( XENOMAI_POSIX_LIBRARY AND XENOMAI_POSIX_INCLUDE_DIR AND NOT XENOMAI_XENO_CONFIG )
-  message(SEND_ERROR "Your Xenomai installation is broken: I can not determine Xenomai POSIX cflags/ldflags without xeno-config.")
+if(XENOMAI_XENO_CONFIG)
+  execute_process(COMMAND ${XENOMAI_XENO_CONFIG} --skin=posix --cflags
+    RESULT_VARIABLE XENOMAI_POSIX_CFLAGS_RESULT
+    OUTPUT_VARIABLE XENOMAI_POSIX_CFLAGS
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND ${XENOMAI_XENO_CONFIG} --skin=posix --no-auto-init --ldflags
+    RESULT_VARIABLE XENOMAI_POSIX_LDFLAGS_RESULT
+    OUTPUT_VARIABLE XENOMAI_POSIX_LDFLAGS
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  if(NOT XENOMAI_POSIX_CFLAGS_RESULT EQUAL 0 OR NOT XENOMAI_POSIX_LDFLAGS_RESULT EQUAL 0)
+    set(XENOMAI_POSIX_FOUND FALSE)
+    return()
+  endif()
+
+  separate_arguments(XENOMAI_POSIX_CFLAGS_LIST UNIX_COMMAND "${XENOMAI_POSIX_CFLAGS}")
+  separate_arguments(XENOMAI_POSIX_LDFLAGS_LIST UNIX_COMMAND "${XENOMAI_POSIX_LDFLAGS}")
+
+  set(XENOMAI_POSIX_INCLUDE_DIR)
+  foreach(flag ${XENOMAI_POSIX_CFLAGS_LIST})
+    if(flag MATCHES "^-I(.+)")
+      list(APPEND XENOMAI_POSIX_INCLUDE_DIR "${CMAKE_MATCH_1}")
+    endif()
+  endforeach()
+  list(REMOVE_DUPLICATES XENOMAI_POSIX_INCLUDE_DIR)
+
+  set(XENOMAI_POSIX_LIBRARY ${XENOMAI_POSIX_LDFLAGS_LIST})
 else()
-  execute_process(COMMAND ${XENOMAI_XENO_CONFIG} --skin=posix --ldflags OUTPUT_VARIABLE XENOMAI_POSIX_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-  execute_process(COMMAND ${XENOMAI_XENO_CONFIG} --skin=posix --cflags OUTPUT_VARIABLE XENOMAI_POSIX_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
+  # Legacy fallback for installations without xeno-config.
+  set(header_NAME pthread.h)
+  find_path(XENOMAI_POSIX_INCLUDE_DIR NAMES ${header_NAME} PATH_SUFFIXES xenomai/posix xenomai)
+  find_library(XENOMAI_POSIX_LIBRARY NAMES pthread_rt)
 endif()
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.

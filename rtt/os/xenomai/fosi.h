@@ -89,6 +89,15 @@ extern "C" {
 #define ORO_XENO_HAS_ACQUIRE_UNTIL
 #endif
 
+// Xenomai 3 removed the old TSC helper names. Alchemy clock ticks have a
+// configurable resolution and default to nanoseconds, which preserves RTT's
+// existing tick/nanosecond conversion model.
+#if CONFIG_XENO_VERSION_MAJOR >= 3
+#define rt_timer_tsc2ns rt_timer_ticks2ns
+#define rt_timer_ns2tsc rt_timer_ns2ticks
+#define rt_timer_tsc rt_timer_read
+#endif
+
 
 	typedef RT_MUTEX rt_mutex_t;
 	typedef RT_MUTEX rt_rec_mutex_t;
@@ -264,6 +273,9 @@ static inline int rtos_nanosleep(const TIME_SPEC *rqtp, TIME_SPEC *rmtp)
     static inline int rtos_mutex_trylock( rt_mutex_t* m)
     {
         CHK_XENO_CALL();
+#if CONFIG_XENO_VERSION_MAJOR >= 3
+        return rt_mutex_acquire(m, TM_NONBLOCK);
+#else
         struct rt_mutex_info info;
         rt_mutex_inquire(m, &info );
 #if ((CONFIG_XENO_VERSION_MAJOR*1000)+(CONFIG_XENO_VERSION_MINOR*100)+CONFIG_XENO_REVISION_LEVEL) >= 2500
@@ -276,6 +288,7 @@ static inline int rtos_nanosleep(const TIME_SPEC *rqtp, TIME_SPEC *rmtp)
         // from here on: we're sure our thread didn't lock it
         // now check if any other thread locked it:
         return rt_mutex_acquire(m, TM_NONBLOCK);
+#endif
     }
 
     static inline int rtos_mutex_lock_until( rt_mutex_t* m, NANO_TIME abs_time)

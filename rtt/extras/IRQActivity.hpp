@@ -43,16 +43,21 @@
 #include "../rtt-config.h"
 
 #ifdef OROPKG_OS_XENOMAI
+#include <xeno_config.h>
+#endif
+
+#if defined(OROPKG_OS_XENOMAI) && CONFIG_XENO_VERSION_MAJOR < 3
+#define ORO_XENO_HAS_NATIVE_INTR
 #include <native/intr.h>
 #else
-// Provide a dump RT_INTR type. start() always returns false on non-Xenomai
-// OSes.
+// Provide a dummy RT_INTR type. start() always returns false on unsupported
+// OSes and on Xenomai 3, where the native interrupt skin was removed.
 struct RT_INTR { };
 #ifndef RTT_DLL_EXPORT
 #ifdef _MSC_VER
-	#pragma message( "IRQActivity is available only on Xenomai. It will fail on startup")
+	#pragma message( "IRQActivity is available only with Xenomai native interrupts. It will fail on startup")
 #else
-#warning "IRQActivity is available only on Xenomai. It will fail on startup"
+#warning "IRQActivity is available only with Xenomai native interrupts. It will fail on startup"
 #endif
 #endif
 #endif
@@ -114,7 +119,7 @@ namespace RTT { namespace extras {
         void setIRQ(int irq);
 
         virtual bool start();
-#ifdef OROPKG_OS_XENOMAI
+#ifdef ORO_XENO_HAS_NATIVE_INTR
         virtual void loop();
         virtual bool breakLoop();
         virtual void step();

@@ -465,7 +465,11 @@ namespace RTT
             RT_TASK* tt = mytask->xenoptr;
             if ( tt )
                 if ( rt_task_inquire ( tt, &info) == 0 )
+#if CONFIG_XENO_VERSION_MAJOR >= 3
+                    return info.prio;
+#else
                     return info.bprio;
+#endif
             return -1;
         }
 
