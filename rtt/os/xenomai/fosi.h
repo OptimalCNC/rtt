@@ -274,7 +274,9 @@ static inline int rtos_nanosleep(const TIME_SPEC *rqtp, TIME_SPEC *rmtp)
     {
         CHK_XENO_CALL();
 #if CONFIG_XENO_VERSION_MAJOR >= 3
-        return rt_mutex_acquire(m, TM_NONBLOCK);
+        RT_MUTEX_INFO info;
+        if (rt_mutex_inquire(m, &info) == 0 && rt_task_same(&info.owner, rt_task_self()) != 0)
+            return 0;
 #else
         struct rt_mutex_info info;
         rt_mutex_inquire(m, &info );
@@ -285,10 +287,10 @@ static inline int rtos_nanosleep(const TIME_SPEC *rqtp, TIME_SPEC *rmtp)
         if (info.lockcnt)
             return 0;
 #endif
+#endif
         // from here on: we're sure our thread didn't lock it
         // now check if any other thread locked it:
         return rt_mutex_acquire(m, TM_NONBLOCK);
-#endif
     }
 
     static inline int rtos_mutex_lock_until( rt_mutex_t* m, NANO_TIME abs_time)
