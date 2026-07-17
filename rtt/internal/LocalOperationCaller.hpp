@@ -51,6 +51,7 @@
 #include "../SendHandle.hpp"
 #include "../ExecutionEngine.hpp"
 #include "OperationCallerBinder.hpp"
+#include "FunctionEffects.hpp"
 #include <boost/fusion/include/vector_tie.hpp>
 #include "../os/oro_allocator.hpp"
 
@@ -671,7 +672,8 @@ namespace RTT
                 this->setCaller( caller );
                 this->setOwner(ee );
                 this->setThread( et, ee );
-                this->mmeth = OperationCallerBinder<Signature>()(meth, object);
+                this->mmeth = OperationCallerBinder<Signature>()(
+                    removeFunctionEffects(meth), object);
             }
 
             /**

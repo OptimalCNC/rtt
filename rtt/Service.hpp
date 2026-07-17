@@ -47,6 +47,7 @@
 #include "internal/OperationCallerC.hpp"
 #include "internal/UnMember.hpp"
 #include "internal/GetSignature.hpp"
+#include "internal/FunctionEffects.hpp"
 
 #include "ConfigurationInterface.hpp"
 #include "Operation.hpp"
@@ -507,7 +508,9 @@ namespace RTT
                 ExecutionThread et = ClientThread)
         {
             typedef typename internal::GetSignatureDS<Func>::Signature SignatureDS;    // function signature with normal object pointer
-            Operation<SignatureDS>* op = new Operation<SignatureDS>(name, boost::function<SignatureDS>(func), et, this->getOwnerExecutionEngine() );
+            Operation<SignatureDS>* op = new Operation<SignatureDS>(
+                name, boost::function<SignatureDS>(internal::removeFunctionEffects(func)),
+                et, this->getOwnerExecutionEngine() );
             ownedoperations.push_back(op);
             return addOperationDS( sp, *op );
         }

@@ -24,6 +24,7 @@
 #include <rtt/Service.hpp>
 #include <rtt/OperationCaller.hpp>
 #include <rtt/TaskContext.hpp>
+#include <rtt/internal/DataSources.hpp>
 
 using namespace std;
 using namespace RTT::detail;
@@ -91,6 +92,19 @@ public:
 
     static double freefunc0(void) { return 1.0; }
     static double freefunc1(int i) { return 2.0; }
+
+#if defined(__clang__)
+#if __has_attribute(nonblocking) && __has_attribute(nonallocating)
+#define ORO_TEST_CLANG_FUNCTION_EFFECTS 1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wperf-constraint-implies-noexcept"
+    int nonblockingNoArgs() [[clang::nonblocking]] { return 7; }
+    int nonblockingAdd(int lhs, int rhs) [[clang::nonblocking]] { return lhs + rhs; }
+    int nonblockingConst(int value) const [[clang::nonblocking]] { return value * 2; }
+    int nonallocatingIncrement(int value) [[clang::nonallocating]] { return value + 1; }
+#pragma clang diagnostic pop
+#endif
+#endif
 
     TaskContext tc;
 
@@ -227,6 +241,46 @@ BOOST_AUTO_TEST_CASE( testOperationAddCpp )
     BOOST_CHECK_EQUAL(opc2(1,2.0), 3.0);
 }
 
+#ifdef ORO_TEST_CLANG_FUNCTION_EFFECTS
+BOOST_AUTO_TEST_CASE( testOperationAddClangFunctionEffects )
+{
+    Service::shared_ptr service = boost::make_shared<Service>("FunctionEffects");
+
+    Operation<int(void)>& no_args = service->addOperation(
+        "nonblockingNoArgs", &OperationTest::nonblockingNoArgs, this);
+    Operation<int(int, int)>& add = service->addOperation(
+        "nonblockingAdd", &OperationTest::nonblockingAdd, this);
+    Operation<int(int)>& constant = service->addOperation(
+        "nonblockingConst", &OperationTest::nonblockingConst, this);
+    Operation<int(int)>& increment = service->addOperation(
+        "nonallocatingIncrement", &OperationTest::nonallocatingIncrement, this);
+    boost::shared_ptr<OperationTest> object(this, [](OperationTest*) {});
+    internal::ValueDataSource<boost::shared_ptr<OperationTest> >::shared_ptr object_source =
+        new internal::ValueDataSource<boost::shared_ptr<OperationTest> >(object);
+    Operation<int(boost::shared_ptr<OperationTest>, int, int)>& data_source_add =
+        service->addOperationDS(
+            "nonblockingAddDS", &OperationTest::nonblockingAdd, object_source.get());
+
+    OperationCaller<int(void)> no_args_caller = service->getOperation(no_args.getName());
+    OperationCaller<int(int, int)> add_caller = service->getOperation(add.getName());
+    OperationCaller<int(int)> const_caller = service->getOperation(constant.getName());
+    OperationCaller<int(int)> increment_caller = service->getOperation(increment.getName());
+    OperationCaller<int(int, int)> data_source_caller =
+        service->getOperation(data_source_add.getName());
+
+    BOOST_REQUIRE(no_args_caller.ready());
+    BOOST_REQUIRE(add_caller.ready());
+    BOOST_REQUIRE(const_caller.ready());
+    BOOST_REQUIRE(increment_caller.ready());
+    BOOST_REQUIRE(data_source_caller.ready());
+    BOOST_CHECK_EQUAL(no_args_caller(), 7);
+    BOOST_CHECK_EQUAL(add_caller(20, 22), 42);
+    BOOST_CHECK_EQUAL(const_caller(21), 42);
+    BOOST_CHECK_EQUAL(increment_caller(41), 42);
+    BOOST_CHECK_EQUAL(data_source_caller(20, 22), 42);
+}
+#endif
+
 // Test adding a C function to the services.
 BOOST_AUTO_TEST_CASE( testOperationAddC )
 {
@@ -320,4 +374,3 @@ BOOST_AUTO_TEST_CASE( testOperationCallAndSignal )
 }
 #endif
 BOOST_AUTO_TEST_SUITE_END()
-
