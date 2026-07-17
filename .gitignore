@@ -12,3 +12,4 @@ install
 class-dump.txt
 headers.txt
 *.sw?
+docs/superpowers/
