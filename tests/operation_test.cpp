@@ -25,10 +25,56 @@
 #include <rtt/OperationCaller.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/internal/DataSources.hpp>
+#include <rtt/internal/FunctionEffects.hpp>
+
+#include <type_traits>
 
 using namespace std;
 using namespace RTT::detail;
 using namespace RTT;
+
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510L
+namespace
+{
+    struct NoexceptQualifierTest
+    {
+        int plain() noexcept;
+        int constant() const noexcept;
+        int variable() volatile noexcept;
+        int constantVariable() const volatile noexcept;
+        int lvalue() & noexcept;
+        int constantLvalue() const & noexcept;
+        int variableLvalue() volatile & noexcept;
+        int constantVariableLvalue() const volatile & noexcept;
+        int rvalue() && noexcept;
+        int constantRvalue() const && noexcept;
+        int variableRvalue() volatile && noexcept;
+        int constantVariableRvalue() const volatile && noexcept;
+    };
+
+#define ORO_CHECK_NOEXCEPT_ERASURE(METHOD, QUALIFIERS)                         \
+    static_assert(std::is_same<                                                \
+        internal::BoostCompatibleFunction<                                    \
+            decltype(&NoexceptQualifierTest::METHOD)>::type,                  \
+        int (NoexceptQualifierTest::*)() QUALIFIERS>::value,                  \
+        "noexcept erasure must preserve cv/ref qualifiers")
+
+    ORO_CHECK_NOEXCEPT_ERASURE(plain, );
+    ORO_CHECK_NOEXCEPT_ERASURE(constant, const);
+    ORO_CHECK_NOEXCEPT_ERASURE(variable, volatile);
+    ORO_CHECK_NOEXCEPT_ERASURE(constantVariable, const volatile);
+    ORO_CHECK_NOEXCEPT_ERASURE(lvalue, &);
+    ORO_CHECK_NOEXCEPT_ERASURE(constantLvalue, const &);
+    ORO_CHECK_NOEXCEPT_ERASURE(variableLvalue, volatile &);
+    ORO_CHECK_NOEXCEPT_ERASURE(constantVariableLvalue, const volatile &);
+    ORO_CHECK_NOEXCEPT_ERASURE(rvalue, &&);
+    ORO_CHECK_NOEXCEPT_ERASURE(constantRvalue, const &&);
+    ORO_CHECK_NOEXCEPT_ERASURE(variableRvalue, volatile &&);
+    ORO_CHECK_NOEXCEPT_ERASURE(constantVariableRvalue, const volatile &&);
+
+#undef ORO_CHECK_NOEXCEPT_ERASURE
+}
+#endif
 
 /**
  * Tests The RTT::Operation and OperationCaller objects and its
@@ -93,6 +139,9 @@ public:
     static double freefunc0(void) { return 1.0; }
     static double freefunc1(int i) { return 2.0; }
 
+    bool noexceptNoArgs() noexcept { return true; }
+    int noexceptAdd(int lhs, int rhs) const noexcept { return lhs + rhs; }
+
 #if defined(__clang__)
 #if __has_attribute(nonblocking) && __has_attribute(nonallocating)
 #define ORO_TEST_CLANG_FUNCTION_EFFECTS 1
@@ -102,6 +151,10 @@ public:
     int nonblockingAdd(int lhs, int rhs) [[clang::nonblocking]] { return lhs + rhs; }
     int nonblockingConst(int value) const [[clang::nonblocking]] { return value * 2; }
     int nonallocatingIncrement(int value) [[clang::nonallocating]] { return value + 1; }
+    int nonblockingNoexceptAdd(int lhs, int rhs) noexcept [[clang::nonblocking]]
+    { return lhs + rhs; }
+    int nonallocatingConstNoexcept(int value) const noexcept [[clang::nonallocating]]
+    { return value * 2; }
 #pragma clang diagnostic pop
 #endif
 #endif
@@ -241,6 +294,34 @@ BOOST_AUTO_TEST_CASE( testOperationAddCpp )
     BOOST_CHECK_EQUAL(opc2(1,2.0), 3.0);
 }
 
+BOOST_AUTO_TEST_CASE( testOperationAddNoexcept )
+{
+    Service::shared_ptr service = boost::make_shared<Service>("Noexcept");
+
+    Operation<bool(void)>& no_args = service->addOperation(
+        "noexceptNoArgs", &OperationTest::noexceptNoArgs, this);
+    Operation<int(int, int)>& add = service->addOperation(
+        "noexceptAdd", &OperationTest::noexceptAdd, this);
+    boost::shared_ptr<OperationTest> object(this, [](OperationTest*) {});
+    internal::ValueDataSource<boost::shared_ptr<OperationTest> >::shared_ptr object_source =
+        new internal::ValueDataSource<boost::shared_ptr<OperationTest> >(object);
+    Operation<int(boost::shared_ptr<OperationTest>, int, int)>& data_source_add =
+        service->addOperationDS(
+            "noexceptAddDS", &OperationTest::noexceptAdd, object_source.get());
+
+    OperationCaller<bool(void)> no_args_caller = service->getOperation(no_args.getName());
+    OperationCaller<int(int, int)> add_caller = service->getOperation(add.getName());
+    OperationCaller<int(int, int)> data_source_caller =
+        service->getOperation(data_source_add.getName());
+
+    BOOST_REQUIRE(no_args_caller.ready());
+    BOOST_REQUIRE(add_caller.ready());
+    BOOST_REQUIRE(data_source_caller.ready());
+    BOOST_CHECK(no_args_caller());
+    BOOST_CHECK_EQUAL(add_caller(20, 22), 42);
+    BOOST_CHECK_EQUAL(data_source_caller(20, 22), 42);
+}
+
 #ifdef ORO_TEST_CLANG_FUNCTION_EFFECTS
 BOOST_AUTO_TEST_CASE( testOperationAddClangFunctionEffects )
 {
@@ -277,6 +358,35 @@ BOOST_AUTO_TEST_CASE( testOperationAddClangFunctionEffects )
     BOOST_CHECK_EQUAL(add_caller(20, 22), 42);
     BOOST_CHECK_EQUAL(const_caller(21), 42);
     BOOST_CHECK_EQUAL(increment_caller(41), 42);
+    BOOST_CHECK_EQUAL(data_source_caller(20, 22), 42);
+}
+
+BOOST_AUTO_TEST_CASE( testOperationAddClangNoexceptFunctionEffects )
+{
+    Service::shared_ptr service = boost::make_shared<Service>("NoexceptEffects");
+
+    Operation<int(int, int)>& add = service->addOperation(
+        "nonblockingNoexceptAdd", &OperationTest::nonblockingNoexceptAdd, this);
+    Operation<int(int)>& constant = service->addOperation(
+        "nonallocatingConstNoexcept", &OperationTest::nonallocatingConstNoexcept, this);
+    boost::shared_ptr<OperationTest> object(this, [](OperationTest*) {});
+    internal::ValueDataSource<boost::shared_ptr<OperationTest> >::shared_ptr object_source =
+        new internal::ValueDataSource<boost::shared_ptr<OperationTest> >(object);
+    Operation<int(boost::shared_ptr<OperationTest>, int, int)>& data_source_add =
+        service->addOperationDS(
+            "nonblockingNoexceptAddDS", &OperationTest::nonblockingNoexceptAdd,
+            object_source.get());
+
+    OperationCaller<int(int, int)> add_caller = service->getOperation(add.getName());
+    OperationCaller<int(int)> const_caller = service->getOperation(constant.getName());
+    OperationCaller<int(int, int)> data_source_caller =
+        service->getOperation(data_source_add.getName());
+
+    BOOST_REQUIRE(add_caller.ready());
+    BOOST_REQUIRE(const_caller.ready());
+    BOOST_REQUIRE(data_source_caller.ready());
+    BOOST_CHECK_EQUAL(add_caller(20, 22), 42);
+    BOOST_CHECK_EQUAL(const_caller(21), 42);
     BOOST_CHECK_EQUAL(data_source_caller(20, 22), 42);
 }
 #endif

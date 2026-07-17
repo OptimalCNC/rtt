@@ -34,54 +34,94 @@ namespace RTT
         };
 
 #if defined(__clang__)
-// noexcept is intentionally excluded: RTT's noexcept callable compatibility
-// is a separate concern and its exception specification must not be erased.
-#define ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, QUALIFIERS)                    \
+#define ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, QUALIFIERS, EXCEPTION_SPEC)    \
         template<class R, class C, class... Args>                              \
         struct RemoveFunctionEffects<                                          \
-            __attribute__((EFFECT)) R (C::*)(Args...) QUALIFIERS>              \
+            __attribute__((EFFECT)) R (C::*)(Args...) QUALIFIERS EXCEPTION_SPEC> \
         {                                                                       \
-            typedef R (C::*type)(Args...) QUALIFIERS;                          \
+            typedef R (C::*type)(Args...) QUALIFIERS EXCEPTION_SPEC;           \
         };
 
+#define ORO_REMOVE_CLANG_FUNCTION_EFFECT_QUALIFIERS(EFFECT, EXCEPTION_SPEC)     \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, , EXCEPTION_SPEC)             \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, const, EXCEPTION_SPEC)        \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, volatile, EXCEPTION_SPEC)     \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, const volatile, EXCEPTION_SPEC) \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, &, EXCEPTION_SPEC)            \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, const &, EXCEPTION_SPEC)      \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, volatile &, EXCEPTION_SPEC)   \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, const volatile &, EXCEPTION_SPEC) \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, &&, EXCEPTION_SPEC)           \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, const &&, EXCEPTION_SPEC)     \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, volatile &&, EXCEPTION_SPEC)  \
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT(EFFECT, const volatile &&, EXCEPTION_SPEC)
+
 #if __has_attribute(nonblocking)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, )
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, const)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, volatile)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, const volatile)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, const &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, volatile &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, const volatile &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, &&)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, const &&)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, volatile &&)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonblocking, const volatile &&)
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT_QUALIFIERS(nonblocking, )
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510L
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT_QUALIFIERS(nonblocking, noexcept)
+#endif
 #endif
 
 #if __has_attribute(nonallocating)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, )
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, const)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, volatile)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, const volatile)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, const &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, volatile &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, const volatile &)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, &&)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, const &&)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, volatile &&)
-        ORO_REMOVE_CLANG_FUNCTION_EFFECT(nonallocating, const volatile &&)
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT_QUALIFIERS(nonallocating, )
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510L
+        ORO_REMOVE_CLANG_FUNCTION_EFFECT_QUALIFIERS(nonallocating, noexcept)
+#endif
 #endif
 
+#undef ORO_REMOVE_CLANG_FUNCTION_EFFECT_QUALIFIERS
 #undef ORO_REMOVE_CLANG_FUNCTION_EFFECT
 #endif
 
         template<class FunctionT>
-        inline typename RemoveFunctionEffects<FunctionT>::type
-        removeFunctionEffects(FunctionT function)
+        struct RemoveNoexcept
         {
-            return function;
+            typedef FunctionT type;
+        };
+
+#if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510L
+#define ORO_REMOVE_NOEXCEPT(QUALIFIERS)                                         \
+        template<class R, class C, class... Args>                              \
+        struct RemoveNoexcept<R (C::*)(Args...) QUALIFIERS noexcept>           \
+        {                                                                       \
+            typedef R (C::*type)(Args...) QUALIFIERS;                          \
+        };
+
+        ORO_REMOVE_NOEXCEPT()
+        ORO_REMOVE_NOEXCEPT(const)
+        ORO_REMOVE_NOEXCEPT(volatile)
+        ORO_REMOVE_NOEXCEPT(const volatile)
+        ORO_REMOVE_NOEXCEPT(&)
+        ORO_REMOVE_NOEXCEPT(const &)
+        ORO_REMOVE_NOEXCEPT(volatile &)
+        ORO_REMOVE_NOEXCEPT(const volatile &)
+        ORO_REMOVE_NOEXCEPT(&&)
+        ORO_REMOVE_NOEXCEPT(const &&)
+        ORO_REMOVE_NOEXCEPT(volatile &&)
+        ORO_REMOVE_NOEXCEPT(const volatile &&)
+
+#undef ORO_REMOVE_NOEXCEPT
+#endif
+
+        /**
+         * Produce the ordinary member-function pointer type understood by
+         * Boost. RTT's wrapper does not inherit the target's constraints.
+         */
+        template<class FunctionT>
+        struct BoostCompatibleFunction
+        {
+            typedef typename RemoveFunctionEffects<FunctionT>::type WithoutEffects;
+            typedef typename RemoveNoexcept<WithoutEffects>::type type;
+        };
+
+        template<class FunctionT>
+        inline typename BoostCompatibleFunction<FunctionT>::type
+        boostCompatibleFunction(FunctionT function)
+        {
+            typedef typename RemoveFunctionEffects<FunctionT>::type WithoutEffects;
+            WithoutEffects without_effects = function;
+            return without_effects;
         }
     }
 }

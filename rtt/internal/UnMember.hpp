@@ -66,7 +66,7 @@ namespace RTT
         template<class F>
         class UnMember
         {
-            typedef typename RemoveFunctionEffects<F>::type function_type;
+            typedef typename BoostCompatibleFunction<F>::type function_type;
             typedef boost::function_types::components<function_type> member_signature;
             typedef typename boost::mpl::erase<typename member_signature::types,
                                                typename boost::mpl::next<typename boost::mpl::begin<member_signature>::type>::type>::type non_member_signature;
@@ -98,7 +98,7 @@ namespace RTT
         template<class F>
         class ArgMember
         {
-            typedef typename RemoveFunctionEffects<F>::type function_type;
+            typedef typename BoostCompatibleFunction<F>::type function_type;
             typedef boost::function_types::components<function_type> member_signature;
             // TODO this erase/insert cycle can be removed and just use member_signature in function_type<T>
             // remove the class from the arg list:

@@ -509,7 +509,7 @@ namespace RTT
         {
             typedef typename internal::GetSignatureDS<Func>::Signature SignatureDS;    // function signature with normal object pointer
             Operation<SignatureDS>* op = new Operation<SignatureDS>(
-                name, boost::function<SignatureDS>(internal::removeFunctionEffects(func)),
+                name, boost::function<SignatureDS>(internal::boostCompatibleFunction(func)),
                 et, this->getOwnerExecutionEngine() );
             ownedoperations.push_back(op);
             return addOperationDS( sp, *op );

@@ -59,6 +59,21 @@ BOOST_AUTO_TEST_CASE(testClientThreadOperationCaller)
     BOOST_CHECK_THROW(m0e(), std::runtime_error);
 }
 
+BOOST_AUTO_TEST_CASE(testNoexceptMethodHelperAndOwnThreadOperation)
+{
+    OperationCaller<double(int)> local =
+        method("m1noexcept", &OperationsFixture::m1noexcept, this);
+    Operation<double(int)>& operation = tc->addOperation(
+        "m1noexcept", &OperationsFixture::m1noexcept, this, OwnThread);
+    OperationCaller<double(int)> own_thread(
+        operation.getName(), tc->provides(), caller->engine());
+
+    BOOST_REQUIRE(local.ready());
+    BOOST_REQUIRE(own_thread.ready());
+    BOOST_CHECK_EQUAL(42.0, local(41));
+    BOOST_CHECK_EQUAL(42.0, own_thread(41));
+}
+
 BOOST_AUTO_TEST_CASE(testOwnThreadOperationCallerCall)
 {
     // Tests using caller and sender

@@ -673,7 +673,7 @@ namespace RTT
                 this->setOwner(ee );
                 this->setThread( et, ee );
                 this->mmeth = OperationCallerBinder<Signature>()(
-                    removeFunctionEffects(meth), object);
+                    boostCompatibleFunction(meth), object);
             }
 
             /**
