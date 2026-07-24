@@ -48,8 +48,10 @@
 #include "../SendStatus.hpp"
 #include "../ConnPolicy.hpp"
 #include "../typekit/Types.hpp"
+#include <cstdint>
 #include <ostream>
 #include <sstream>
+#include <type_traits>
 #ifdef OS_RT_MALLOC
 #include "../rt_string.hpp"
 #endif
@@ -58,6 +60,58 @@ namespace RTT
 {
     using namespace std;
     using namespace detail;
+
+    template <typename T>
+    void add_signed_integer_operators(OperatorRepository::shared_ptr const& oreg)
+    {
+        oreg->add( newUnaryOperator( "-", std::negate<T>() ) );
+        oreg->add( newUnaryOperator( "+", identity<T>() ) );
+        oreg->add( newBinaryOperator( "*", std::multiplies<T>() ) );
+        oreg->add( newBinaryOperator( "/", divides3<T, T, T>() ) );
+        oreg->add( newBinaryOperator( "%", std::modulus<T>() ) );
+        oreg->add( newBinaryOperator( "+", std::plus<T>() ) );
+        oreg->add( newBinaryOperator( "-", std::minus<T>() ) );
+        oreg->add( newBinaryOperator( "<", std::less<T>() ) );
+        oreg->add( newBinaryOperator( "<=", std::less_equal<T>() ) );
+        oreg->add( newBinaryOperator( ">", std::greater<T>() ) );
+        oreg->add( newBinaryOperator( ">=", std::greater_equal<T>() ) );
+        oreg->add( newBinaryOperator( "==", std::equal_to<T>() ) );
+        oreg->add( newBinaryOperator( "!=", std::not_equal_to<T>() ) );
+    }
+
+    template <typename T>
+    void add_unsigned_integer_operators(OperatorRepository::shared_ptr const& oreg)
+    {
+        oreg->add( newUnaryOperator( "+", identity<T>() ) );
+        oreg->add( newBinaryOperator( "*", std::multiplies<T>() ) );
+        oreg->add( newBinaryOperator( "/", divides3<T, T, T>() ) );
+        oreg->add( newBinaryOperator( "%", std::modulus<T>() ) );
+        oreg->add( newBinaryOperator( "+", std::plus<T>() ) );
+        oreg->add( newBinaryOperator( "-", std::minus<T>() ) );
+        oreg->add( newBinaryOperator( "<", std::less<T>() ) );
+        oreg->add( newBinaryOperator( "<=", std::less_equal<T>() ) );
+        oreg->add( newBinaryOperator( ">", std::greater<T>() ) );
+        oreg->add( newBinaryOperator( ">=", std::greater_equal<T>() ) );
+        oreg->add( newBinaryOperator( "==", std::equal_to<T>() ) );
+        oreg->add( newBinaryOperator( "!=", std::not_equal_to<T>() ) );
+    }
+
+    template <typename T>
+    void add_floating_point_operators(OperatorRepository::shared_ptr const& oreg)
+    {
+        oreg->add( newUnaryOperator( "-", std::negate<T>() ) );
+        oreg->add( newUnaryOperator( "+", identity<T>() ) );
+        oreg->add( newBinaryOperator( "*", std::multiplies<T>() ) );
+        oreg->add( newBinaryOperator( "/", std::divides<T>() ) );
+        oreg->add( newBinaryOperator( "+", std::plus<T>() ) );
+        oreg->add( newBinaryOperator( "-", std::minus<T>() ) );
+        oreg->add( newBinaryOperator( "<", std::less<T>() ) );
+        oreg->add( newBinaryOperator( "<=", std::less_equal<T>() ) );
+        oreg->add( newBinaryOperator( ">", std::greater<T>() ) );
+        oreg->add( newBinaryOperator( ">=", std::greater_equal<T>() ) );
+        oreg->add( newBinaryOperator( "==", std::equal_to<T>() ) );
+        oreg->add( newBinaryOperator( "!=", std::not_equal_to<T>() ) );
+    }
 
 #ifndef RTT_NO_STD_TYPES
     template<class T>
@@ -95,7 +149,12 @@ namespace RTT
 
         std::string operator()(const std::string& s, T t) const {
             std::ostringstream oss(s, std::ios_base::ate);
-            oss << std::boolalpha << t;
+            oss << std::boolalpha;
+            if constexpr (std::is_same_v<T, std::int8_t> ||
+                          std::is_same_v<T, std::uint8_t>)
+                oss << static_cast<int>(t);
+            else
+                oss << t;
             return oss.str();
         }
     };
@@ -108,7 +167,12 @@ namespace RTT
 
         rt_string operator()(const rt_string& s, T t) const {
             rt_ostringstream oss(s, std::ios_base::ate);
-            oss << std::boolalpha << t;
+            oss << std::boolalpha;
+            if constexpr (std::is_same_v<T, std::int8_t> ||
+                          std::is_same_v<T, std::uint8_t>)
+                oss << static_cast<int>(t);
+            else
+                oss << t;
             return oss.str();
         }
     };
@@ -127,98 +191,34 @@ namespace RTT
         oreg->add( newBinaryOperator( "==", std::equal_to<bool>() ) );
         oreg->add( newBinaryOperator( "!=", std::not_equal_to<bool>() ) );
 
-        // int stuff
-        oreg->add( newUnaryOperator( "-", std::negate<int>() ) );
-        oreg->add( newUnaryOperator( "+", identity<int>() ) );
-        oreg->add( newBinaryOperator( "*", std::multiplies<int>() ) );
-        oreg->add( newBinaryOperator( "/", divides3<int,int,int>() ) ); // use our own divides<> which detects div by zero
-        oreg->add( newBinaryOperator( "%", std::modulus<int>() ) );
-        oreg->add( newBinaryOperator( "+", std::plus<int>() ) );
-        oreg->add( newBinaryOperator( "-", std::minus<int>() ) );
-        oreg->add( newBinaryOperator( "<", std::less<int>() ) );
-        oreg->add( newBinaryOperator( "<=", std::less_equal<int>() ) );
-        oreg->add( newBinaryOperator( ">", std::greater<int>() ) );
-        oreg->add( newBinaryOperator( ">=", std::greater_equal<int>() ) );
-        oreg->add( newBinaryOperator( "==", std::equal_to<int>() ) );
-        oreg->add( newBinaryOperator( "!=", std::not_equal_to<int>() ) );
+        add_signed_integer_operators<std::int8_t>(oreg);
+        add_unsigned_integer_operators<std::uint8_t>(oreg);
+        add_signed_integer_operators<std::int16_t>(oreg);
+        add_unsigned_integer_operators<std::uint16_t>(oreg);
+        add_signed_integer_operators<std::int32_t>(oreg);
+        add_unsigned_integer_operators<std::uint32_t>(oreg);
 #ifndef ORO_EMBEDDED
-        // uint stuff
-        oreg->add( newUnaryOperator( "+", identity<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "*", std::multiplies<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "/", divides3<unsigned int,unsigned int,unsigned int>() ) ); // use our own divides<> which detects div by zero
-        oreg->add( newBinaryOperator( "%", std::modulus<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "+", std::plus<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "-", std::minus<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "<", std::less<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "<=", std::less_equal<unsigned int>() ) );
-        oreg->add( newBinaryOperator( ">", std::greater<unsigned int>() ) );
-        oreg->add( newBinaryOperator( ">=", std::greater_equal<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "==", std::equal_to<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "!=", std::not_equal_to<unsigned int>() ) );
-        // llong stuff
-        oreg->add( newUnaryOperator( "-", std::negate<long long>() ) );
-        oreg->add( newUnaryOperator( "+", identity<long long>() ) );
-        oreg->add( newBinaryOperator( "*", std::multiplies<long long>() ) );
-        oreg->add( newBinaryOperator( "/", divides3<long long,long long,long long>() ) ); // use our own divides<> which detects div by zero
-        oreg->add( newBinaryOperator( "%", std::modulus<long long>() ) );
-        oreg->add( newBinaryOperator( "+", std::plus<long long>() ) );
-        oreg->add( newBinaryOperator( "-", std::minus<long long>() ) );
-        oreg->add( newBinaryOperator( "<", std::less<long long>() ) );
-        oreg->add( newBinaryOperator( "<=", std::less_equal<long long>() ) );
-        oreg->add( newBinaryOperator( ">", std::greater<long long>() ) );
-        oreg->add( newBinaryOperator( ">=", std::greater_equal<long long>() ) );
-        oreg->add( newBinaryOperator( "==", std::equal_to<long long>() ) );
-        oreg->add( newBinaryOperator( "!=", std::not_equal_to<long long>() ) );
-        // ullong stuff
-        oreg->add( newUnaryOperator( "+", identity<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "*", std::multiplies<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "/", divides3<unsigned long long,unsigned long long,unsigned long long>() ) ); // use our own divides<> which detects div by zero
-        oreg->add( newBinaryOperator( "%", std::modulus<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "+", std::plus<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "-", std::minus<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "<", std::less<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "<=", std::less_equal<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( ">", std::greater<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( ">=", std::greater_equal<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "==", std::equal_to<unsigned long long>() ) );
-        oreg->add( newBinaryOperator( "!=", std::not_equal_to<unsigned long long>() ) );
+        add_signed_integer_operators<std::int64_t>(oreg);
+        add_unsigned_integer_operators<std::uint64_t>(oreg);
 #endif
-        // double stuff..
-        oreg->add( newUnaryOperator( "-", std::negate<double>() ) );
-        oreg->add( newUnaryOperator( "+", identity<double>() ) );
-        oreg->add( newBinaryOperator( "*", std::multiplies<double>() ) );
-        oreg->add( newBinaryOperator( "/", std::divides<double>() ) );
-        oreg->add( newBinaryOperator( "+", std::plus<double>() ) );
-        oreg->add( newBinaryOperator( "-", std::minus<double>() ) );
-        oreg->add( newBinaryOperator( "<", std::less<double>() ) );
-        oreg->add( newBinaryOperator( "<=", std::less_equal<double>() ) );
-        oreg->add( newBinaryOperator( ">", std::greater<double>() ) );
-        oreg->add( newBinaryOperator( ">=", std::greater_equal<double>() ) );
-        oreg->add( newBinaryOperator( "==", std::equal_to<double>() ) );
-        oreg->add( newBinaryOperator( "!=", std::not_equal_to<double>() ) );
+        add_floating_point_operators<double>(oreg);
 #ifndef ORO_EMBEDDED
-        // float stuff
-        oreg->add( newUnaryOperator( "-", std::negate<float>() ) );
-        oreg->add( newUnaryOperator( "+", identity<float>() ) );
-        oreg->add( newBinaryOperator( "*", std::multiplies<float>() ) );
-        oreg->add( newBinaryOperator( "/", std::divides<float>() ) );
-        oreg->add( newBinaryOperator( "+", std::plus<float>() ) );
-        oreg->add( newBinaryOperator( "-", std::minus<float>() ) );
-        oreg->add( newBinaryOperator( "<", std::less<float>() ) );
-        oreg->add( newBinaryOperator( "<=", std::less_equal<float>() ) );
-        oreg->add( newBinaryOperator( ">", std::greater<float>() ) );
-        oreg->add( newBinaryOperator( ">=", std::greater_equal<float>() ) );
-        oreg->add( newBinaryOperator( "==", std::equal_to<float>() ) );
-        oreg->add( newBinaryOperator( "!=", std::not_equal_to<float>() ) );
+        add_floating_point_operators<float>(oreg);
 #endif
 #ifndef RTT_NO_STD_TYPES
         // strings
         // causes memory allocation....
         oreg->add( newBinaryOperator( "+", std::plus<std::string>() ) );
-        oreg->add( newBinaryOperator( "+", string_concatenation<int>() ) );
-        oreg->add( newBinaryOperator( "+", string_concatenation<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "+", string_concatenation<double>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::int8_t>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::uint8_t>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::int16_t>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::uint16_t>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::int32_t>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::uint32_t>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::int64_t>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<std::uint64_t>() ) );
         oreg->add( newBinaryOperator( "+", string_concatenation<float>() ) );
+        oreg->add( newBinaryOperator( "+", string_concatenation<double>() ) );
         oreg->add( newBinaryOperator( "+", string_concatenation<bool>() ) );
         oreg->add( newBinaryOperator( "+", string_concatenation<char>() ) );
         oreg->add( newBinaryOperator( "==", std::equal_to<const std::string&>() ) );
@@ -231,10 +231,16 @@ namespace RTT
 
 #ifdef OS_RT_MALLOC
         oreg->add( newBinaryOperator( "+", std::plus<rt_string>() ) );
-        oreg->add( newBinaryOperator( "+", rt_string_concatenation<int>() ) );
-        oreg->add( newBinaryOperator( "+", rt_string_concatenation<unsigned int>() ) );
-        oreg->add( newBinaryOperator( "+", rt_string_concatenation<double>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::int8_t>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::uint8_t>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::int16_t>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::uint16_t>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::int32_t>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::uint32_t>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::int64_t>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<std::uint64_t>() ) );
         oreg->add( newBinaryOperator( "+", rt_string_concatenation<float>() ) );
+        oreg->add( newBinaryOperator( "+", rt_string_concatenation<double>() ) );
         oreg->add( newBinaryOperator( "+", rt_string_concatenation<bool>() ) );
         oreg->add( newBinaryOperator( "+", rt_string_concatenation<char>() ) );
         oreg->add( newBinaryOperator( "==", std::equal_to<const rt_string&>() ) );

@@ -48,11 +48,11 @@ public:
 
     EnumTypeTest()
     {
-        if (!Types()->type("int")) {
+        if (!Types()->type("Int32")) {
             plugin::PluginLoader::Instance()->loadTypekits("../rtt:../../rtt");
         }
-        if (!Types()->type("int")) {
-            Types()->addType(new types::TemplateTypeInfo<int>("int"));
+        if (!Types()->type("Int32")) {
+            Types()->addType(new types::TemplateTypeInfo<int>("Int32"));
         }
 
         a = new ValueDataSource<TheEnum>( A );
@@ -74,15 +74,15 @@ BOOST_AUTO_TEST_CASE( testEnumIntConversion )
 {
 
     BOOST_REQUIRE( Types()->type("TheEnum") );
-    BOOST_REQUIRE( Types()->type("int") );
+    BOOST_REQUIRE( Types()->type("Int32") );
 
     // Test enum to int
-    BOOST_CHECK( Types()->type("int")->convert( a ) );
-    BOOST_CHECK( Types()->type("int")->convert( b ) );
+    BOOST_CHECK( Types()->type("Int32")->convert( a ) );
+    BOOST_CHECK( Types()->type("Int32")->convert( b ) );
 
     // Test enum to int to enum
-    BOOST_CHECK( Types()->type("TheEnum")->convert( Types()->type("int")->convert(a) ) );
-    BOOST_CHECK( Types()->type("TheEnum")->convert( Types()->type("int")->convert(b) ) );
+    BOOST_CHECK( Types()->type("TheEnum")->convert( Types()->type("Int32")->convert(a) ) );
+    BOOST_CHECK( Types()->type("TheEnum")->convert( Types()->type("Int32")->convert(b) ) );
 
     // Test composition of enum from int.
     PropertyBag result;
@@ -91,13 +91,13 @@ BOOST_AUTO_TEST_CASE( testEnumIntConversion )
     PropertyBagIntrospector pbi(result);
     pbi.introspect( &pa);
     BOOST_REQUIRE_EQUAL( result.size(), 1);
-    BOOST_CHECK( result.getItem(0)->getTypeInfo() == Types()->type("int") );
+    BOOST_CHECK( result.getItem(0)->getTypeInfo() == Types()->type("Int32") );
     DataSource<int>::shared_ptr dint = DataSource<int>::narrow( result.getItem(0)->getDataSource().get() );
     BOOST_CHECK_EQUAL(dint->get(), (int)A );
 
     pbi.introspect( &pb);
     BOOST_REQUIRE_EQUAL( result.size(), 2);
-    BOOST_CHECK( result.getItem(1)->getTypeInfo() == Types()->type("int") );
+    BOOST_CHECK( result.getItem(1)->getTypeInfo() == Types()->type("Int32") );
     dint = DataSource<int>::narrow( result.getItem(1)->getDataSource().get() );
     BOOST_REQUIRE( dint );
     BOOST_CHECK_EQUAL(dint->get(), (int)B );

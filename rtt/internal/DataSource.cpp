@@ -161,7 +161,7 @@ namespace RTT {
 
         // (void) type info
         TypeInfo* DataSourceTypeInfo<void>::TypeInfoObject = 0;
-        const std::string DataSourceTypeInfo<void>::tname("void");
+        const std::string DataSourceTypeInfo<void>::tname("Void");
 
         const std::string& DataSourceTypeInfo<void>::getType() { return tname; }
         const std::string& DataSourceTypeInfo<void>::getTypeName() { return tname; }

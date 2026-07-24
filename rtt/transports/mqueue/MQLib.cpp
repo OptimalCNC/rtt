@@ -43,6 +43,7 @@
 #include "../../types/TransportPlugin.hpp"
 #include "../../types/TypekitPlugin.hpp"
 #include <boost/serialization/vector.hpp>
+#include <cstdint>
 
 using namespace std;
 using namespace RTT::detail;
@@ -51,31 +52,37 @@ namespace RTT {
     namespace mqueue {
         bool MQLibPlugin::registerTransport(std::string name, TypeInfo* ti)
         {
-            if ( name == "int" )
-                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<int>() );
-            if ( name == "double" )
-                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<double>() );
-            //if ( name == "string" )
-            //    return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::string>() );
-            if ( name == "float" )
+            if ( name == "Int8" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::int8_t>() );
+            if ( name == "UInt8" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::uint8_t>() );
+            if ( name == "Int16" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::int16_t>() );
+            if ( name == "UInt16" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::uint16_t>() );
+            if ( name == "Int32" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::int32_t>() );
+            if ( name == "UInt32" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::uint32_t>() );
+            if ( name == "Int64" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::int64_t>() );
+            if ( name == "UInt64" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::uint64_t>() );
+            if ( name == "Float32" )
                 return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<float>() );
-            if ( name == "uint" )
-                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<unsigned int>() );
-            if ( name == "char" )
+            if ( name == "Float64" )
+                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<double>() );
+            //if ( name == "String" )
+            //    return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<std::string>() );
+            if ( name == "Char" )
                 return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<char>() );
-            if ( name == "llong" )
-                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<long long>() );
-            if ( name == "ullong" )
-                return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<unsigned long long>() );
-            //if ( name == "long" )
-            //    return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<long>() );
             //if ( name == "PropertyBag" )
             //    return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<PropertyBag>() );
-            if ( name == "bool" )
+            if ( name == "Bool" )
                 return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<bool>() );
             if ( name == "array" )
                 return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQSerializationProtocol< std::vector<double> >() );
-            //if ( name == "void" )
+            //if ( name == "Void" )
             //    return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQFallBackProtocol(false)); // warn=false
             return false;
         }

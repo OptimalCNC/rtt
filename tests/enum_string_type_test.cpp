@@ -61,14 +61,14 @@ public:
 
     EnumTypeTest()
     {
-        if (!Types()->type("int")) {
+        if (!Types()->type("Int32")) {
             plugin::PluginLoader::Instance()->loadTypekits("../rtt:../../rtt");
         }
-        if (!Types()->type("int")) {
-            Types()->addType(new types::TemplateTypeInfo<int>("int"));
+        if (!Types()->type("Int32")) {
+            Types()->addType(new types::TemplateTypeInfo<int>("Int32"));
         }
-        if (!Types()->type("string")) {
-            Types()->addType(new types::StdStringTypeInfo("string"));
+        if (!Types()->type("String")) {
+            Types()->addType(new types::StdStringTypeInfo("String"));
         }
 
         a = new ValueDataSource<TheEnum>( A );
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE( testEnumStringConversion )
 {
 
     ti = Types()->type("TheEnum");
-    ts = Types()->type("string");
+    ts = Types()->type("String");
 
     BOOST_REQUIRE( ti );
     BOOST_REQUIRE( ts );

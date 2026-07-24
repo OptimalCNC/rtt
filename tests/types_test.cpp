@@ -67,7 +67,7 @@ BOOST_FIXTURE_TEST_SUITE(  TypesTestSuite,  TypesTest )
 //! Tests the preservation of the capacity of a string in the type system.
 BOOST_AUTO_TEST_CASE( testStringCapacity )
 {
-    Attribute<string> str = Types()->type("string")->buildVariable("str",10);
+    Attribute<string> str = Types()->type("String")->buildVariable("str",10);
     size_t strCapacity=str.get().capacity();
     // check size hint:
     BOOST_CHECK_EQUAL( str.get().size() , 10 );
@@ -143,21 +143,21 @@ BOOST_AUTO_TEST_CASE( testTypes )
     Types()->addType( new StructTypeInfo<AType,false>("astruct"));
     string test =
         // Line 2 (see below):
-        string("var int i2 = -1, j = 10, k; set k = 20\n") +
+        string("var Int32 i2 = -1, j = 10, k; set k = 20\n") +
         "do test.assert( i2 == -1 ) ; do test.assert( j == 10 ); do test.assert(k == 20)\n" +
-        "var double d = 10.0\n"+
+        "var Float64 d = 10.0\n"+
         "do test.assert( d == 10.0 )\n" +
-        "var bool b = false\n"+
+        "var Bool b = false\n"+
         "do test.assert( b == false )\n" +
-        "var string s=\"string\"\n"+
+        "var String s=\"string\"\n"+
         "do test.assert( s == \"string\" )\n" +
-        "const int ic = i2\n" +
+        "const Int32 ic = i2\n" +
         "do test.assert( ic == 0 )\n" + // i was null at parse time !
-        "const double dc = 10.0\n"+     // evaluate 10.0 at parse time
+        "const Float64 dc = 10.0\n"+     // evaluate 10.0 at parse time
         "do test.assert( dc == 10.0 )\n" +
-        "const bool bc = true && false\n"+
+        "const Bool bc = true && false\n"+
         "do test.assert( bc == false )\n" +
-        "const string sc= \"hello\"\n"+
+        "const String sc= \"hello\"\n"+
         "do test.assert( sc == \"hello\" )\n" +
         "var array ar(10)\n"+ // size hint syntax != constructor syntax
         "do test.assert( ar.size == 10)\n"+
@@ -194,8 +194,8 @@ BOOST_AUTO_TEST_CASE( testTypes )
         "do test.assert(ar4[1]==3.0)\n"+
         "do test.assert(ar4[2]==4.0)\n"+
         "do test.assert(ar4[3]==5.0)\n"+
-        "var string str(10)\n"+
-        "var int strCapacity = str.capacity\n"
+        "var String str(10)\n"+
+        "var Int32 strCapacity = str.capacity\n"
         // 50:
 //        "do test.print(str.size)\n"+
 //        "do test.print(str.capacity)\n"+
@@ -294,14 +294,14 @@ BOOST_AUTO_TEST_CASE( testCharType )
 {
     string test =
         // Line 2 (see below):
-        string("var char c = char('c');\n") +
+        string("var Char c = Char('c');\n") +
 //        "do test.assert( c == c ); \n" +
-//        "do test.assert( char('c') == c ); \n" +
-        "var char d = char('d');\n" +
+//        "do test.assert( Char('c') == c ); \n" +
+        "var Char d = Char('d');\n" +
 //        "do test.assert( c != d ); \n" +
 //        "set c = 'a';\n" +
-        "set c = char('a');\n" +
-        "do test.assert( char('a') == c ); \n" +
+        "set c = Char('a');\n" +
+        "do test.assert( Char('a') == c ); \n" +
         "do test.assert( c != d ); \n" +
         "do test.assert( c <  d ); \n" +
         "do test.assert( c <= d ); \n" +
@@ -309,15 +309,15 @@ BOOST_AUTO_TEST_CASE( testCharType )
         "do test.assert( d >= c ); \n" +
         "set d = c;\n" +
         "do test.assert( c == d ); \n" +
-        "do test.assert( char('a') == d ); \n" +
-        "do test.assert( char('a') == char('a') ); \n" +
-        "do test.assert( char('a') != char('b') ); \n" +
-        "do test.assert( char('a') <  char('b') ); \n" +
-        "do test.assert( char('a') <= char('b') ); \n" +
-        "do test.assert( char('a') <= char('a') ); \n" +
-        "do test.assert( char('z') >  char('w') ); \n" +
-        "do test.assert( char('z') >= char('w') ); \n" +
-        "do test.assert( char('z') >= char('z') ); \n"
+        "do test.assert( Char('a') == d ); \n" +
+        "do test.assert( Char('a') == Char('a') ); \n" +
+        "do test.assert( Char('a') != Char('b') ); \n" +
+        "do test.assert( Char('a') <  Char('b') ); \n" +
+        "do test.assert( Char('a') <= Char('b') ); \n" +
+        "do test.assert( Char('a') <= Char('a') ); \n" +
+        "do test.assert( Char('z') >  Char('w') ); \n" +
+        "do test.assert( Char('z') >= Char('w') ); \n" +
+        "do test.assert( Char('z') >= Char('z') ); \n"
         ;
 
     string state = string("StateMachine X { initial state Init { entry {\n")
@@ -338,17 +338,17 @@ BOOST_AUTO_TEST_CASE( testCharType )
 BOOST_AUTO_TEST_CASE( testOperators )
 {
     string prog = string("program x {\n") +
-        "var int i = 3\n" +
-        "var char c = 'c'\n" +
-        "var double d = 10.0*i\n"+
+        "var Int32 i = 3\n" +
+        "var Char c = 'c'\n" +
+        "var Float64 d = 10.0*i\n"+
         "do test.assert( d == 30.0 )\n" +
-        "var bool b = false\n"+
-        "var string s=\"string\"\n"+
+        "var Bool b = false\n"+
+        "var String s=\"string\"\n"+
         "set b = b || b && true && false || true\n"+
         "try test.assertMsg( s == \"string\", \"Unexpected string:\'\" + s +\"' instead of 'string'\")\n"+
         "set s = \"  \" + s + \"  \"\n"+
         "try test.assertMsg( s == \"  string  \", \"Unexpected string:\'\" + s +\"' instead of '  string  '\")\n"+
-        "set s = s + int(10)\n"+
+        "set s = s + Int32(10)\n"+
         "try test.assertMsg( s == \"  string  10\", \"Unexpected string:\'\" + s +\"' instead of '  string  10'\")\n"+
         "set s = s + \" \" + false\n"+
         "do  test.assertMsg( s == \"  string  10 false\", \"Unexpected string:\'\" + s +\"' instead of '  string  10 false'\")\n"+
@@ -408,44 +408,77 @@ BOOST_AUTO_TEST_CASE( testDotsAndIndexes )
 BOOST_AUTO_TEST_CASE( testConversions )
 {
     string prog = string("program x {\n") +
-        "var int i = 3.0\n" +
-        "var double d = float(10.0*i)\n"+
-        "do test.assert( float(d) == float(30.0) )\n" +
-        "var float f = 5\n" +
-        "set f = double(5) * double(-1) + i\n" +
+        "var Int32 i = 3.0\n" +
+        "var Float64 d = Float32(10.0*i)\n"+
+        "do test.assert( Float32(d) == Float32(30.0) )\n" +
+        "var Float32 f = 5\n" +
+        "set f = Float64(5) * Float64(-1) + i\n" +
         "set i = f\n" +
         "set f = i\n" +
-        "set i = double(float(int(f)))\n" +
-        "set f = int(float(double(int(3.333))))\n" +
+        "set i = Float64(Float32(Int32(f)))\n" +
+        "set f = Int32(Float32(Float64(Int32(3.333))))\n" +
         "do test.assert( f == 3 )\n" +
         "}";
     // execute
     executePrograms(prog);
 }
 
-/**
- * Tests converting (unsigned) long long types to and from other types.
- */
-BOOST_AUTO_TEST_CASE( testLongLong )
+BOOST_AUTO_TEST_CASE( testCanonicalNumericTypes )
 {
     string prog = string("program x {\n") +
-        "var llong ll = 9223372036854775807ll\n" +
+        "var Int8 i8 = Int8(-8)\n" +
+        "var UInt8 u8 = UInt8(8)\n" +
+        "var Int16 i16 = Int16(-16)\n" +
+        "var UInt16 u16 = UInt16(16)\n" +
+        "var Int32 i32 = Int32(-32)\n" +
+        "var UInt32 u32 = UInt32(32)\n" +
+        "var Int64 i64 = Int64(-64)\n" +
+        "var UInt64 u64 = UInt64(64)\n" +
+        "var Float32 f32 = Float32(1.5)\n" +
+        "var Float64 f64 = Float64(2.5)\n" +
+        "do test.assert(i8 + Int8(3) == Int8(-5))\n" +
+        "do test.assert(u8 + UInt8(3) == UInt8(11))\n" +
+        "do test.assert(i16 - Int16(4) == Int16(-20))\n" +
+        "do test.assert(u16 * UInt16(2) == UInt16(32))\n" +
+        "do test.assert(i32 / Int32(2) == Int32(-16))\n" +
+        "do test.assert(u32 % UInt32(5) == UInt32(2))\n" +
+        "do test.assert(i64 + Int64(1) == Int64(-63))\n" +
+        "do test.assert(u64 + UInt64(1) == UInt64(65))\n" +
+        "do test.assert(f32 + Float32(0.5) == Float32(2.0))\n" +
+        "do test.assert(f64 - Float64(0.5) == Float64(2.0))\n" +
+        "do test.assert(UInt64(UInt32(1000)) == 1000ull)\n" +
+        "do test.assert(Int16(Int8(-8)) == Int16(-8))\n" +
+        "do test.assert(Bool(UInt32(256)))\n" +
+        "do test.assert(\"i8=\" + Int8(-8) == \"i8=-8\")\n" +
+        "do test.assert(\"u8=\" + UInt8(255) == \"u8=255\")\n" +
+        "}";
+
+    executePrograms(prog);
+}
+
+/**
+ * Tests converting fixed-width 64-bit types to and from other types.
+ */
+BOOST_AUTO_TEST_CASE( testInt64 )
+{
+    string prog = string("program x {\n") +
+        "var Int64 ll = 9223372036854775807ll\n" +
         "do test.assert( -(ll + 2) == 9223372036854775807ll )\n" +
-        "var ullong ull = 18446744073709551615ull\n" +
+        "var UInt64 ull = 18446744073709551615ull\n" +
         "do test.assert( ull + 1 == 0 )\n" +
-        "var double d = ll\n" +
+        "var Float64 d = ll\n" +
         "do test.assert( d == 9.223372036854775807e+18 )\n" +
         "set ll = 3.0f\n" +
         "do test.assert( ll == 3ll )\n" +
         "set ll = -1.0\n" +
         "do test.assert( ll == -1ll )\n" +
-        "set ll = int(-1000)\n" +
+        "set ll = Int32(-1000)\n" +
         "do test.assert( ll == -1000ll )\n" +
-        "set ull = int(1000)\n" +
+        "set ull = Int32(1000)\n" +
         "do test.assert( ull == 1000ull )\n" +
-        "set ull = uint(1000)\n" +
+        "set ull = UInt32(1000)\n" +
         "do test.assert( ull == 1000ull )\n" +
-        "set ull = llong(12345)\n" +
+        "set ull = Int64(12345)\n" +
         "do test.assert( ull == 12345ull )\n" +
         "}";
     // execute
@@ -458,7 +491,7 @@ BOOST_AUTO_TEST_CASE( testLongLong )
 BOOST_AUTO_TEST_CASE( testHex )
 {
     string prog = string("program x {\n") +
-        "var uint i = 0xabc\n" +
+        "var UInt32 i = 0xabc\n" +
         "test.assert( i == 0xabc )\n"+
         "test.assert( i == 2748 )\n"+
         "i = 0Xcba\n" +
@@ -548,7 +581,7 @@ BOOST_AUTO_TEST_CASE( testOperatorOrder )
         "do test.assert( 6 - 9 % 2*3 ==  15/3 % 3 + 1 )\n" + // 3 == 3
         "do test.assert( 3*(2+1) == 9 )\n" +
         "do test.assert( 1 - 1 + 5 == 5 )\n" +  // not: -5
-        "var int a,b,c;\n" +
+        "var Int32 a,b,c;\n" +
         " a = b = c = 3;\n" +  // not 0,0,3
         "do test.assertEqual( a, 3 )\n" +
         "do test.assertEqual( b, 3 )\n" +
@@ -585,19 +618,19 @@ BOOST_AUTO_TEST_CASE( testFlowStatus )
     string prog = string("program x {\n") +
         "do test.assert( NewData )\n" +
         "do test.assert( OldData )\n" +
-        "do test.assert( !bool(NoData) )\n" +
+        "do test.assert( !Bool(NoData) )\n" +
         "do test.assert( NewData > NoData )\n" +
         "do test.assert( NewData > OldData )\n" +
         "do test.assert( OldData > NoData )\n" +
         "do test.assert( OldData == OldData )\n" +
-        "if ( bool(NewData) && OldData ) then {\n" +
+        "if ( Bool(NewData) && OldData ) then {\n" +
         "} else {\n" +
         "   do test.assert(false)\n" +
         "}\n" +
-        "if ( bool(NoData) ) then {\n" +
+        "if ( Bool(NoData) ) then {\n" +
         "   do test.assert(false)\n" +
         "}\n" +
-        "if ( !bool(NoData) ) then {} else {\n" +
+        "if ( !Bool(NoData) ) then {} else {\n" +
         "   do test.assert(false)\n" +
         "}\n" +
         "}";

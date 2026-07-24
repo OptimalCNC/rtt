@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( testSimpleFunction)
 
 BOOST_AUTO_TEST_CASE( testSimpleReturnFunction)
 {
-    string prog = string("int foo { \n")
+    string prog = string("Int32 foo { \n")
         + " test.assert( test.isTrue( true ) )\n"
         + " return 3\n"
         + "}\n"
@@ -110,16 +110,16 @@ BOOST_AUTO_TEST_CASE( testOnlyExportFunction)
 //                + "   test.print(\"foo()\")\n"
         + " do test.assert( test.isTrue( true ) )\n"
         + "}\n"
-        + "export int foo_ret(double d) { \n"
+        + "export Int32 foo_ret(Float64 d) { \n"
 //        + "   test.printNumber(\"foo_ret(double d), d is: \", d)\n"
         + "   if (true) then\n"
         + "     return 3\n"
         + "   else\n"
         + "     return 5\n"
         + "}\n"
-        + "export int foo_args(double d, int v) { \n"
+        + "export Int32 foo_args(Float64 d, Int32 v) { \n"
 //        + " test.printNumber(\"foo_args(double d, int v) v is: \", v)\n"
-        + " var double r = 10\n"
+        + " var Float64 r = 10\n"
         + " if ( d == 3.0 && v == 6) then\n"
         + "     set r = +1\n"
         + " else\n"
@@ -238,13 +238,13 @@ BOOST_AUTO_TEST_CASE( testReturnExportFunction)
     string prog = string("export function foo { \n")
         + " do test.assert( test.isTrue( true ) )\n"
         + "}\n"
-        + "export int foo_ret() { \n"
+        + "export Int32 foo_ret() { \n"
         + "   if (true) then\n"
         + "     return 3\n"
         + "   else\n"
         + "     return 5\n"
         + "}\n"
-        + "export int foo_args(double d, int v) { \n"
+        + "export Int32 foo_args(Float64 d, Int32 v) { \n"
         + " do test.assert( test.isTrue( true ) )\n"
         + " if ( d == 3.0 && v == 6) then\n"
         + "     return +1\n" // 10
@@ -319,7 +319,7 @@ BOOST_AUTO_TEST_CASE( testRecFunction)
 
 BOOST_AUTO_TEST_CASE( testCallFunction)
 {
-    string prog = string("function foo(int a, string b, bool c) { \n")
+    string prog = string("function foo(Int32 a, String b, Bool c) { \n")
         + " do test.assert( test.isTrue( true ) )\n"
         + " if true then\n"
         + "    return\n"
@@ -336,8 +336,8 @@ BOOST_AUTO_TEST_CASE( testCallFunction)
 BOOST_AUTO_TEST_CASE( testFunctionStack)
 {
     string prog = string("export function foo { \n")
-        +"  var double a = 1.234\n"
-        +"  var double b = 4.321\n"
+        +"  var Float64 a = 1.234\n"
+        +"  var Float64 b = 4.321\n"
         +"  do test.assert( a == 1.234 )\n"
         +"  do test.assert( b == 4.321 )\n"
         +"  set a = 2.134\n"
@@ -346,8 +346,8 @@ BOOST_AUTO_TEST_CASE( testFunctionStack)
         +"  do test.assert( b == 3.421 )\n"
         + "}\n"
         + "program x { \n"
-        +"  var double b = 1.234\n" // we switch val's of a and b here
-        +"  var double a = 4.321\n"
+        +"  var Float64 b = 1.234\n" // we switch val's of a and b here
+        +"  var Float64 a = 4.321\n"
         + "   do foo()\n"
         +"  do test.assert( b == 1.234 )\n"
         +"  do test.assert( a == 4.321 )\n"
@@ -367,12 +367,12 @@ BOOST_AUTO_TEST_CASE( testFunctionExportArgs)
 {
     // Test if the foo args are init'ed correctly.
     string prog =
-        string("export function fooA(int a, string b, bool c) { \n")
+        string("export function fooA(Int32 a, String b, Bool c) { \n")
         + " do test.assertMsg( c, \"c not true\" )\n"
         + " do test.assertMsg( a == 1, \"a not 1\" )\n"
         + " do test.assertMsg( b == \"A\", \"b not A\" )\n"
         + "}\n"
-        + "export function fooB(int a, string b, bool c) { \n"
+        + "export function fooB(Int32 a, String b, Bool c) { \n"
         + " do test.assertMsg( !c, \"c not false\" )\n"
         + " do test.assertMsg( a == -1, \"a not -1\" )\n"
         + " do test.assertMsg( b == \"B\", \"b not B\"   )\n"
@@ -393,16 +393,16 @@ BOOST_AUTO_TEST_CASE( testFunctionCallArgs)
 {
     // Test if the foo args are init'ed correctly.
     string prog =
-        string("function fooA(int a, string b, bool c) { \n")
+        string("function fooA(Int32 a, String b, Bool c) { \n")
         + " do test.assert( c )\n"
         + " do test.assert( a == 1 )\n"
         + " do test.assert( b == \"A\" )\n"
         + "}\n"
-        + "function fooB(int a, string b, bool c) { \n"
+        + "function fooB(Int32 a, String b, Bool c) { \n"
         + " do test.assert( !c )\n"
-        + " var int i = 1\n"
-        + " var string s = \"A\"\n"
-        + " var bool tf = true\n"
+        + " var Int32 i = 1\n"
+        + " var String s = \"A\"\n"
+        + " var Bool tf = true\n"
         + " call fooA(i, s, tf)\n"
         + " do test.assert( a == -1 )\n"
         + " do test.assert( b == \"B\" )\n"
@@ -430,7 +430,7 @@ BOOST_AUTO_TEST_CASE( testFunctionFail)
         + " do fooA()\n"
         + "}\n"
         + "program x { \n"
-        + "   var bool success = false\n"
+        + "   var Bool success = false\n"
         + "   try fooA()\n"
         + "   catch \n"
         + "      set success = true\n" // error caught.
@@ -488,5 +488,3 @@ void FunctionsFixture::finishFunction(TaskContext* tc, std::string prog_name)
     sa->getProgram( prog_name )->stop();
     sa->unloadProgram( prog_name );
 }
-
-

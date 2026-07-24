@@ -481,7 +481,7 @@ Hello [R]> <command>ret</command>
 	attributes, we create one dynamically:
       </para>
       <screen>
-Hello [R]> <command>var string the_attribute = "HelloWorld"</command>
+Hello [R]> <command>var String the_attribute = "HelloWorld"</command>
 Hello [R]> <command>the_attribute</command>
  = <command>Hello World</command>
 Hello [R]> <command>the_attribute = "Veni Vidi Vici !"</command>
@@ -1284,14 +1284,14 @@ Hello [R]&gt;
 	  A small program script could be loaded into MyTask with
 	  the following contents:
 	  <programlisting>  program MyControlProgram {
-    var double the_K  = K        // read task property, see later.
-    var double setp_d
+    var Float64 the_K  = K        // read task property, see later.
+    var Float64 setp_d
 
     while ( true ) {
       if ( SetPoint_X.read( setp_d ) != NoData ) {   // read Input Port
-        var double in_d = 0.0;
+        var Float64 in_d = 0.0;
         Data_R.read( in_d )             // read Input Port
-        var double out_d = (setp_d - in_d) * the_K  // Calculate
+        var Float64 out_d = (setp_d - in_d) * the_K  // Calculate
         Data_W.write( out_d )          // write Data Port
       }
       yield       // this is a 'yield' point to avoid inifinite spinning.
@@ -1606,7 +1606,7 @@ Hello [R]&gt;
 	  The syntax in scripts is the same as in C++:</para>
 	<para>
 	<programlisting> // call:
-  var double oldvalue
+  var Float64 oldvalue
   ATask.changeParameter( 0.1 )
   // or :
   set oldvalue = ATask.changeParameter( 0.1 ) // store return value 
@@ -1844,14 +1844,14 @@ Hello [R]&gt;
 	A program script can access the above attributes simply by naming them:</para>
       <para>
 	<programlisting>  // a program in "ATask" does :
-  var double pi2 = pi * 2.
-  var int    myMax = 3
+  var Float64 pi2 = pi * 2.
+  var Int32    myMax = 3
   set max = myMax
 
   set Param = "B Value"</programlisting>
 	<programlisting>  // an external (peer task) program does :
-  var double pi2 = ATask.pi * 2.
-  var int    myMax = 3
+  var Float64 pi2 = ATask.pi * 2.
+  var Int32    myMax = 3
   set ATask.max = myMax	</programlisting></para>
       <para>
 	When trying to assign a value to a constant, the script parser
@@ -2314,7 +2314,7 @@ Hello [R]&gt;
       access its peers as such :</para>
     <para>
       <programlisting> // Script:
-  var bool result = CTask.aOperation() </programlisting></para>
+  var Bool result = CTask.aOperation() </programlisting></para>
     <para>
       The peer connection graph can be traversed at arbitrary
       depth. Thus you can access your peer's peers.
@@ -2677,8 +2677,8 @@ Hello [R]&gt;
 	<para>
 	  <programlisting>  program foo
   {
-    var int i = 1
-    var double j = 2.0
+    var Int32 i = 1
+    var Float64 j = 2.0
     changeParameter(i,j)
   }</programlisting>
 	  Any number of programs may be listed in a file.
@@ -2704,7 +2704,7 @@ Hello [R]&gt;
 	</screen>
 	<para>While you also can inspect its status :</para>
 	<screen>
-  var bool ret
+  var Bool ret
   ret = foo.isRunning()
   ret = foo.inError()
   ret = foo.isPaused()
@@ -2714,7 +2714,7 @@ Hello [R]&gt;
 	for debugging purposes.</para>
 	<screen>
   set foo.i = 3
-  var double oldj = foo.j
+  var Float64 oldj = foo.j
 	</screen>
 	<para>
 	  Program scripts can also be controlled in C++, but only from the
@@ -3267,8 +3267,8 @@ Hello [R]&gt;
 	<programlisting>
   program ControlDevice
   {
-     const int par1 = 0
-     const int par2 = 1
+     const Int32 par1 = 0
+     const Int32 par2 = 1
      device.setParameter(par1, supervisor.par1 )
      device.setParameter(par2, supervisor.par2 )
 

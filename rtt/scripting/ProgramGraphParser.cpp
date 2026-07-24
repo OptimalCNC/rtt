@@ -182,7 +182,7 @@ namespace RTT
        );
 
     // the function's definition args :
-    funcargs = ch_p('(') >> ( !str_p("void") >> ch_p(')') | ((
+    funcargs = ch_p('(') >> ( !str_p("Void") >> ch_p(')') | ((
          valuechangeparser.bareDefinitionParser()[boost::bind(&ProgramGraphParser::seenfunctionarg, this)]
              >> *(ch_p(',')>> valuechangeparser.bareDefinitionParser()[boost::bind(&ProgramGraphParser::seenfunctionarg, this)]) )
         >> closebrace ));
@@ -361,7 +361,7 @@ namespace RTT
           throw parse_exception_semantic_error("function " + funcdef + " redefined.");
 
       AttributeBase* retarg = 0;
-      if ( !rettype.empty() && rettype != "void") {
+      if ( !rettype.empty() && rettype != "Void") {
           TypeInfo* type = TypeInfoRepository::Instance()->type( rettype );
           if ( type == 0 )
               throw_( iter_t(), "Return type '" + rettype + "' for function '"+ funcdef +"' is an unknown type." );

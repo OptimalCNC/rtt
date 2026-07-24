@@ -52,7 +52,7 @@ namespace RTT
         struct BoolTypeInfo: public StdTypeInfo<bool>
         {
             BoolTypeInfo() :
-                StdTypeInfo<bool> ("bool")
+                StdTypeInfo<bool> ("Bool")
             {
             }
 

@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(testProgramCondition)
         + "      do test.fail() \n" //20
         + "else \n"
         + "   do test.fail() \n"
-        + "var bool trig = false \n"
+        + "var Bool trig = false \n"
         + "do test.resetI()\n"
         + "while test.increase() != 100 && !trig \n"
         + "   if test.i == 50 then \n"
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(testProgramCondition)
         + "    do test.fail() \n"
         + "do test.resetI()\n" //30
         + "set trig = false\n"
-        + "for (var int j = 0; j != 100 && !trig ; set j = test.increase() )\n"
+        + "for (var Int32 j = 0; j != 100 && !trig ; set j = test.increase() )\n"
         + "   if j == 50 then \n"
         + "       set trig = true \n"
 //         + "if test.i != 51 then \n" // require same result as with ISO C
@@ -258,7 +258,7 @@ BOOST_AUTO_TEST_CASE(testProgramBreak)
         + "if test.i != 50 then \n" // break on 50
         + "    do test.fail() \n"
         + "do test.resetI()\n"
-        + "for (var int j = 0; j != 100  ; set j = test.increase() )\n"
+        + "for (var Int32 j = 0; j != 100  ; set j = test.increase() )\n"
         + "   if j != 50 then \n"
         + "       do nothing \n"
         + "   else {\n"
@@ -311,7 +311,7 @@ BOOST_AUTO_TEST_CASE(testProgramLoops)
         + "    do test.fail() \n"
         + "do test.resetI()\n"
         // single for loop
-        + "for (var int j = 0; j != 100  ; j = test.increase() ) {\n"
+        + "for (var Int32 j = 0; j != 100  ; j = test.increase() ) {\n"
         + "}\n"
         + "if test.i != 100 then \n" // 20
         + "    do test.fail() \n"
@@ -320,7 +320,7 @@ BOOST_AUTO_TEST_CASE(testProgramLoops)
         + "do test.resetI()\n"
         // double for loop
         + "for ( j = 0; j != 100  ; j = test.increase() ) {\n"
-        + "   for (var int j2 = 0; j2 != 100  ; j2 = j2 + 1 ) {\n"
+        + "   for (var Int32 j2 = 0; j2 != 100  ; j2 = j2 + 1 ) {\n"
         + "   }\n"
         + "   if j2 != 100 then \n"
         + "      do test.fail() \n"
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE(testProgramLoops)
         + "do test.resetI()\n"
         // for loop in while loop
         + "while (test.increase() != 200) {\n"
-        + "   for (var int j3 = 0; j3 != 100  ; j3 = j3 + 1 ) {\n"
+        + "   for (var Int32 j3 = 0; j3 != 100  ; j3 = j3 + 1 ) {\n"
         + "   }\n"   // 40
         + "}\n"
         + "if test.i != 200 then \n"
@@ -344,7 +344,7 @@ BOOST_AUTO_TEST_CASE(testProgramLoops)
         + "do test.resetI()\n"
         // for loop in while loop + break in for
         + "while (test.increase() != 200) {\n"
-        + "   for (var int j3b = 0; j3b != 100  ; j3b = j3b + 1 ) {\n"
+        + "   for (var Int32 j3b = 0; j3b != 100  ; j3b = j3b + 1 ) {\n"
         + "      if j3b == 50 then break \n"
         + "   }\n"
         + "   if j3b != 50 then \n"
@@ -356,7 +356,7 @@ BOOST_AUTO_TEST_CASE(testProgramLoops)
         + "    do test.fail() \n"
         + "do test.resetI()\n"
         // while loop in for loop
-        + "for (var int j4 = 0; j4 != 100  ; j4 = j4 + 1 ) {\n"
+        + "for (var Int32 j4 = 0; j4 != 100  ; j4 = j4 + 1 ) {\n"
         + "   test.resetI()\n" // 60
         + "   while (test.increase() != 200) {\n"
         + "   }\n"
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE(testProgramLoops)
         + "    do test.fail() \n"
         + "do test.resetI()\n"
         // while loop in for loop + break in while
-        + "for (var int j5 = 0; j5 != 100  ; j5 = j5 + 1 ) {\n"
+        + "for (var Int32 j5 = 0; j5 != 100  ; j5 = j5 + 1 ) {\n"
         + "   test.resetI()\n"
         + "   while (test.increase() != 200) {\n"
         + "      if test.i == 50 then break \n"
@@ -493,7 +493,7 @@ BOOST_AUTO_TEST_CASE(testProgramCallFoo)
 BOOST_AUTO_TEST_CASE(testProgramSendFoo)
 {
     // see if modifying an attribute works.
-    string prog = string("export function foo(int arg) {\n")
+    string prog = string("export function foo(Int32 arg) {\n")
         + "  do test.assert( tvar_i == arg ) \n"
         + "  do test.assert( tvar_i != tconst_i ) \n"
         + "  set tvar_i = tvar_i+2\n"
@@ -529,7 +529,7 @@ BOOST_AUTO_TEST_CASE(testProgramSendFoo)
 BOOST_AUTO_TEST_CASE(testProgramCmdFoo)
 {
     // see if modifying an attribute works.
-    string prog = string("export function foo(int arg) {\n")
+    string prog = string("export function foo(Int32 arg) {\n")
         + "  do test.assert( tvar_i == arg ) \n"
         + "  do test.assert( tvar_i != tconst_i ) \n"
         + "  set tvar_i = tvar_i+2\n"
@@ -568,7 +568,7 @@ BOOST_AUTO_TEST_CASE(testSend)
         + "var SendHandle sh\n"
         + "set sh = test.increaseCmd.send()\n"
         + "test.assertEqual( test.i, 1 )\n" // not yet send
-        + "var int r = 0\n"
+        + "var Int32 r = 0\n"
         //+ "sh.collect(r)\n" // hangs
         + "while (sh.collectIfDone(r) != SendSuccess)\n"
         + "    yield \n"

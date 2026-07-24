@@ -64,8 +64,8 @@ namespace RTT
     BOOST_SPIRIT_DEBUG_RULE( const_int );
     BOOST_SPIRIT_DEBUG_RULE( const_hex );
     BOOST_SPIRIT_DEBUG_RULE( const_uint );
-    BOOST_SPIRIT_DEBUG_RULE( const_llong );
-    BOOST_SPIRIT_DEBUG_RULE( const_ullong );
+    BOOST_SPIRIT_DEBUG_RULE( const_int64 );
+    BOOST_SPIRIT_DEBUG_RULE( const_uint64 );
     BOOST_SPIRIT_DEBUG_RULE( const_char );
     BOOST_SPIRIT_DEBUG_RULE( const_bool );
     BOOST_SPIRIT_DEBUG_RULE( const_string );
@@ -78,8 +78,8 @@ namespace RTT
         const_float
       | const_double
       | const_hex
-      | const_ullong
-      | const_llong
+      | const_uint64
+      | const_int64
       | const_uint
       | const_int
       | const_bool
@@ -96,23 +96,23 @@ namespace RTT
         boost::bind( &ValueParser::seendoubleconstant, this, _1 ) ];
 
     const_hex = (str_p("0x") | str_p("0X")) >>
-      hex_p [
+      uint_parser<std::uint32_t, 16>() [
         boost::bind( &ValueParser::seenhexconstant, this, _1 ) ];
 
-    const_ullong =
-      uint_parser<unsigned long long>() [
-        boost::bind( &ValueParser::seenullongconstant, this, _1 ) ] >> str_p("ull");
+    const_uint64 =
+      uint_parser<std::uint64_t>() [
+        boost::bind( &ValueParser::seenuint64constant, this, _1 ) ] >> str_p("ull");
 
-    const_llong =
-      uint_parser<long long>() [
-        boost::bind( &ValueParser::seenllongconstant, this, _1 ) ] >> str_p("ll");
+    const_int64 =
+      uint_parser<std::int64_t>() [
+        boost::bind( &ValueParser::seenint64constant, this, _1 ) ] >> str_p("ll");
 
     const_uint =
-      uint_parser<unsigned int>() [
+      uint_parser<std::uint32_t>() [
         boost::bind( &ValueParser::seenuintconstant, this, _1 ) ] >> ch_p('u');
 
     const_int =
-      int_parser<int>() [
+      int_parser<std::int32_t>() [
         boost::bind( &ValueParser::seenintconstant, this, _1 ) ];
 
     const_bool =
@@ -207,29 +207,29 @@ namespace RTT
         ret = new ConstantDataSource<char>( *c );
     }
 
-    void ValueParser::seenhexconstant( unsigned int i )
+    void ValueParser::seenhexconstant( std::uint32_t i )
     {
-      ret = new ConstantDataSource<unsigned int>( i );
+      ret = new ConstantDataSource<std::uint32_t>( i );
     }
 
-  void ValueParser::seenintconstant( int i )
+  void ValueParser::seenintconstant( std::int32_t i )
   {
-    ret = new ConstantDataSource<int>( i );
+    ret = new ConstantDataSource<std::int32_t>( i );
   }
 
-  void ValueParser::seenuintconstant( unsigned int i ) // RobWork uint -> unsigned int
+  void ValueParser::seenuintconstant( std::uint32_t i )
   {
-    ret = new ConstantDataSource<unsigned int>( i ); // RobWork uint -> unsigned int
+    ret = new ConstantDataSource<std::uint32_t>( i );
   }
 
-  void ValueParser::seenllongconstant( long long i )
+  void ValueParser::seenint64constant( std::int64_t i )
   {
-    ret = new ConstantDataSource<long long>( i );
+    ret = new ConstantDataSource<std::int64_t>( i );
   }
 
-  void ValueParser::seenullongconstant( unsigned long long i )
+  void ValueParser::seenuint64constant( std::uint64_t i )
   {
-    ret = new ConstantDataSource<unsigned long long>( i );
+    ret = new ConstantDataSource<std::uint64_t>( i );
   }
 
   void ValueParser::seenfloatconstant( double i )

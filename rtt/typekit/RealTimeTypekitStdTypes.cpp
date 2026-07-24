@@ -56,7 +56,7 @@ namespace RTT
         // the latter causes capacity changes, probably due to the copy-on-write implementation of string(). Assignment
         // from a c-style string obviously disables a copy-on-write connection.
 #ifndef RTT_NO_STD_TYPES
-        ti->addType( new StdStringTypeInfo() );
+        ti->addType( new StdStringTypeInfo("String") );
         ti->addType( new SequenceTypeInfo<std::vector<double> >("array") );
 #endif
 #ifdef OS_RT_MALLOC
@@ -65,4 +65,3 @@ namespace RTT
     }
     }
 }
-

@@ -50,6 +50,7 @@
 #include "RTTCorbaConversion.hpp"
 #include "../../types/TransportPlugin.hpp"
 #include "../../types/TypekitPlugin.hpp"
+#include <cstdint>
 #ifdef OS_RT_MALLOC
 #include "../../rt_string.hpp"
 #endif
@@ -161,28 +162,34 @@ namespace RTT {
         {
             if ( name == "unknown_t") // register fallback also.
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaFallBackProtocol());
-            if ( name == "int" )
-                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<int>() );
-            if ( name == "double" )
-                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<double>() );
-            if ( name == "float" )
+            if ( name == "Int8" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::int8_t>() );
+            if ( name == "UInt8" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::uint8_t>() );
+            if ( name == "Int16" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::int16_t>() );
+            if ( name == "UInt16" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::uint16_t>() );
+            if ( name == "Int32" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::int32_t>() );
+            if ( name == "UInt32" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::uint32_t>() );
+            if ( name == "Int64" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::int64_t>() );
+            if ( name == "UInt64" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::uint64_t>() );
+            if ( name == "Float32" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<float>() );
-            if ( name == "uint" )
-                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<unsigned int>() );
-            if ( name == "llong" )
-                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<long long>() );
-            if ( name == "ullong" )
-                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<unsigned long long>() );
-            if ( name == "char" )
+            if ( name == "Float64" )
+                return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<double>() );
+            if ( name == "Char" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<char>() );
-            //if ( name == "long" )
-            //    return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<long>() );
 //                if ( name == "PropertyBag" )
 //                    return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<PropertyBag>() );
-            if ( name == "bool" )
+            if ( name == "Bool" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<bool>() );
 #ifndef RTT_NO_STD_TYPES
-            if ( name == "string" )
+            if ( name == "String" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::string>() );
             if ( name == "array" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol< std::vector<double> >() );
@@ -191,7 +198,7 @@ namespace RTT {
             if ( name == "rt_string")
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<rt_string>() );
 #endif
-            if ( name == "void" )
+            if ( name == "Void" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaFallBackProtocol(false)); // warn=false
             if ( name == "ConnPolicy")
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<ConnPolicy>() );

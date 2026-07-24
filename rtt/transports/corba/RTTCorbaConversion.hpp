@@ -46,6 +46,7 @@ email                : peter.soetens@fmtc.be
 #include "TaskContextServer.hpp"
 #include "TaskContextProxy.hpp"
 #include "CorbaConnPolicy.hpp"
+#include <cstdint>
 #ifdef OS_RT_MALLOC
 #include <rtt/rt_string.hpp>
 #endif
@@ -64,25 +65,86 @@ namespace RTT {
     };
 
     template<>
-    struct AnyConversion<int> : public AnyConversionHelper<int, CORBA::Long> {
+    struct AnyConversion<std::int8_t> : public AnyConversionHelper<std::int8_t, CORBA::Short> {
+      typedef CORBA::ShortSeq sequence;
+    };
+
+    template<>
+    struct AnyConversion<std::uint8_t> {
+      typedef CORBA::Octet CorbaType;
+      typedef std::uint8_t StdType;
+      typedef CORBA::OctetSeq sequence;
+
+      static CORBA::Any::from_octet toAny(StdType value) {
+        return CORBA::Any::from_octet(value);
+      }
+
+      static CORBA::Any::to_octet fromAny(CorbaType& value) {
+        return CORBA::Any::to_octet(value);
+      }
+
+      static StdType get(CorbaType value) {
+        return value;
+      }
+
+      static bool toStdType(StdType& target, const CorbaType& source) {
+        target = source;
+        return true;
+      }
+
+      static bool toCorbaType(CorbaType& target, const StdType& source) {
+        target = source;
+        return true;
+      }
+
+      static bool update(const CORBA::Any& any, StdType& value) {
+        CorbaType result;
+        if (any >>= fromAny(result)) {
+          value = result;
+          return true;
+        }
+        return false;
+      }
+
+      static CORBA::Any_ptr createAny(StdType value) {
+        CORBA::Any_ptr result = new CORBA::Any();
+        *result <<= toAny(value);
+        return result;
+      }
+
+      static bool updateAny(StdType value, CORBA::Any& any) {
+        any <<= toAny(value);
+        return true;
+      }
+    };
+
+    template<>
+    struct AnyConversion<std::int16_t> : public AnyConversionHelper<std::int16_t, CORBA::Short> {
+      typedef CORBA::ShortSeq sequence;
+    };
+
+    template<>
+    struct AnyConversion<std::uint16_t> : public AnyConversionHelper<std::uint16_t, CORBA::UShort> {
+      typedef CORBA::UShortSeq sequence;
+    };
+
+    template<>
+    struct AnyConversion<std::int32_t> : public AnyConversionHelper<std::int32_t, CORBA::Long> {
       typedef CORBA::LongSeq sequence;
     };
 
-    //template<>
-    //struct AnyConversion<long> : public AnyConversionHelper<long> {};
-
     template<>
-    struct AnyConversion<unsigned int> : public AnyConversionHelper<unsigned int, CORBA::ULong> {
+    struct AnyConversion<std::uint32_t> : public AnyConversionHelper<std::uint32_t, CORBA::ULong> {
       typedef CORBA::ULongSeq sequence;
     };
 
     template<>
-    struct AnyConversion<long long> : public AnyConversionHelper<long long, CORBA::LongLong> {
+    struct AnyConversion<std::int64_t> : public AnyConversionHelper<std::int64_t, CORBA::LongLong> {
       typedef CORBA::LongLongSeq sequence;
     };
 
     template<>
-    struct AnyConversion<unsigned long long> : public AnyConversionHelper<unsigned long long, CORBA::ULongLong> {
+    struct AnyConversion<std::uint64_t> : public AnyConversionHelper<std::uint64_t, CORBA::ULongLong> {
       typedef CORBA::ULongLongSeq sequence;
     };
 

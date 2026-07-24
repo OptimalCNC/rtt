@@ -323,7 +323,7 @@ base::DataSourceBase::shared_ptr CorbaOperationCallerFactory::produce(const std:
         // convert returned any to local type:
         const types::TypeInfo* ti = this->getArgumentType(0);
         if ( ti ) {
-            if ( ti != Types()->type("void") ) {
+            if ( ti != Types()->type("Void") ) {
                 // create a method call object and a return value and let the former store results in the latter.
                 CorbaTypeTransporter* ctt = dynamic_cast<CorbaTypeTransporter*>( ti->getProtocol(ORO_CORBA_PROTOCOL_ID) );
                 DataSourceBase::shared_ptr result = ti->buildValue();

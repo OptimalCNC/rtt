@@ -44,6 +44,7 @@
 #include "PropertyParser.hpp"
 #include "../ConfigurationInterface.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <map>
 
@@ -57,7 +58,7 @@ namespace RTT
      */
   class ValueParser
   {
-    rule_t constant, const_float, const_double, const_int, const_uint, const_llong, const_ullong, const_bool, named_constant,
+    rule_t constant, const_float, const_double, const_int, const_uint, const_int64, const_uint64, const_bool, named_constant,
       const_string, const_char, const_hex;
     CommonParser& commonparser;
     PeerParser peerparser;
@@ -82,11 +83,11 @@ namespace RTT
 
     void seennamedconstant( iter_t begin, iter_t end );
     void seenboolconstant( iter_t begin, iter_t end );
-    void seenintconstant( int c );
-    void seenhexconstant( unsigned int c );
-    void seenuintconstant( unsigned int c ); // RobWork uint -> unsigned int
-    void seenllongconstant( long long c );
-    void seenullongconstant( unsigned long long c );
+    void seenintconstant( std::int32_t c );
+    void seenhexconstant( std::uint32_t c );
+    void seenuintconstant( std::uint32_t c );
+    void seenint64constant( std::int64_t c );
+    void seenuint64constant( std::uint64_t c );
     void seencharconstant( iter_t c );
     void seenfloatconstant( double c );
     void seendoubleconstant( double c );

@@ -150,15 +150,15 @@ BOOST_AUTO_TEST_CASE( testParseState)
 {
     // a state which should never fail
     string prog = string("StateMachine X {\n")
-        + " param int isten\n"
-        + " param bool isflse\n"
-        + " param bool isok\n"
-        + " param double isnegative\n"
-        + " var bool istrrue = true\n"
-        + " var double d_dummy = -1.0\n"
-        + " var int    i_dummy = -1\n"
-        + " var bool   varinit = false\n"
-        + " var bool   b_dummy = true\n" // 10
+        + " param Int32 isten\n"
+        + " param Bool isflse\n"
+        + " param Bool isok\n"
+        + " param Float64 isnegative\n"
+        + " var Bool istrrue = true\n"
+        + " var Float64 d_dummy = -1.0\n"
+        + " var Int32    i_dummy = -1\n"
+        + " var Bool   varinit = false\n"
+        + " var Bool   b_dummy = true\n" // 10
         + " initial state INIT {\n"
         // XXX bug : preconditions are not checked in the initial state.
 //         + " preconditions {\n"
@@ -309,8 +309,8 @@ BOOST_AUTO_TEST_CASE( testStateChildren)
 {
     // instantiate two children and check init of vars and params
     string prog = string("StateMachine Y {\n")
-        + " param double isnegative\n"
-        + " var   double t = 1.0\n"
+        + " param Float64 isnegative\n"
+        + " var Float64 t = 1.0\n"
         + " initial state INIT {\n"
         + " entry {\n"
         + "     do test.good()\n"
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE( testStateChildren)
         + " }\n"
         + " }\n"
         + string("StateMachine Z {\n")
-        + " param double neg\n"
+        + " param Float64 neg\n"
         + " initial state INIT {\n"
         + " transitions {\n"
         + "     if neg >= 0. then select PARAMFAIL\n"
@@ -356,9 +356,9 @@ BOOST_AUTO_TEST_CASE( testStateChildren)
         + " }\n"
         + " }\n"
         + string("StateMachine X {\n")
-        + " param double isnegative\n"
-        + " var double d_dummy = -2.0\n"
-        + " var int    i_dummy = -1\n"
+        + " param Float64 isnegative\n"
+        + " var Float64 d_dummy = -2.0\n"
+        + " var Int32    i_dummy = -1\n"
         + " SubMachine Y y1(isnegative = d_dummy)\n"
         + " SubMachine Y y2(isnegative = -3.0)\n"
         + " SubMachine Y y3(isnegative = isnegative)\n"
@@ -519,7 +519,7 @@ BOOST_AUTO_TEST_CASE( testStateOperations)
         + " }\n"
         + " }\n"
         + " state TEST {\n"
-        + "   var double dret\n"
+        + "   var Float64 dret\n"
         + "   entry {\n"
         + "   setState( rt_string(\"TEST-ENTRY\") )\n"
         + "   methods.m0()\n"
@@ -728,9 +728,9 @@ BOOST_AUTO_TEST_CASE( testStateTransitions)
     // test processing of transition statements.
     string prog = string("StateMachine X {\n")
         + " initial state INIT {\n"
-        + " var int i = 0;\n" // transition counter
-        + " var int j = 0;\n" // entry counter
-        + " var int k = 0;\n" // run counter
+        + " var Int32 i = 0;\n" // transition counter
+        + " var Int32 j = 0;\n" // entry counter
+        + " var Int32 k = 0;\n" // run counter
         + " entry {\n"
         + "   set j = j + 1\n"
         + " }\n"
@@ -807,7 +807,7 @@ BOOST_AUTO_TEST_CASE( testStateYield )
     // test processing of yield statements when an eventTransition occurs:
     string prog = string("StateMachine X {\n")
         + " initial state INIT {\n"
-        + " var double d = 0.0\n"
+        + " var Float64 d = 0.0\n"
         + " run { do o_event(1.0); test.i = 5; do test.assert(test.i == 5);\n" // synchronous call on o_event, so signal must be delivered when we return.
         + "       do yield;\n"
         + "       test.i = 10;\n"
@@ -838,7 +838,7 @@ BOOST_AUTO_TEST_CASE( testStateYieldbySend )
     this->o_event.getOperationCaller()->setThread(OwnThread, tc->engine() );
     string prog = string("StateMachine X {\n")
         + " initial state INIT {\n"
-        + " var double d = 0.0\n"
+        + " var Float64 d = 0.0\n"
         + " run { do o_event.send(1.0); test.i = 5; do test.assert(test.i == 5);\n" // asynchronous send on o_event, so signal must be processed when we return.
         + "       do yield;\n"
         + "       test.i = 10;\n"
@@ -867,7 +867,7 @@ BOOST_AUTO_TEST_CASE( testStateYieldbyCmd )
     // test yielding and checking .cmd syntax
     string prog = string("StateMachine X {\n")
         + " initial state INIT {\n"
-        + " var double d = 0.0\n"
+        + " var Float64 d = 0.0\n"
         + " run {\n"
         + "   test.assertEqual( test.i, 0 )\n"
         + "   var SendStatus ss\n"
@@ -901,7 +901,7 @@ BOOST_AUTO_TEST_CASE( testStateYieldbyCmd )
 BOOST_AUTO_TEST_CASE( testStateSendFunction )
 {
     // test yielding and checking .send syntax
-    string func = string("export function foo(int arg) {\n")
+    string func = string("export function foo(Int32 arg) {\n")
         + "  do test.assert( tvar_i == arg ) \n"
         + "  do test.assert( tvar_i != tconst_i ) \n"
         + "  set tvar_i = tvar_i+2\n"
@@ -953,7 +953,7 @@ BOOST_AUTO_TEST_CASE( testStateSendFunction )
 BOOST_AUTO_TEST_CASE( testStateCmdFunction )
 {
     // test yielding and checking .cmd syntax
-    string func = string("export function foo(int arg) {\n")
+    string func = string("export function foo(Int32 arg) {\n")
         + "  do test.assert( tvar_i == arg ) \n"
         + "  do test.assert( tvar_i != tconst_i ) \n"
         + "  set tvar_i = tvar_i+2\n"
@@ -1001,7 +1001,7 @@ BOOST_AUTO_TEST_CASE( testStateGlobalTransitions)
 {
     // test processing of transition statements.
     string prog = string("StateMachine X {\n")
-        + " var int gi = 0;\n" // transition counter
+        + " var Int32 gi = 0;\n" // transition counter
         + " transitions {\n"
 
         + "  if gi < 5 then {\n"
@@ -1019,9 +1019,9 @@ BOOST_AUTO_TEST_CASE( testStateGlobalTransitions)
         + "  } select FINI\n" // we must be checked before
         + " }\n"
         + " initial state INIT {\n"
-        + " var int i = 0;\n" // transition counter
-        + " var int j = 0;\n" // entry counter
-        + " var int k = 0;\n" // run counter
+        + " var Int32 i = 0;\n" // transition counter
+        + " var Int32 j = 0;\n" // entry counter
+        + " var Int32 k = 0;\n" // run counter
         + " entry {\n"
         + "   set j = j + 1\n"
         + " }\n"
@@ -1063,8 +1063,8 @@ BOOST_AUTO_TEST_CASE( testStateSubStateVars)
 {
     // test get/set access of substate variables and parameters
     string prog = string("StateMachine Y {\n")
-        + " param double isnegative\n"
-        + " var   double t = 1.0\n"
+        + " param Float64 isnegative\n"
+        + " var Float64 t = 1.0\n"
         + " initial state INIT {\n"
         + " transitions {\n"
         + "     if isnegative >= 0. then select PARAMFAIL\n"
@@ -1090,9 +1090,9 @@ BOOST_AUTO_TEST_CASE( testStateSubStateVars)
         + " }\n"
         + " }\n"
         + string("StateMachine X {\n")
-        + " param double isnegative\n"
-        + " var double d_dummy = -2.0\n"
-        + " var int    i_dummy = -1\n" //31
+        + " param Float64 isnegative\n"
+        + " var Float64 d_dummy = -2.0\n"
+        + " var Int32    i_dummy = -1\n" //31
         + " SubMachine Y y1(isnegative = d_dummy)\n"
         + " initial state INIT {\n"
         + " entry {\n"
@@ -1140,8 +1140,8 @@ BOOST_AUTO_TEST_CASE( testStateSubStateCommands)
 {
     // test get/set access of substate variables and parameters
     string prog = string("StateMachine Y {\n")
-        + " param double isnegative\n"
-        + " var   double t = 1.0\n"
+        + " param Float64 isnegative\n"
+        + " var Float64 t = 1.0\n"
         + " initial state INIT {\n"
         + " transitions {\n"
         + "     if isnegative < 0. then select ISNEGATIVE\n"
@@ -1224,7 +1224,7 @@ BOOST_AUTO_TEST_CASE( testStateOperationSignalTransition )
 {
     // test event reception from own component
     string prog = string("StateMachine X {\n")
-        + " var   double et = 0.0\n"
+        + " var Float64 et = 0.0\n"
         + " initial state INIT {\n"
         + "    transition o_event(et) { test.assert(et == 3.33); } select FINI\n" // test signal transition
         + " }\n"
@@ -1250,7 +1250,7 @@ BOOST_AUTO_TEST_CASE( testStateOperationCallerSignalTransition )
 {
     // test event reception from another component
     string prog = string("StateMachine X {\n")
-        + " var   double et = 0.0\n"
+        + " var Float64 et = 0.0\n"
         + " initial state INIT {\n"
         + "    transition caller.c_event(et) select FINI\n" // test signal transition
         + " }\n"
@@ -1333,7 +1333,7 @@ BOOST_AUTO_TEST_CASE( testStateOperationSignalTransitionPriority )
     + "    transitions { select STATE1 }\n"
     + " }\n"
     + " state STATE1 {\n"
-    + "    var double d;\n"       
+    + "    var Float64 d;\n"
     + "    transition v_event() select STATE2\n" // test signal transition
     + "    transition v_event() select ERROR\n"   // This one should not be taken.
     + "    transition o_event(d) select ERROR\n"   // This one should not be taken.
@@ -1468,7 +1468,7 @@ BOOST_AUTO_TEST_CASE( testStateOperationSignalTransitionAround )
 BOOST_AUTO_TEST_CASE( testStateOperationSignalTransitionProgram )
 {
     string prog = string("StateMachine X {\n")
-        + " var   double et = 0.0\n"
+        + " var Float64 et = 0.0\n"
         + " initial state INIT {\n"
         + "    transition o_event(et) { test.i = 5; } select FINI\n" // test program
         + " }\n"
@@ -1497,7 +1497,7 @@ BOOST_AUTO_TEST_CASE( testStateOperationSignalTransitionProgram )
 BOOST_AUTO_TEST_CASE( testStateOperationSignalGuard )
 {
     string prog = string("StateMachine X {\n")
-        + " var   double et = 0.0\n"
+        + " var Float64 et = 0.0\n"
         + " initial state INIT {\n"
         + "    transition o_event(et) if (et == 3.33) then \n"
         + "        select FINI\n" // test guard
@@ -1528,7 +1528,7 @@ BOOST_AUTO_TEST_CASE( testStateOperationSignalGuard )
 BOOST_AUTO_TEST_CASE( testStateOperationCallerSignalGuard )
 {
     string prog = string("StateMachine X {\n")
-        + " var   double et = 0.0\n"
+        + " var Float64 et = 0.0\n"
         + " initial state INIT {\n"
         + "    transition caller.c_event(et) if (et == 3.33) then\n"
         + "       select FINI\n"
@@ -1560,10 +1560,10 @@ BOOST_AUTO_TEST_CASE( testStateEvents)
 {
     // test event reception in sub states.
     string prog = string("StateMachine Y {\n")
-        + " var   int t = 0\n"
-        + " var   double et_global = 0.0, et_local = 0.0\n"
-        + " var   bool eb = false\n"
-        + " var   bool eflag = false\n"
+        + " var Int32 t = 0\n"
+        + " var Float64 et_global = 0.0, et_local = 0.0\n"
+        + " var Bool eb = false\n"
+        + " var Bool eflag = false\n"
         + " transition t_event(t) { do log(\"Global Transition to TESTSELF\");} select TESTSELF\n" // test self transition
         + " transition d_event(et_global)\n"
         + "     if et_global < 0. then { do log(\"Global ISNEGATIVE Transition\");} select ISNEGATIVE\n"
@@ -1693,10 +1693,10 @@ BOOST_AUTO_TEST_CASE( testStateLevelEvents)
 {
     // test event reception in sub states.
     string prog = string("StateMachine Y {\n")
-        + " var   int t = 0\n"
-        + " var   double et_global = 0.0, et_local = 0.0\n"
-        + " var   bool eb = false\n"
-        + " var   bool eflag = false\n"
+        + " var Int32 t = 0\n"
+        + " var Float64 et_global = 0.0, et_local = 0.0\n"
+        + " var Bool eb = false\n"
+        + " var Bool eflag = false\n"
         + " transition if ( t_event.read(t) == NewData && t == 1 ) then { do log(\"Global Transition to TESTSELF\");} select TESTSELF\n" // test self transition
         + " transition d_event(et_global) if ( et_global < 0.) then \n"
         + "     { do log(\"Global ISNEGATIVE Transition\");} select ISNEGATIVE\n"

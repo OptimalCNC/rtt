@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE(testDataFlowInterface)
 
     // And check type names
     CORBA::String_var cstr = ports->getDataType("mo");
-    BOOST_CHECK_EQUAL(string("double"),
+    BOOST_CHECK_EQUAL(string("Float64"),
 	    string(cstr.in()));
 }
 

@@ -115,9 +115,9 @@
   set v = w.force      // read the force
   set v = w.torque     // read the torque
 
-  var double x = v.x  // also : v.y or v.z
+  var Float64 x = v.x  // also : v.y or v.z
 
-  var double p = r.roll  // also : r.pitch or r.yaw</programlisting>
+  var Float64 p = r.roll  // also : r.pitch or r.yaw</programlisting>
     </para>
     <para>
       You can not use the '.' operator in the reverse direction.
@@ -153,7 +153,7 @@
   // roll, pitch and yaw are double expressions, this
   // returns a rotation, that is constructed using the
   // Roll-Pitch-Yaw convention in RADIANS :
-  var double roll = 45.0 * (2.*3.14/360.)         // convert to radians
+  var Float64 roll = 45.0 * (2.*3.14/360.)         // convert to radians
   // ...
   var rotation rot = rotation( roll, pitch, yaw )
   
@@ -170,7 +170,7 @@
   // and has been recently introduced in the parser
   var double6d d6 = double6d(0.0)
   set d6[0] = 1.0
-  var double d0 = d6[0]
+  var Float64 d0 = d6[0]
   set d6 = double6d( 1., 2., 3., 4., 5., 6. ) </programlisting>
   </section>
 </article>
@@ -291,9 +291,9 @@
   set v = w.force      // read the force
   set v = w.torque     // read the torque
 
-  var double x = v.x  // also : v.y or v.z
+  var Float64 x = v.x  // also : v.y or v.z
 
-  var double p = r.roll  // also : r.pitch or r.yaw</programlisting>
+  var Float64 p = r.roll  // also : r.pitch or r.yaw</programlisting>
     </para>
     <para>
       You can not use the '.' operator in the reverse direction.
@@ -329,7 +329,7 @@
   // roll, pitch and yaw are double expressions, this
   // returns a rotation, that is constructed using the
   // Roll-Pitch-Yaw convention in RADIANS :
-  var double roll = 45.0 * (2.*3.14/360.)         // convert to radians
+  var Float64 roll = 45.0 * (2.*3.14/360.)         // convert to radians
   // ...
   var rotation rot = rotation( roll, pitch, yaw )
   
@@ -346,7 +346,7 @@
   // and has been recently introduced in the parser
   var double6d d6 = double6d(0.0)
   set d6[0] = 1.0
-  var double d0 = d6[0]
+  var Float64 d0 = d6[0]
   set d6 = double6d( 1., 2., 3., 4., 5., 6. ) </programlisting>
   </section>
 </article>
@@ -467,9 +467,9 @@
   set v = w.force      // read the force
   set v = w.torque     // read the torque
 
-  var double x = v.x  // also : v.y or v.z
+  var Float64 x = v.x  // also : v.y or v.z
 
-  var double p = r.roll  // also : r.pitch or r.yaw</programlisting>
+  var Float64 p = r.roll  // also : r.pitch or r.yaw</programlisting>
     </para>
     <para>
       You can not use the '.' operator in the reverse direction.
@@ -505,7 +505,7 @@
   // roll, pitch and yaw are double expressions, this
   // returns a rotation, that is constructed using the
   // Roll-Pitch-Yaw convention in RADIANS :
-  var double roll = 45.0 * (2.*3.14/360.)         // convert to radians
+  var Float64 roll = 45.0 * (2.*3.14/360.)         // convert to radians
   // ...
   var rotation rot = rotation( roll, pitch, yaw )
   
@@ -522,7 +522,7 @@
   // and has been recently introduced in the parser
   var double6d d6 = double6d(0.0)
   set d6[0] = 1.0
-  var double d0 = d6[0]
+  var Float64 d0 = d6[0]
   set d6 = double6d( 1., 2., 3., 4., 5., 6. ) </programlisting>
   </section>
 </article>

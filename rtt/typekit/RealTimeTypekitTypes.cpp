@@ -46,6 +46,7 @@
 #include "BoolTypeInfo.hpp"
 #include "../types/TypeInfoName.hpp"
 
+#include <cstdint>
 
 namespace RTT
 {
@@ -61,18 +62,19 @@ namespace RTT
     {
         TypeInfoRepository::shared_ptr ti = TypeInfoRepository::Instance();
 
-        // The standard C types + std::string are defined here,
-        ti->addType( new StdTypeInfo<short>("short") );
-        ti->addType( new StdTypeInfo<unsigned short>("ushort") );
-        ti->addType( new StdTypeInfo<int>("int") );
-        ti->addType( new StdTypeInfo<unsigned int>("uint") );
-        ti->addType( new StdTypeInfo<long long>("llong") );
-        ti->addType( new StdTypeInfo<unsigned long long>("ullong") );
-        ti->addType( new StdTypeInfo<double>("double") );
-        ti->addType( new StdTypeInfo<float>("float") );
-        ti->addType( new StdTypeInfo<char>("char") );
+        ti->addType( new StdTypeInfo<std::int8_t>("Int8") );
+        ti->addType( new StdTypeInfo<std::uint8_t>("UInt8") );
+        ti->addType( new StdTypeInfo<std::int16_t>("Int16") );
+        ti->addType( new StdTypeInfo<std::uint16_t>("UInt16") );
+        ti->addType( new StdTypeInfo<std::int32_t>("Int32") );
+        ti->addType( new StdTypeInfo<std::uint32_t>("UInt32") );
+        ti->addType( new StdTypeInfo<std::int64_t>("Int64") );
+        ti->addType( new StdTypeInfo<std::uint64_t>("UInt64") );
+        ti->addType( new StdTypeInfo<float>("Float32") );
+        ti->addType( new StdTypeInfo<double>("Float64") );
+        ti->addType( new StdTypeInfo<char>("Char") );
         ti->addType( new BoolTypeInfo() );
-        ti->addType( new TypeInfoName<void>("void"));
+        ti->addType( new TypeInfoName<void>("Void"));
 
         // load the Orocos specific types:
         loadOrocosTypes( ti );

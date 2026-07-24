@@ -46,6 +46,8 @@
 #include "../rtt-fwd.hpp"
 #include "../internal/mystd.hpp"
 #include "../types/TemplateConstructor.hpp"
+#include <cstdint>
+#include <type_traits>
 #ifdef OS_RT_MALLOC
 #include "../rt_string.hpp"
 #endif
@@ -133,45 +135,94 @@ namespace RTT
             }
         };
 
-        double float_to_double( float val ) {return double(val);}
-        float double_to_float( double val ) {return float(val);}
+        template <typename Target, typename Source>
+        Target numeric_cast(Source value)
+        {
+            return static_cast<Target>(value);
+        }
 
-        int float_to_int(float f) { return int(f); }
-        float int_to_float(int i) { return float(i); }
-        int double_to_int(double f) { return int(f); }
-        double int_to_double(int i) { return double(i); }
-        unsigned int int_to_uint(int i) { return (unsigned int)(i); }
-        int uint_to_int(unsigned int ui) { return int(ui); }
+        template <typename Signature>
+        struct ExactTypeConstructor : types::TemplateConstructor<Signature>
+        {
+            using Base = types::TemplateConstructor<Signature>;
+            using Source = typename Base::arg1_type;
 
-        // llong
-        long long float_to_llong(float f) { return (long long)(f); }
-        float llong_to_float(long long i) { return (float)(i); }
-        long long double_to_llong(double f) { return (long long)(f); }
-        double llong_to_double(long long i) { return (double)(i); }
-        long long int_to_llong(int i) { return (long long)(i); }
-        int llong_to_int(long long i) { return (int)(i); }
-        long long uint_to_llong(unsigned int i) { return (long long)(i); }
-        unsigned int llong_to_uint(long long i) { return (unsigned int)(i); }
-        bool llong_to_bool(long long i) { return i != 0; }
+            template <typename Function>
+            ExactTypeConstructor(Function function, bool automatic)
+                : Base(function, automatic)
+            {
+            }
 
-        // ullong
-        unsigned long long float_to_ullong(float f) { return (unsigned long long)(f); }
-        float ullong_to_float(unsigned long long i) { return (float)(i); }
-        unsigned long long double_to_ullong(double f) { return (unsigned long long)(f); }
-        double ullong_to_double(unsigned long long i) { return (double)(i); }
-        unsigned long long int_to_ullong(int i) { return (unsigned long long)(i); }
-        int ullong_to_int(unsigned long long i) { return (int)(i); }
-        unsigned long long uint_to_ullong(unsigned int i) { return (unsigned long long)(i); }
-        unsigned int ullong_to_uint(unsigned long long i) { return (unsigned int)(i); }
-        unsigned long long llong_to_ullong(long long i) { return (unsigned long long)(i); }
-        long long ullong_to_llong(unsigned long long i) { return (long long)(i); }
+            base::DataSourceBase::shared_ptr build(
+                const std::vector<base::DataSourceBase::shared_ptr>& args) const override
+            {
+                if (args.size() != 1 ||
+                    args.front()->getTypeInfo() !=
+                        internal::DataSourceTypeInfo<Source>::getTypeInfo()) {
+                    return base::DataSourceBase::shared_ptr();
+                }
+                return Base::build(args);
+            }
+        };
+
+        template <typename Target, typename Source>
+        void add_numeric_constructor(TypeInfo* target, bool automatic)
+        {
+            if constexpr (!std::is_same_v<Target, Source>) {
+                target->addConstructor(
+                    new ExactTypeConstructor<Target(Source)>(
+                        &numeric_cast<Target, Source>, automatic));
+            }
+        }
+
+        template <typename Target>
+        void add_integer_constructors(TypeInfo* target)
+        {
+            add_numeric_constructor<Target, std::int8_t>(target, false);
+            add_numeric_constructor<Target, std::uint8_t>(target, false);
+            add_numeric_constructor<Target, std::int16_t>(target, false);
+            add_numeric_constructor<Target, std::uint16_t>(target, false);
+            add_numeric_constructor<Target, std::int32_t>(target, true);
+            add_numeric_constructor<Target, std::uint32_t>(target, true);
+            add_numeric_constructor<Target, std::int64_t>(target, false);
+            add_numeric_constructor<Target, std::uint64_t>(target, false);
+            add_numeric_constructor<Target, float>(target, false);
+            add_numeric_constructor<Target, double>(target, false);
+            add_numeric_constructor<Target, bool>(target, true);
+        }
+
+        template <typename Target>
+        void add_floating_point_constructors(TypeInfo* target)
+        {
+            add_numeric_constructor<Target, std::int8_t>(target, true);
+            add_numeric_constructor<Target, std::uint8_t>(target, true);
+            add_numeric_constructor<Target, std::int16_t>(target, true);
+            add_numeric_constructor<Target, std::uint16_t>(target, true);
+            add_numeric_constructor<Target, std::int32_t>(target, true);
+            add_numeric_constructor<Target, std::uint32_t>(target, true);
+            add_numeric_constructor<Target, std::int64_t>(target, true);
+            add_numeric_constructor<Target, std::uint64_t>(target, true);
+            add_numeric_constructor<Target, float>(target, true);
+            add_numeric_constructor<Target, double>(target, true);
+        }
 
 #endif
         bool flowstatus_to_bool(FlowStatus fs) { return fs != NoData ; }
         bool writestatus_to_bool(WriteStatus fs) { return fs == WriteSuccess ; }
         bool send_to_bool(SendStatus ss) { return ss == SendSuccess; }
-        bool int_to_bool(int i) { return i != 0; }
-        int bool_to_int(bool b) { return int(b); }
+        template <typename Source>
+        bool numeric_to_bool(Source value)
+        {
+            return value != Source{};
+        }
+
+        template <typename Source>
+        void add_bool_constructor(TypeInfo* target)
+        {
+            target->addConstructor(
+                new ExactTypeConstructor<bool(Source)>(
+                    &numeric_to_bool<Source>, true));
+        }
 
         struct string_ctor
         {
@@ -225,49 +276,35 @@ namespace RTT
     {
         TypeInfoRepository::shared_ptr ti = TypeInfoRepository::Instance();
 #ifndef ORO_EMBEDDED
-        ti->type("double")->addConstructor( newConstructor( &float_to_double, true ));
-        ti->type("double")->addConstructor( newConstructor( &int_to_double, true ));
-        ti->type("float")->addConstructor( newConstructor( &int_to_float, true ));
-        ti->type("float")->addConstructor( newConstructor( &double_to_float, true ));
-        ti->type("int")->addConstructor( newConstructor( &float_to_int, false ));
-        ti->type("int")->addConstructor( newConstructor( &double_to_int, false ));
-        ti->type("int")->addConstructor( newConstructor( &uint_to_int, true ));
-        ti->type("int")->addConstructor( newConstructor( &bool_to_int, true ));
-        ti->type("uint")->addConstructor( newConstructor( &int_to_uint, true ));
+        add_integer_constructors<std::int8_t>(ti->type("Int8"));
+        add_integer_constructors<std::uint8_t>(ti->type("UInt8"));
+        add_integer_constructors<std::int16_t>(ti->type("Int16"));
+        add_integer_constructors<std::uint16_t>(ti->type("UInt16"));
+        add_integer_constructors<std::int32_t>(ti->type("Int32"));
+        add_integer_constructors<std::uint32_t>(ti->type("UInt32"));
+        add_integer_constructors<std::int64_t>(ti->type("Int64"));
+        add_integer_constructors<std::uint64_t>(ti->type("UInt64"));
+        add_floating_point_constructors<float>(ti->type("Float32"));
+        add_floating_point_constructors<double>(ti->type("Float64"));
 
-        // llong
-        ti->type("llong")->addConstructor( newConstructor( &float_to_llong, true ));
-        ti->type("float")->addConstructor( newConstructor( &llong_to_float, true ));
-        ti->type("llong")->addConstructor( newConstructor( &double_to_llong, true ));
-        ti->type("double")->addConstructor( newConstructor( &llong_to_double, true ));
-        ti->type("llong")->addConstructor( newConstructor( &int_to_llong, true ));
-        ti->type("int")->addConstructor( newConstructor( &llong_to_int, true ));
-        ti->type("llong")->addConstructor( newConstructor( &uint_to_llong, true ));
-        ti->type("uint")->addConstructor( newConstructor( &llong_to_uint, true ));
-        ti->type("bool")->addConstructor( newConstructor( &llong_to_bool, true ));
-
-        // ullong
-        ti->type("ullong")->addConstructor( newConstructor( &float_to_ullong, true ));
-        ti->type("float")->addConstructor( newConstructor( &ullong_to_float, true ));
-        ti->type("ullong")->addConstructor( newConstructor( &double_to_ullong, true ));
-        ti->type("double")->addConstructor( newConstructor( &ullong_to_double, true ));
-        ti->type("ullong")->addConstructor( newConstructor( &int_to_ullong, true ));
-        ti->type("int")->addConstructor( newConstructor( &ullong_to_int, true ));
-        ti->type("ullong")->addConstructor( newConstructor( &uint_to_ullong, true ));
-        ti->type("uint")->addConstructor( newConstructor( &ullong_to_uint, true ));
-        ti->type("ullong")->addConstructor( newConstructor( &llong_to_ullong, true ));
-        ti->type("llong")->addConstructor( newConstructor( &ullong_to_llong, true ));
-
-        ti->type("string")->addConstructor( newConstructor( string_ctor() ) );
+        ti->type("String")->addConstructor( newConstructor( string_ctor() ) );
 #ifdef OS_RT_MALLOC
         ti->type("rt_string")->addConstructor( newConstructor( rt_string_ctor_int() ) );
         ti->type("rt_string")->addConstructor( newConstructor( rt_string_ctor_string() ) );
-        ti->type("string")->addConstructor( newConstructor( string_ctor_rt_string() ) );
+        ti->type("String")->addConstructor( newConstructor( string_ctor_rt_string() ) );
 #endif
-        ti->type("bool")->addConstructor( newConstructor( &flowstatus_to_bool, true ) );
-        ti->type("bool")->addConstructor( newConstructor( &writestatus_to_bool, true ) );
-        ti->type("bool")->addConstructor( newConstructor( &send_to_bool, true ) );
-        ti->type("bool")->addConstructor( newConstructor( &int_to_bool, true ) );
+        TypeInfo* bool_type = ti->type("Bool");
+        bool_type->addConstructor( newConstructor( &flowstatus_to_bool, true ) );
+        bool_type->addConstructor( newConstructor( &writestatus_to_bool, true ) );
+        bool_type->addConstructor( newConstructor( &send_to_bool, true ) );
+        add_bool_constructor<std::int8_t>(bool_type);
+        add_bool_constructor<std::uint8_t>(bool_type);
+        add_bool_constructor<std::int16_t>(bool_type);
+        add_bool_constructor<std::uint16_t>(bool_type);
+        add_bool_constructor<std::int32_t>(bool_type);
+        add_bool_constructor<std::uint32_t>(bool_type);
+        add_bool_constructor<std::int64_t>(bool_type);
+        add_bool_constructor<std::uint64_t>(bool_type);
 #endif
         return true;
     }

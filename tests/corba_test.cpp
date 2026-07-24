@@ -37,6 +37,7 @@
 
 #include "operations_fixture.hpp"
 
+#include <cstdint>
 #include <memory>
 
 using namespace std;
@@ -233,14 +234,22 @@ BOOST_AUTO_TEST_CASE( testCorbaTypes )
     testCorbaTypeSequence<double>(3, 1.0);
     testCorbaType<float>(2.0);
     testCorbaTypeSequence<float>(3, 2.0);
-    testCorbaType<int>(-3);
-    testCorbaTypeSequence<int>(3, -3);
-    testCorbaType<unsigned int>(4);
-    testCorbaTypeSequence<unsigned int>(3, 4);
-    testCorbaType<long long>(-9223372036854775807ll);
-    testCorbaTypeSequence<long long>(3, 9223372036854775807ll);
-    testCorbaType<unsigned long long>(18446744073709551615ull);
-    testCorbaTypeSequence<unsigned long long>(3, 18446744073709551615ull);
+    testCorbaType<std::int8_t>(-8);
+    testCorbaTypeSequence<std::int8_t>(3, -8);
+    testCorbaType<std::uint8_t>(8);
+    testCorbaTypeSequence<std::uint8_t>(3, 8);
+    testCorbaType<std::int16_t>(-16);
+    testCorbaTypeSequence<std::int16_t>(3, -16);
+    testCorbaType<std::uint16_t>(16);
+    testCorbaTypeSequence<std::uint16_t>(3, 16);
+    testCorbaType<std::int32_t>(-32);
+    testCorbaTypeSequence<std::int32_t>(3, -32);
+    testCorbaType<std::uint32_t>(32);
+    testCorbaTypeSequence<std::uint32_t>(3, 32);
+    testCorbaType<std::int64_t>(-9223372036854775807ll);
+    testCorbaTypeSequence<std::int64_t>(3, 9223372036854775807ll);
+    testCorbaType<std::uint64_t>(18446744073709551615ull);
+    testCorbaTypeSequence<std::uint64_t>(3, 18446744073709551615ull);
     testCorbaType<bool>(true);
     testCorbaType<char>('c');
     testCorbaTypeSequence<char>(3, 'c');
@@ -540,7 +549,7 @@ BOOST_AUTO_TEST_CASE(testDataFlowInterface)
 
     // And check type names
     CORBA::String_var cstr = ports->getDataType("mo");
-    BOOST_CHECK_EQUAL(string("double"),
+    BOOST_CHECK_EQUAL(string("Float64"),
         string(cstr.in()));
 }
 

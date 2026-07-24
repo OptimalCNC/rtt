@@ -110,7 +110,7 @@ namespace RTT {
             : func(pi), proc(procs) {}
 
         std::string FunctionFactory::resultType() const {
-            return func->getResult() ? func->getResult()->getDataSource()->getTypeName() : "void";
+            return func->getResult() ? func->getResult()->getDataSource()->getTypeName() : "Void";
         }
 
         std::string FunctionFactory::getName() const {
@@ -271,4 +271,3 @@ namespace RTT {
         }
 #endif
 }
-

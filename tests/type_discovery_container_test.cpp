@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE( testStringContainerType )
 
     AssignableDataSource< string >::shared_ptr atype = new ReferenceDataSource< string >( tester );
 
-    BOOST_REQUIRE( Types()->type("string") == atype->getTypeInfo() );
+    BOOST_REQUIRE( Types()->type("String") == atype->getTypeInfo() );
 
     // check the part names lookup:
     vector<string> names = atype->getMemberNames();
@@ -207,4 +207,3 @@ BOOST_AUTO_TEST_CASE( testStringContainerType )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

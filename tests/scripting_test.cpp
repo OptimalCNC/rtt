@@ -91,15 +91,15 @@ BOOST_AUTO_TEST_CASE(TestScriptingParser)
 
     // test variable decls:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        var int i = 0;
-        var int y, z = 10;
+        var Int32 i = 0;
+        var Int32 y, z = 10;
         test.i = z;
         )));
     BOOST_CHECK_EQUAL( i, 10);
 
     // test if statement:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        var int x = 1, y = 2;
+        var Int32 x = 1, y = 2;
         if 3 == 8 then
             test.i = x;
         else
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingParser)
 
     // test while statement:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        var int x = 1, y = 2;
+        var Int32 x = 1, y = 2;
         while x != y {
             test.i = 3;
             x = y;
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingParser)
 
     // test while name clash:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        var int whilex, whiley\n
+        var Int32 whilex, whiley\n
         whilex = 1;
         whiley = 2\n
         while whilex != whiley {
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingParser)
 
     // test for statement:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        var int x = 10, y = 20;
+        var Int32 x = 10, y = 20;
         for( x = 0; x != y; x = x + 1) {
             test.i = x;
         })));
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingParser)
 
     // test for name clash:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        var int forx, fory\n
+        var Int32 forx, fory\n
         forx = 10; fory = 20;
         for( forx = 0; forx != fory; forx = forx + 1) {
             test.i = forx;
@@ -146,21 +146,21 @@ BOOST_AUTO_TEST_CASE(TestScriptingParser)
 
     // test function +  a statement that uses that function:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        export function adder(int a, int b) {
+        export function adder(Int32 a, Int32 b) {
             test.i = a + b;
         }\n
         adder(5,6)\n
         )));
     BOOST_CHECK_EQUAL( i, 11);
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        export void adder2(int a, int b) {
+        export Void adder2(Int32 a, Int32 b) {
             test.i = a + b;
         }\n
         adder2(7,8)\n
         )));
     BOOST_CHECK_EQUAL( i, 15);
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        export int adder3(int a, int b) {
+        export Int32 adder3(Int32 a, Int32 b) {
             return a + b;
         }\n
         test.i = adder3(6,10)\n
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE(TestSingleInputParsersRequireCompleteInput)
     BOOST_REQUIRE(!tc->provides()->getValue(partial_name));
     BOOST_CHECK_THROW(
         parser.parseValueStatement(
-            "var int partial_parser_value = 1 trailing", tc),
+            "var Int32 partial_parser_value = 1 trailing", tc),
         parse_exception);
     BOOST_CHECK(!tc->provides()->getValue(partial_name));
 
@@ -301,7 +301,7 @@ BOOST_AUTO_TEST_CASE(TestSingleInputParsersRequireCompleteInput)
     BOOST_REQUIRE(!tc->provides()->getValue(invalid_name));
     BOOST_CHECK_THROW(
         parser.parseValueStatement(
-            "var int invalid_parser_value = \"not an integer\"", tc),
+            "var Int32 invalid_parser_value = \"not an integer\"", tc),
         parse_exception);
     BOOST_CHECK(!tc->provides()->getValue(invalid_name));
 
@@ -309,7 +309,7 @@ BOOST_AUTO_TEST_CASE(TestSingleInputParsersRequireCompleteInput)
     BOOST_REQUIRE(!tc->provides()->getValue(complete_name));
     BOOST_REQUIRE(
         parser.parseValueStatement(
-            "var int complete_parser_value = 1;", tc));
+            "var Int32 complete_parser_value = 1;", tc));
     BOOST_CHECK(tc->provides()->getValue(complete_name));
     tc->provides()->removeValue(complete_name);
 }
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE(TestParserRejectsNullContext)
     BOOST_CHECK_THROW(parser.parseExpression("1", 0), parse_exception);
     BOOST_CHECK_THROW(parser.parseValueChange("1", 0), parse_exception);
     BOOST_CHECK_THROW(
-        parser.parseValueStatement("var int value = 1", 0),
+        parser.parseValueStatement("var Int32 value = 1", 0),
         parse_exception);
 }
 
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // define a function (added to scripting interface):
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void func1(void) {
+        Void func1(Void) {
             test.increase();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -403,7 +403,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // export a function:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        export void efunc1(void) {
+        export Void efunc1(Void) {
             test.increase();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -411,7 +411,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // local function:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void lfunc1(void) {
+        Void lfunc1(Void) {
             test.increase();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -419,7 +419,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // global function:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        global void gfunc1(void) {
+        global Void gfunc1(Void) {
             test.increase();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -427,7 +427,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // nested function call:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void func2(void) {
+        Void func2(Void) {
             func1();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -435,7 +435,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // nested exported function call:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void efunc2(void) {
+        Void efunc2(Void) {
             efunc1();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -443,7 +443,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // nested global function call:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void gfunc2(void) {
+        Void gfunc2(Void) {
             gfunc1();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -451,7 +451,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // nested local function call:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void lfunc2(void) {
+        Void lfunc2(Void) {
             lfunc1();
         })));
     BOOST_CHECK_EQUAL( i, 0);
@@ -499,7 +499,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // RE-define a function (added to scripting interface):
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void func1(void) {
+        Void func1(Void) {
             test.increase();
             test.increase();
         })));
@@ -511,7 +511,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // RE-export a function:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        export void efunc1(void) {
+        export Void efunc1(Void) {
             test.increase();
             test.increase();
         })));
@@ -523,7 +523,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 
     // RE-global a function:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        global void gfunc1(void) {
+        global Void gfunc1(Void) {
             test.increase();
             test.increase();
         })));
@@ -551,7 +551,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunctionWithYield)
 
     // define a function that yields:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-          void func1(void) {
+          Void func1(Void) {
               test.printNumber("[ENTER func1()] CycleCounter = ", CycleCounter);
               test.increase();
               yield;
@@ -563,7 +563,7 @@ BOOST_AUTO_TEST_CASE(TestScriptingFunctionWithYield)
 
     // define a function that calls func1, yields and calls func1 again:
     BOOST_REQUIRE( sc->eval( MULTILINE_STRING(
-        void func2(void) {
+        Void func2(Void) {
             test.printNumber("[ENTER func2()] CycleCounter = ", CycleCounter);
             func1();
             yield;

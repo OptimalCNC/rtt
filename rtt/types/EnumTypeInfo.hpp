@@ -83,14 +83,14 @@ namespace RTT
                     boost::dynamic_pointer_cast< EnumTypeInfo<T> >( this->getSharedPtr() );
                 assert(mthis);
 
-                if (!Types()->type("int")) {
+                if (!Types()->type("Int32")) {
                     Logger::log().logf(Logger::Error, "EnumTypeInfo",
                                        "Failed to register enum <-> int conversion because type int is not known in type system.");
                     return false;
                 } else {
                     TemplateTypeInfo<T,false>::installTypeInfoObject(ti);
                     ti->setStreamFactory(mthis);
-                    Types()->type("int")->addConstructor(newConstructor(
+                    Types()->type("Int32")->addConstructor(newConstructor(
                             &EnumTypeInfo<T>::enum_to_int, true));
                 }
                 ti->addConstructor( newConstructor( &EnumTypeInfo<T>::int_to_enum, true) );

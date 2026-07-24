@@ -26,6 +26,9 @@
 
 #include "unit.hpp"
 
+#include <cstdint>
+#include <type_traits>
+
 #include <types/TemplateTypeInfo.hpp>
 #include <types/TemplateConstructor.hpp>
 #include <types/Operators.hpp>
@@ -38,7 +41,7 @@ struct TypekitFixture
 {
     TypekitFixture()
     {
-        if (!Types()->type("int")) {
+        if (!Types()->type("Int32")) {
             RTT::types::RealTimeTypekitPlugin().loadTypes();
         }
     }
@@ -76,19 +79,48 @@ BOOST_AUTO_TEST_CASE( testComposeDecompose )
     }
 }
 
-BOOST_AUTO_TEST_CASE( testBuiltinShortTypesAreRegistered )
+BOOST_AUTO_TEST_CASE( testCanonicalBuiltinTypesAreRegistered )
 {
-    RTT::types::TypeInfo* short_type = Types()->type("short");
-    RTT::types::TypeInfo* ushort_type = Types()->type("ushort");
+    const std::vector<std::string> canonical_names = {
+        "Bool", "Int8", "UInt8", "Int16", "UInt16", "Int32", "UInt32",
+        "Int64", "UInt64", "Float32", "Float64", "Char", "String", "Void"
+    };
+    for (const std::string& name : canonical_names) {
+        BOOST_CHECK_MESSAGE(Types()->type(name), "Missing canonical type " + name);
+    }
 
-    BOOST_REQUIRE_MESSAGE(short_type, "RTT built-in typekit must register short");
-    BOOST_REQUIRE_MESSAGE(ushort_type, "RTT built-in typekit must register ushort");
+    const std::vector<std::string> legacy_names = {
+        "bool", "int8", "uint8", "short", "ushort", "int16", "uint16",
+        "int", "uint", "int32", "uint32", "llong", "ullong", "int64",
+        "uint64", "float", "double", "char", "string", "void"
+    };
+    for (const std::string& name : legacy_names) {
+        BOOST_CHECK_MESSAGE(!Types()->type(name), "Legacy type is still registered: " + name);
+    }
 
-    Property<short> short_property("short_value", "", static_cast<short>(-3));
-    Property<unsigned short> ushort_property("ushort_value", "", static_cast<unsigned short>(7));
+#define RTT_CHECK_CANONICAL_TYPE(CPP_TYPE, TYPE_NAME)                         \
+    BOOST_REQUIRE(Types()->getTypeInfo<CPP_TYPE>());                          \
+    BOOST_CHECK_EQUAL(Types()->getTypeInfo<CPP_TYPE>()->getTypeName(), TYPE_NAME)
 
-    BOOST_CHECK_EQUAL(short_type->decomposeType(short_property.getDataSource())->getTypeName(), "short");
-    BOOST_CHECK_EQUAL(ushort_type->decomposeType(ushort_property.getDataSource())->getTypeName(), "ushort");
+    RTT_CHECK_CANONICAL_TYPE(bool, "Bool");
+    RTT_CHECK_CANONICAL_TYPE(std::int8_t, "Int8");
+    RTT_CHECK_CANONICAL_TYPE(std::uint8_t, "UInt8");
+    RTT_CHECK_CANONICAL_TYPE(std::int16_t, "Int16");
+    RTT_CHECK_CANONICAL_TYPE(std::uint16_t, "UInt16");
+    RTT_CHECK_CANONICAL_TYPE(std::int32_t, "Int32");
+    RTT_CHECK_CANONICAL_TYPE(std::uint32_t, "UInt32");
+    RTT_CHECK_CANONICAL_TYPE(std::int64_t, "Int64");
+    RTT_CHECK_CANONICAL_TYPE(std::uint64_t, "UInt64");
+    RTT_CHECK_CANONICAL_TYPE(float, "Float32");
+    RTT_CHECK_CANONICAL_TYPE(double, "Float64");
+    RTT_CHECK_CANONICAL_TYPE(char, "Char");
+    RTT_CHECK_CANONICAL_TYPE(std::string, "String");
+    RTT_CHECK_CANONICAL_TYPE(void, "Void");
+
+#undef RTT_CHECK_CANONICAL_TYPE
+
+    static_assert(std::is_same_v<short, std::int16_t>);
+    static_assert(std::is_same_v<int, std::int32_t>);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
