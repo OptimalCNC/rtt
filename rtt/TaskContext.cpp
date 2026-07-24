@@ -98,6 +98,7 @@ namespace RTT
         this->addOperation("isActive", &TaskContext::isActive, this, ClientThread).doc("Is the Execution Engine of this TaskContext active ?");
         this->addOperation("inFatalError", &TaskContext::inFatalError, this, ClientThread).doc("Check if this TaskContext is in the FatalError state.");
         this->addOperation("error", &TaskContext::error, this, ClientThread).doc("Enter the RunTimeError state (= errorHook() ).");
+        this->addOperation("recover", &TaskContext::recover, this, ClientThread).doc("Recover from the RunTimeError or Exception state.");
         this->addOperation("inRunTimeError", &TaskContext::inRunTimeError, this, ClientThread).doc("Check if this TaskContext is in the RunTimeError state.");
         this->addOperation("inException", &TaskContext::inException, this, ClientThread).doc("Check if this TaskContext is in the Exception state.");
         this->addOperation("cleanup", &TaskContext::cleanup, this, ClientThread).doc("Reset this TaskContext to the PreOperational state ( =cleanupHook() ).");

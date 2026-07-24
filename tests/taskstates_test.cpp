@@ -368,6 +368,20 @@ BOOST_AUTO_TEST_CASE( testSetPeriod )
     BOOST_CHECK_EQUAL( pertc.getPeriod(), 0.5 );
 }
 
+BOOST_AUTO_TEST_CASE( testRecoverOperationIsExported )
+{
+    TaskContext recoverable("recoverable", TaskContext::PreOperational);
+    OperationCaller<bool(void)> recover = recoverable.getOperation("recover");
+    BOOST_REQUIRE(recover.ready());
+
+    BOOST_REQUIRE(recoverable.configure());
+    BOOST_REQUIRE(recoverable.start());
+    recoverable.error();
+    BOOST_REQUIRE(recoverable.inRunTimeError());
+    BOOST_CHECK(recover());
+    BOOST_CHECK(recoverable.getTaskState() == TaskContext::Running);
+}
+
 /**
  * Tests the normal TC states.
  */
@@ -742,4 +756,3 @@ BOOST_AUTO_TEST_CASE(testTaskCore_bails_out_if_startHook_returns_true_but_except
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-
