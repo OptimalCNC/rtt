@@ -93,7 +93,7 @@ namespace RTT
             virtual DataObjectDataSource<T>* clone() const {
                 return new DataObjectDataSource(mobject);
             }
-            virtual DataObjectDataSource<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& alreadyCloned ) const {
+            virtual DataObjectDataSource<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& ) const {
                 return new DataObjectDataSource(mobject);
             }
         };

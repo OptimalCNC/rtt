@@ -104,10 +104,9 @@ namespace RTT
 
         AssignableDataSource<T>* clone() const
         { return new InputPortSource<T>(*port); }
-        AssignableDataSource<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& alreadyCloned ) const
+        AssignableDataSource<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& ) const
         { return const_cast<InputPortSource<T>*>(this); }
     };
 }}
 
 #endif
-

@@ -268,12 +268,12 @@ namespace RTT
             {
             }
 
-            virtual base::DataSourceBase::shared_ptr produceSend(const std::vector<base::DataSourceBase::shared_ptr>& args, ExecutionEngine* caller) const
+            virtual base::DataSourceBase::shared_ptr produceSend(const std::vector<base::DataSourceBase::shared_ptr>&, ExecutionEngine*) const
             { throw no_asynchronous_operation_exception("cannot use produceSend on synchronous operations"); }
-            virtual base::DataSourceBase::shared_ptr produceCollect(const std::vector<base::DataSourceBase::shared_ptr>& args, internal::DataSource<bool>::shared_ptr blocking) const
+            virtual base::DataSourceBase::shared_ptr produceCollect(const std::vector<base::DataSourceBase::shared_ptr>&, internal::DataSource<bool>::shared_ptr) const
             { throw no_asynchronous_operation_exception("cannot use produceCollect on synchronous operations"); }
 #ifdef ORO_SIGNALLING_OPERATIONS
-            virtual Handle produceSignal( base::ActionInterface* func, const std::vector<base::DataSourceBase::shared_ptr>& args, ExecutionEngine* subscriber) const
+            virtual Handle produceSignal( base::ActionInterface*, const std::vector<base::DataSourceBase::shared_ptr>&, ExecutionEngine*) const
             { throw no_asynchronous_operation_exception("cannot use produceSignal on synchronous operations"); }
 #endif
             virtual base::DataSourceBase::shared_ptr produceHandle() const

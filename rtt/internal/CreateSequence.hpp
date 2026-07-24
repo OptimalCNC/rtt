@@ -477,12 +477,12 @@ namespace RTT
 
             typedef bf::vector<> atype;
 
-            static type sources(std::vector<base::DataSourceBase::shared_ptr>::const_iterator args, int argnbr = 0)
+            static type sources(std::vector<base::DataSourceBase::shared_ptr>::const_iterator, int = 0)
             {
                 return type();
             }
 
-            static atype assignable(std::vector<base::DataSourceBase::shared_ptr>::const_iterator args, int argnbr = 0)
+            static atype assignable(std::vector<base::DataSourceBase::shared_ptr>::const_iterator, int = 0)
             {
                 return atype();
             }
@@ -493,23 +493,23 @@ namespace RTT
              * @param seq A Fusion Sequence of DataSource<T> types.
              * @return A sequence of type T holding the values of the DataSource<T>.
              */
-            static data_type data(const type& seq) {
+            static data_type data(const type&) {
                 return data_type();
             }
 
-            static void update(const type&seq) {
+            static void update(const type&) {
                 return;
             }
 
-            static void set(const data_type& in, const atype& seq) {
+            static void set(const data_type&, const atype&) {
                 return;
             }
 
-            static void load(const data_store_type& in, const atype& seq) {
+            static void load(const data_store_type&, const atype&) {
                 return;
             }
 
-            static data_store_type store(const data_type& in ) {
+            static data_store_type store(const data_type&) {
                 return data_store_type();
             }
 
@@ -520,15 +520,15 @@ namespace RTT
              * @param alreadyCloned the copy/clone map
              * @return A Fusion Sequence of DataSource<T>::shared_ptr containing the copies.
              */
-            static type copy(const type& seq, std::map<
+            static type copy(const type&, std::map<
                               const base::DataSourceBase*,
-                              base::DataSourceBase*>& alreadyCloned) {
+                              base::DataSourceBase*>&) {
                 return type();
             }
-            static const types::TypeInfo* GetTypeInfo(int i) {
+            static const types::TypeInfo* GetTypeInfo(int) {
                 return 0;
             }
-            static std::string GetType(int i) {
+            static std::string GetType(int) {
                 return "na";
             }
         };

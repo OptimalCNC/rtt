@@ -159,7 +159,7 @@ namespace RTT
     }
 
     template<typename T>
-    ReferenceDataSource<T>* ReferenceDataSource<T>::copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& alreadyCloned ) const {
+    ReferenceDataSource<T>* ReferenceDataSource<T>::copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& ) const {
         return const_cast<ReferenceDataSource<T>*>(this); // no copy needed, data is outside.
     }
 
