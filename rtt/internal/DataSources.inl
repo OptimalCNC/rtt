@@ -113,7 +113,7 @@ namespace RTT
     }
 
     template<typename T>
-    ConstantDataSource<T>* ConstantDataSource<T>::copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& alreadyCloned ) const {
+    ConstantDataSource<T>* ConstantDataSource<T>::copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& ) const {
         // no copy needed, share this with all instances.
         return const_cast<ConstantDataSource<T>*>(this);
     }
