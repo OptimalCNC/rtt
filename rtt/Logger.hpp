@@ -170,7 +170,11 @@ namespace RTT
          * draining. This is the real-time-safe logging surface for code that
          * can format through fixed-size printf arguments.
          */
-        void logf(LogLevel ll, const char* module, const char* format, ...);
+        void logf(LogLevel ll, const char* module, const char* format, ...)
+#if defined(__GNUC__) || defined(__clang__)
+            __attribute__((format(printf, 4, 5)))
+#endif
+            ;
 
         /**
          * Drain queued log messages to configured sinks and history.

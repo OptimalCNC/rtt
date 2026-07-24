@@ -554,7 +554,7 @@ namespace RTT {
           {
 #ifndef ORO_EMBEDDED
               Logger::log().logf(Logger::Error, "ScriptingService::loadFunctions",
-                                  "%s :%s", filename.c_str(), exc.what());
+                                  "%s :%s", filename.c_str(), exc.what().c_str());
               if ( mrethrow )
                   throw;
 #endif
@@ -616,7 +616,7 @@ namespace RTT {
         catch( const file_parse_exception& exc )
         {
             Logger::log().logf(Logger::Error, "ScriptingService",
-                                "%s :%s", filename.c_str(), exc.what());
+                                "%s :%s", filename.c_str(), exc.what().c_str());
             return false;
         }
         return true;
@@ -651,7 +651,7 @@ namespace RTT {
           {
 #ifndef ORO_EMBEDDED
               Logger::log().logf(Logger::Error, "ProgramLoader::loadProgram",
-                                  "%s :%s", filename.c_str(), exc.what());
+                                  "%s :%s", filename.c_str(), exc.what().c_str());
               if ( mrethrow )
                   throw;
 #endif
@@ -747,7 +747,7 @@ namespace RTT {
             {
 #ifndef ORO_EMBEDDED
                 Logger::log().logf(Logger::Error, "ScriptingService::loadStateMachine",
-                                    "%s :%s", filename.c_str(), exc.what());
+                                    "%s :%s", filename.c_str(), exc.what().c_str());
                 if ( mrethrow )
                     throw;
 #endif

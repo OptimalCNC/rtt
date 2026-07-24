@@ -221,22 +221,22 @@ namespace RTT
         } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
             // way to fatal,  must be reported immediately
             Logger::log().logf(Logger::Error, "StatementProcessor",
-                                "fatal_semantic_parse_exception: %s", pe.what());
+                                "fatal_semantic_parse_exception: %s", pe.what().c_str());
             return -1;
         } catch ( syntactic_parse_exception& pe ) { // wrong content after = sign etc..
             // syntactic errors must be reported immediately
             Logger::log().logf(Logger::Error, "StatementProcessor",
-                                "syntactic_parse_exception: %s", pe.what());
+                                "syntactic_parse_exception: %s", pe.what().c_str());
             return -1;
         } catch ( parse_exception_parser_fail &pe )
             {
                 // ignore, try next parser
                 Logger::log().logf(Logger::Debug, "StatementProcessor",
-                                    "Ignoring ValueChange exception :\n%s", pe.what());
+                                    "Ignoring ValueChange exception :\n%s", pe.what().c_str());
         } catch ( parse_exception& pe ) {
             // syntactic errors must be reported immediately
             Logger::log().logf(Logger::Error, "StatementProcessor",
-                                "parse_exception :%s", pe.what());
+                                "parse_exception :%s", pe.what().c_str());
             return -1;
         }
         Logger::log().logf(Logger::Debug, "StatementProcessor", "Trying Expression...");
@@ -252,21 +252,21 @@ namespace RTT
         } catch ( syntactic_parse_exception& pe ) { // missing brace etc
             // syntactic errors must be reported immediately
             Logger::log().logf(Logger::Error, "StatementProcessor",
-                                "syntactic_parse_exception :%s", pe.what());
+                                "syntactic_parse_exception :%s", pe.what().c_str());
             return -1;
         } catch ( fatal_semantic_parse_exception& pe ) { // incorr args, ...
             // way to fatal,  must be reported immediately
             Logger::log().logf(Logger::Error, "StatementProcessor",
-                                "fatal_semantic_parse_exception :%s", pe.what());
+                                "fatal_semantic_parse_exception :%s", pe.what().c_str());
             return -1;
         } catch ( parse_exception_parser_fail &pe ) {
                 // ignore, try next parser
                 Logger::log().logf(Logger::Debug, "StatementProcessor",
-                                    "Ignoring Expression exception :\n%s", pe.what());
+                                    "Ignoring Expression exception :\n%s", pe.what().c_str());
         } catch ( parse_exception& pe ) {
             // ignore, try next parser
             Logger::log().logf(Logger::Debug, "StatementProcessor",
-                                "Ignoring Expression parse_exception :\n%s", pe.what());
+                                "Ignoring Expression parse_exception :\n%s", pe.what().c_str());
         }
         return -1;
     }
