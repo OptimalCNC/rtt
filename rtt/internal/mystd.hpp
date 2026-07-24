@@ -111,34 +111,6 @@ namespace RTT { namespace internal {
         }
     };
 
-#if 0
-    // Alternative implementations, return const ref.
-    template<typename PairT>
-    class select1st
-      : public std::unary_function<PairT, typename PairT::first_type>
-    {
-      typedef typename PairT::first_type ResultT;
-    public:
-      const ResultT& operator()( const PairT& p )
-        {
-          return p.first;
-        };
-    };
-
-    template<typename PairT>
-    class select2nd
-      : public std::unary_function<PairT, typename PairT::second_type>
-    {
-      typedef typename PairT::second_type ResultT;
-    public:
-      const ResultT& operator()( const PairT& p )
-        {
-          return p.second;
-        };
-    };
-#endif
-
-
     // my own handy little extension..
     template<typename MapT>
     std::vector<typename MapT::mapped_type> values( const MapT& map )

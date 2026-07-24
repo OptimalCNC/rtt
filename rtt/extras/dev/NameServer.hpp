@@ -38,9 +38,9 @@
 #ifndef ORO_NAMESERVER_HPP
 #define ORO_NAMESERVER_HPP
 
+#include <map>
 #include <iterator>
 #include <string>
-#include <map>
 // #include "rtt-config.h"
 // #ifdef OROPKG_CORELIB_REPORTING
 // #include "../../Logger.hpp"
@@ -235,20 +235,25 @@ namespace RTT
          *
          * On dereference it will give you a ValueType (an object)
          */
-#if __GNUC__ == 2
-        class value_iterator : public bidirectional_iterator<ValueType, int>
-#else
-        class value_iterator : public std::iterator<std::input_iterator_tag, ValueType>
-#endif
+        class value_iterator
         {
         protected:
         	typename NameServer<_ValueType>::iterator i;
 
         public:
+            using iterator_category = std::bidirectional_iterator_tag;
+            using iterator_concept = std::bidirectional_iterator_tag;
+            using value_type = ValueType;
+            using difference_type = typename std::iterator_traits<iterator>::difference_type;
+            using pointer = void;
+            using reference = ValueType;
+
+            value_iterator() = default;
+
             value_iterator( iterator _i ) : i( _i )
             {}
 
-            ValueType operator*()
+            ValueType operator*() const
             {
                 return ( ( *i ).second );
             }
@@ -267,31 +272,26 @@ namespace RTT
 
             value_iterator operator++( int )
             {
-                value_iterator ret;
+                value_iterator ret( *this );
                 operator++();
                 return ret;
             }
 
             value_iterator operator--( int )
             {
-                value_iterator ret;
+                value_iterator ret( *this );
                 operator--();
                 return ret;
             }
 
-            bool operator==( value_iterator other )
+            bool operator==( const value_iterator& other ) const
             {
                 return ( i == other.i );
             }
 
-            bool operator!=( value_iterator other )
+            bool operator!=( const value_iterator& other ) const
             {
                 return ( i != other.i );
-            }
-
-            int operator- ( value_iterator other )
-            {
-                return ( i -other.i );
             }
         };
 
@@ -300,22 +300,26 @@ namespace RTT
          *
          * On dereference it will give you a NameType (a name).
          */
-#if __GNUC__ == 2
-        class name_iterator : public bidirectional_iterator<NameType, int>
-#else
-        class name_iterator : public std::iterator< std::input_iterator_tag , NameType>
-#endif
+        class name_iterator
         {
 
         protected:
         	typename NameServer<_ValueType>::iterator i;
 
         public:
+            using iterator_category = std::bidirectional_iterator_tag;
+            using iterator_concept = std::bidirectional_iterator_tag;
+            using value_type = NameType;
+            using difference_type = typename std::iterator_traits<iterator>::difference_type;
+            using pointer = void;
+            using reference = NameType;
+
+            name_iterator() = default;
 
             name_iterator( iterator _i ) : i( _i )
             {}
 
-            NameType operator*()
+            NameType operator*() const
             {
                 return ( ( *i ).first );
             }
@@ -346,19 +350,14 @@ namespace RTT
                 return ret;
             }
 
-            bool operator==( name_iterator other )
+            bool operator==( const name_iterator& other ) const
             {
                 return ( i == other.i );
             }
 
-            bool operator!=( name_iterator other )
+            bool operator!=( const name_iterator& other ) const
             {
                 return ( i != other.i );
-            }
-
-            int operator- ( name_iterator other )
-            {
-                return ( i -other.i );
             }
         };
 

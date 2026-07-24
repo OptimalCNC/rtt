@@ -25,6 +25,7 @@
 #include <extras/dev/AnalogOutput.hpp>
 #include <extras/dev/DigitalInput.hpp>
 #include <extras/dev/DigitalOutput.hpp>
+#include <extras/dev/NameServer.hpp>
 
 
 #include <iostream>
@@ -81,4 +82,30 @@ BOOST_AUTO_TEST_CASE( testNaming)
     BOOST_CHECK( doi );
 
 }
+
+BOOST_AUTO_TEST_CASE(testNameServerIterators)
+{
+    using NameIterator = RTT::dev::NameServer<int>::name_iterator;
+    using ValueIterator = RTT::dev::NameServer<int>::value_iterator;
+
+    static_assert(std::bidirectional_iterator<NameIterator>);
+    static_assert(std::bidirectional_iterator<ValueIterator>);
+
+    RTT::dev::NameServer<int> names;
+    BOOST_REQUIRE(names.registerObject(1, "one"));
+    BOOST_REQUIRE(names.registerObject(2, "two"));
+
+    NameIterator name = names.getNameBegin();
+    BOOST_CHECK_EQUAL(*name, "one");
+    NameIterator previous_name = name++;
+    BOOST_CHECK_EQUAL(*previous_name, "one");
+    BOOST_CHECK_EQUAL(*name, "two");
+
+    ValueIterator value = names.getValueBegin();
+    BOOST_CHECK_EQUAL(*value, 1);
+    ValueIterator previous_value = value++;
+    BOOST_CHECK_EQUAL(*previous_value, 1);
+    BOOST_CHECK_EQUAL(*value, 2);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
