@@ -117,6 +117,8 @@ void OperationsFixture::createOperationCallerFactories(TaskContext* target)
     dat->addOperation("assert", &OperationsFixture::assertBool, this).doc("assert").arg("b", "bd");
     dat->addOperation("assertEqual", &OperationsFixture::assertEqual, this);
     dat->addOperation("increase", &OperationsFixture::increase, this).doc("Return increasing i");
+    dat->addOperation("getState", &OperationsFixture::getState, this)
+        .doc("Return a test state vector");
     dat->addOperation("increaseCmd", &OperationsFixture::increase, this, OwnThread).doc("Return increasing i");
     dat->addOperation("resetI", &OperationsFixture::resetI, this).doc("ResetI i");
     dat->addOperation("assertMsg", &OperationsFixture::assertMsg, this).doc("Assert message").arg("bool", "").arg("text", "text");

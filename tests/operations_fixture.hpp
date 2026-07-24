@@ -19,6 +19,7 @@
 
 
 #include <iostream>
+#include <vector>
 #include <TaskContext.hpp>
 #include "unit.hpp"
 
@@ -64,6 +65,11 @@ public:
     const void *returnAddressOfConst(const int &i) { return &i; }
 
     int sleepAndIncrement(int seconds) { sleep(seconds); return ++i; }
+
+    std::vector<double> getState(int state) const
+    {
+        return {static_cast<double>(state), static_cast<double>(state + 1)};
+    }
 
     //exception tests:
     void m0except(void) { throw std::runtime_error("exception"); }

@@ -24,6 +24,8 @@
 #include <extras/SequentialActivity.hpp>
 #include <plugin/PluginLoader.hpp>
 #include <scripting/Parser.hpp>
+#include <scripting/CommonParser.hpp>
+#include <scripting/ExpressionParser.hpp>
 #include <internal/GlobalService.hpp>
 
 
@@ -223,6 +225,50 @@ BOOST_AUTO_TEST_CASE(TestExpressionParserRejectsTrailingInput)
     BOOST_CHECK_EQUAL(i, 0);
 }
 
+BOOST_AUTO_TEST_CASE(TestScriptingServiceRejectsAdjacentCalls)
+{
+    PluginLoader::Instance()->loadService("scripting", tc);
+    boost::shared_ptr<Scripting> scripting =
+        tc->getProvider<Scripting>("scripting");
+    BOOST_REQUIRE(scripting);
+
+    i = 0;
+    BOOST_CHECK(!scripting->eval("test.increase()test.increase()"));
+    BOOST_CHECK_EQUAL(i, 0);
+}
+
+BOOST_AUTO_TEST_CASE(TestScriptingServiceReportsProgramLoadFailure)
+{
+    PluginLoader::Instance()->loadService("scripting", tc);
+    ScriptingService::shared_ptr scripting =
+        boost::dynamic_pointer_cast<ScriptingService>(
+            tc->provides("scripting"));
+    BOOST_REQUIRE(scripting);
+
+    const std::string program = "program DuplicateProgram {}";
+    BOOST_REQUIRE(scripting->eval(program));
+
+    Parser parser(caller->engine());
+    BOOST_CHECK_THROW(
+        parser.runScript(program, tc, scripting.get(), "duplicate-program"),
+        file_parse_exception);
+}
+
+BOOST_AUTO_TEST_CASE(TestScriptingServiceReportsOperationFailure)
+{
+    PluginLoader::Instance()->loadService("scripting", tc);
+    ScriptingService::shared_ptr scripting =
+        boost::dynamic_pointer_cast<ScriptingService>(
+            tc->provides("scripting"));
+    BOOST_REQUIRE(scripting);
+
+    Parser parser(caller->engine());
+    BOOST_CHECK_THROW(
+        parser.runScript("test.fail()", tc, scripting.get(), "failing-operation"),
+        file_parse_exception);
+    BOOST_CHECK(!scripting->eval("test.fail()"));
+}
+
 BOOST_AUTO_TEST_CASE(TestExpressionParserAcceptsStatementTerminator)
 {
     Parser parser(caller->engine());
@@ -251,6 +297,14 @@ BOOST_AUTO_TEST_CASE(TestSingleInputParsersRequireCompleteInput)
         parse_exception);
     BOOST_CHECK(!tc->provides()->getValue(partial_name));
 
+    const std::string invalid_name = "invalid_parser_value";
+    BOOST_REQUIRE(!tc->provides()->getValue(invalid_name));
+    BOOST_CHECK_THROW(
+        parser.parseValueStatement(
+            "var int invalid_parser_value = \"not an integer\"", tc),
+        parse_exception);
+    BOOST_CHECK(!tc->provides()->getValue(invalid_name));
+
     const std::string complete_name = "complete_parser_value";
     BOOST_REQUIRE(!tc->provides()->getValue(complete_name));
     BOOST_REQUIRE(
@@ -258,6 +312,74 @@ BOOST_AUTO_TEST_CASE(TestSingleInputParsersRequireCompleteInput)
             "var int complete_parser_value = 1;", tc));
     BOOST_CHECK(tc->provides()->getValue(complete_name));
     tc->provides()->removeValue(complete_name);
+}
+
+BOOST_AUTO_TEST_CASE(TestCallResultIndexing)
+{
+    Parser parser(caller->engine());
+
+    DataSourceBase::shared_ptr result;
+    try {
+        result = parser.parseExpression("test.getState(2)[0]", tc);
+    } catch (const parse_exception& error) {
+        BOOST_FAIL(error.what());
+    }
+    BOOST_REQUIRE(result);
+    DataSource<double>::shared_ptr value =
+        dynamic_cast<DataSource<double>*>(result.get());
+    BOOST_REQUIRE(value);
+    BOOST_CHECK_EQUAL(value->get(), 2.0);
+}
+
+BOOST_AUTO_TEST_CASE(TestExpressionParserRejectsMalformedCallIndexes)
+{
+    Parser parser(caller->engine());
+    const std::vector<std::string> invalid_expressions = {
+        "test.getState(2)[",
+        "test.getState(2)[]",
+        "test.getState(2)[0",
+        "test.getState(2)[0][0]",
+        "test.getState(2)[0].missing",
+        "test.getState(2)[0]trailing",
+        "test.getState(2)[\"invalid\"]"
+    };
+
+    for (const std::string& expression : invalid_expressions) {
+        BOOST_TEST_CONTEXT(expression) {
+            BOOST_CHECK_THROW(
+                parser.parseExpression(expression, tc),
+                parse_exception);
+        }
+    }
+}
+
+BOOST_AUTO_TEST_CASE(TestExpressionParserRejectsMissingResult)
+{
+    CommonParser common_parser;
+    ExpressionParser parser(tc, caller->engine(), common_parser);
+
+    BOOST_CHECK_THROW(parser.getResult(), parse_exception);
+    BOOST_CHECK_THROW(parser.getCmdResult(), parse_exception);
+    BOOST_CHECK_THROW(parser.getHandle(), parse_exception);
+    BOOST_CHECK_THROW(parser.dropResult(), parse_exception);
+}
+
+BOOST_AUTO_TEST_CASE(TestParserRejectsNullContext)
+{
+    Parser parser(caller->engine());
+
+    BOOST_CHECK_THROW(
+        parser.runScript("", 0, 0, "null-context"),
+        parse_exception);
+    BOOST_CHECK_THROW(parser.parseFunction("", 0), parse_exception);
+    BOOST_CHECK_THROW(parser.parseProgram("", 0), parse_exception);
+    BOOST_CHECK_THROW(parser.parseStateMachine("", 0), parse_exception);
+    BOOST_CHECK_THROW(parser.parseCondition("true", 0), parse_exception);
+    BOOST_CHECK_THROW(parser.parseExpression("1", 0), parse_exception);
+    BOOST_CHECK_THROW(parser.parseValueChange("1", 0), parse_exception);
+    BOOST_CHECK_THROW(
+        parser.parseValueStatement("var int value = 1", 0),
+        parse_exception);
 }
 
 BOOST_AUTO_TEST_CASE(TestScriptingFunction)

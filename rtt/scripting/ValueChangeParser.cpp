@@ -341,6 +341,9 @@ namespace RTT
     void ValueChangeParser::cleanup()
     {
         for_each(assigncommands.begin(), assigncommands.end(), boost::lambda::bind(boost::lambda::delete_ptr(), boost::lambda::_1));
+        for_each(conditions.begin(), conditions.end(), boost::lambda::bind(boost::lambda::delete_ptr(), boost::lambda::_1));
+        assigncommands.clear();
+        conditions.clear();
     }
 
     void ValueChangeParser::clear()

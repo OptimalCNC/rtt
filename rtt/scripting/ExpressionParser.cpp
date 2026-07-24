@@ -205,6 +205,10 @@ namespace RTT
 
   void DataCallParser::seendatacall()
   {
+    if ( argparsers.empty() )
+      throw parse_exception_parser_fail(
+          "Operation call completed without an argument parser." );
+
     ArgumentsParser* argspar = argparsers.top();
     argparsers.pop();
     std::string obj = argspar->objectname();
@@ -212,7 +216,9 @@ namespace RTT
     std::vector<DataSourceBase::shared_ptr> args = argspar->result();
     Service::shared_ptr peer = argspar->object();
     delete argspar;
-    assert(peer && "peer may never be null.");
+    if ( !peer )
+      throw parse_exception_fatal_semantic_error(
+          "Operation call resolved to an invalid service." );
 //    cout << "seendatacall "<< mobject << "." << mmethod<<endl;
 
     if ( true ) {
@@ -234,6 +240,10 @@ namespace RTT
                             ret = sha->getFactory()->produceCollect(args, new ValueDataSource<bool>(true) );// blocking
                         else // (meth == "collectIfDone")
                             ret = sha->getFactory()->produceCollect(args, new ValueDataSource<bool>(false) );// non-blocking
+                        if ( !ret )
+                            throw parse_exception_fatal_semantic_error(
+                                obj + "." + meth +
+                                ": failed to create the collect operation." );
                         return;
                     }
                 }
@@ -253,17 +263,35 @@ namespace RTT
                 break;
             case CALLTYPE_CMD:
                 DataSourceBase::shared_ptr sendds = ops->produceSend( meth, args, mcaller );
+                if ( !sendds )
+                    throw parse_exception_fatal_semantic_error(
+                        obj + "." + meth +
+                        ": failed to create the send operation." );
                 args.clear();
                 args.push_back( sendds ); // store the produceSend DS for collecting:
+                OperationInterfacePart* operation = ops->getOperation(meth);
+                if ( !operation )
+                    throw parse_exception_fatal_semantic_error(
+                        obj + "." + meth +
+                        ": operation metadata is unavailable." );
                 for ( unsigned int i =0; i != arity; ++i) {
-                    args.push_back( ops->getOperation(meth)->getCollectType( i + 1 )->buildValue() ); // this is only to satisfy produceCollect. We ignore the results...
+                    const TypeInfo* collect_type =
+                        operation->getCollectType( i + 1 );
+                    if ( !collect_type )
+                        throw parse_exception_fatal_semantic_error(
+                            obj + "." + meth +
+                            ": collect result type is unavailable." );
+                    args.push_back( collect_type->buildValue() ); // this is only to satisfy produceCollect. We ignore the results...
                 }
 
                 DataSource<SendStatus>::shared_ptr collectds
                         = boost::dynamic_pointer_cast<DataSource<SendStatus> >(
                               ops->produceCollect( meth, args, new ValueDataSource<bool>(false) )
                           ); // non-blocking, need extra condition
-                assert(collectds);
+                if ( !collectds )
+                    throw parse_exception_fatal_semantic_error(
+                        obj + "." + meth +
+                        ": failed to create the collect result." );
 
                 ret = new ActionAliasDataSource<SendStatus>(new CommandDataSource( sendds ), collectds.get() );
                 mcmdcnd = new CmdCollectCondition( collectds ); // Replaces RTT 1.x completion condition.
@@ -285,7 +313,9 @@ namespace RTT
             throw parse_exception_fatal_semantic_error("While calling "+obj+"."+meth+": "+e.what());
         }
     }
-    assert( ret.get() );
+    if ( !ret )
+      throw parse_exception_fatal_semantic_error(
+          obj + "." + meth + ": operation produced no result." );
   }
 
   DataCallParser::~DataCallParser()
@@ -345,13 +375,22 @@ namespace RTT
 
   void ConstructorParser::seen_constructor( void )
   {
+    if ( argparsers.empty() )
+      throw parse_exception_parser_fail(
+          "Constructor completed without an argument parser." );
+
     ArgumentsParser* argspar = argparsers.top();
     argparsers.pop();
     std::string obj = argspar->objectname();
     std::vector<DataSourceBase::shared_ptr> args = argspar->result();
     delete argspar;
 
-    ret = TypeInfoRepository::Instance()->type( obj )->construct( args );
+    TypeInfo* type = TypeInfoRepository::Instance()->type( obj );
+    if ( !type )
+        throw parse_exception_semantic_error(
+            "Unknown constructor type \"" + obj + "\"." );
+
+    ret = type->construct( args );
 
     if (!ret) {
         throw parse_exception_no_such_constructor( obj, args );
@@ -592,12 +631,18 @@ namespace RTT
   void ExpressionParser::seenvalue()
   {
     DataSourceBase::shared_ptr ds = valueparser.lastParsed();
+    if ( !ds )
+      throw parse_exception_parser_fail(
+          "Value parser produced no result." );
     parsestack.push( ds );
   }
 
   void ExpressionParser::seendatacall()
   {
       DataSourceBase::shared_ptr n( datacallparser.getParseResult() );
+      if ( !n )
+        throw parse_exception_fatal_semantic_error(
+            "Operation call produced no expression result." );
       parsestack.push( n );
       mhandle = datacallparser.getParseHandle();
       mcmdcnd = datacallparser.getParseCmdResult();
@@ -606,6 +651,9 @@ namespace RTT
   void ExpressionParser::seenconstructor()
   {
       DataSourceBase::shared_ptr n( constrparser.getParseResult() );
+      if ( !n )
+        throw parse_exception_fatal_semantic_error(
+            "Constructor produced no expression result." );
       parsestack.push( n );
   }
 
@@ -624,28 +672,44 @@ namespace RTT
 
   DataSourceBase::shared_ptr ExpressionParser::getResult()
   {
-    assert( !parsestack.empty() );
+    if ( !hasResult() )
+      throw parse_exception_parser_fail(
+          "Expression parser has no result." );
     return parsestack.top();
   }
 
   ConditionInterface*  ExpressionParser::getCmdResult()
   {
-    assert( !parsestack.empty() );
+    if ( !hasResult() )
+      throw parse_exception_parser_fail(
+          "Expression parser has no command result." );
     return mcmdcnd;
   }
 
   boost::shared_ptr<AttributeBase> ExpressionParser::getHandle()
   {
-    assert( !parsestack.empty() );
+    if ( !hasResult() )
+      throw parse_exception_parser_fail(
+          "Expression parser has no send handle result." );
     return mhandle;
+  }
+
+  DataSourceBase::shared_ptr
+  ExpressionParser::popResult(const std::string& operation)
+  {
+    if ( !hasResult() )
+      throw parse_exception_parser_fail(
+          "Expression parser stack underflow while " + operation + "." );
+
+    DataSourceBase::shared_ptr result = parsestack.top();
+    parsestack.pop();
+    return result;
   }
 
   void ExpressionParser::seen_unary( const std::string& op )
   {
-    DataSourceBase::shared_ptr arg( parsestack.top() );
-    if ( ! arg)
-        throw parse_exception_fatal_semantic_error( "Root element not found\"." );
-    parsestack.pop();
+    DataSourceBase::shared_ptr arg =
+        popResult("applying unary operator " + op);
     DataSourceBase::shared_ptr ret =
         opreg->applyUnary( op, arg.get() );
     if ( ! ret )
@@ -658,8 +722,8 @@ namespace RTT
   {
       std::string member(s,f);
       // inspirired on seen_unary
-    DataSourceBase::shared_ptr arg( parsestack.top() );
-    parsestack.pop();
+    DataSourceBase::shared_ptr arg =
+        popResult("accessing member " + member);
     DataSourceBase::shared_ptr ret = arg->getMember(member);
     if ( ! ret )
       throw parse_exception_fatal_semantic_error( arg->getType() + " does not have member \"" + member +
@@ -669,10 +733,10 @@ namespace RTT
 
   void ExpressionParser::seen_binary( const std::string& op )
   {
-    DataSourceBase::shared_ptr arg1( parsestack.top() );
-    parsestack.pop();
-    DataSourceBase::shared_ptr arg2( parsestack.top() );
-    parsestack.pop();
+    DataSourceBase::shared_ptr arg1 =
+        popResult("reading the right operand of " + op);
+    DataSourceBase::shared_ptr arg2 =
+        popResult("reading the left operand of " + op);
 
     // Arg2 is the first (!) argument, as it was pushed on the stack
     // first.
@@ -686,10 +750,10 @@ namespace RTT
 
   void ExpressionParser::seen_assign()
   {
-    DataSourceBase::shared_ptr arg1( parsestack.top() );
-    parsestack.pop(); // right hand side
-    DataSourceBase::shared_ptr arg2( parsestack.top() );
-    parsestack.pop(); // left hand side
+    DataSourceBase::shared_ptr arg1 =
+        popResult("reading an assignment value");
+    DataSourceBase::shared_ptr arg2 =
+        popResult("reading an assignment target");
 
     // hack to drop-in a new instance of SendHandle:
     if (arg2->getTypeName() == "SendHandle" && mhandle) {
@@ -740,10 +804,10 @@ namespace RTT
 
   void ExpressionParser::seen_index()
   {
-    DataSourceBase::shared_ptr arg1( parsestack.top() );
-    parsestack.pop();
-    DataSourceBase::shared_ptr arg2( parsestack.top() );
-    parsestack.pop();
+    DataSourceBase::shared_ptr arg1 =
+        popResult("reading an index");
+    DataSourceBase::shared_ptr arg2 =
+        popResult("reading an indexed value");
 
     // Arg2 is the first (!) argument, as it was pushed on the stack
     // first.
@@ -757,6 +821,6 @@ namespace RTT
   void ExpressionParser::dropResult()
   {
       mcmdcnd = 0;
-    parsestack.pop();
+    popResult("dropping the expression result");
   }
 }

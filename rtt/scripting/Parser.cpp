@@ -61,6 +61,18 @@ namespace RTT
 {
   using namespace detail;
 
+  namespace
+  {
+    TaskContext* requireTaskContext(TaskContext* context)
+    {
+      if (!context) {
+        throw parse_exception_fatal_semantic_error(
+            "Parser requires a valid TaskContext.");
+      }
+      return context;
+    }
+  }
+
   Parser::Parser(ExecutionEngine* caller) : mcaller(caller) {
 
       if (mcaller == 0) {
@@ -71,6 +83,7 @@ namespace RTT
   }
 
   void Parser::runScript(std::string const& code, TaskContext* mowner, ScriptingService* service, std::string const& filename ) {
+      mowner = requireTaskContext(mowner);
       our_buffer_t script(code + "\n"); // work around mandatory trailing newline/eos for statements.
       our_pos_iter_t parsebegin( script.begin(), script.end(), filename );
       our_pos_iter_t parseend( script.end(), script.end(), filename );
@@ -91,6 +104,7 @@ namespace RTT
 
   Parser::ParsedFunctions Parser::parseFunction( const std::string& text, TaskContext* c, const std::string& filename)
   {
+    c = requireTaskContext(c);
     our_buffer_t function(text);
     our_pos_iter_t parsebegin( function.begin(), function.end(), filename );
     our_pos_iter_t parseend( function.end(), function.end(), filename );
@@ -103,6 +117,7 @@ namespace RTT
 
   Parser::ParsedPrograms Parser::parseProgram( const std::string& text, TaskContext* c, const std::string& filename)
   {
+    c = requireTaskContext(c);
     our_buffer_t program(text);
     our_pos_iter_t parsebegin( program.begin(), program.end(), filename );
     our_pos_iter_t parseend( program.end(),program.end(),filename );
@@ -118,6 +133,8 @@ namespace RTT
   Parser::ParsedStateMachines Parser::parseStateMachine( const std::string& text, TaskContext* c, const std::string& filename)
   {
       // This code is copied from parseProgram()
+
+    c = requireTaskContext(c);
 
     our_buffer_t program(text);
     our_pos_iter_t parsebegin( program.begin(), program.end(), filename );
@@ -142,6 +159,7 @@ namespace RTT
   ConditionInterface* Parser::parseCondition( const std::string& s,
                                               TaskContext* tc )
   {
+    tc = requireTaskContext(tc);
     our_buffer_t scopy(s);
     our_pos_iter_t parsebegin( scopy.begin(), scopy.end(), "teststring" );
     our_pos_iter_t parseend( scopy.end(), scopy.end(), "teststring" );
@@ -179,6 +197,7 @@ namespace RTT
   DataSourceBase::shared_ptr Parser::parseExpression( const std::string& _s,
                                            TaskContext* tc )
   {
+    tc = requireTaskContext(tc);
     std::string s( _s );
 
     our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
@@ -224,6 +243,7 @@ namespace RTT
   DataSourceBase::shared_ptr Parser::parseValueStatement( const std::string& _s,
                                                        TaskContext* tc )
   {
+    tc = requireTaskContext(tc);
     std::string s( _s );
 
     our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
@@ -238,24 +258,29 @@ namespace RTT
             parse( parsebegin, parseend, parser.parser() >> !ch_p(';'),
                    SKIP_PARSER );
         if ( !result.hit ) {
-            parser.reset();
             throw parse_exception_parser_fail(
                 "Parser did not find a value statement in text." );
         }
         if ( !result.full ) {
-            parser.reset();
             throw parse_exception_syntactic_error(
                 "Unexpected trailing input after value statement." );
         }
     }
     catch( const parse_exception& )
     {
+        parser.reset();
         throw;
     }
     catch( const parser_error<std::string, iter_t>& e )
         {
+            parser.reset();
             // this only happens if input is really wrong.
             throw parse_exception_syntactic_error( e.descriptor );
+        }
+    catch( ... )
+        {
+            parser.reset();
+            throw;
         }
 
     ActionInterface* ac = 0;

@@ -202,6 +202,8 @@ namespace RTT { namespace scripting
       types::OperatorRepository::shared_ptr opreg;
 
       TaskContext* context;
+      base::DataSourceBase::shared_ptr
+      popResult(const std::string& operation);
   public:
       ExpressionParser( TaskContext* pc, ExecutionEngine* caller, CommonParser& common_parser );
     ~ExpressionParser();
@@ -224,7 +226,10 @@ namespace RTT { namespace scripting
     // does..
     void dropResult();
 
-      bool hasResult() { return !parsestack.empty(); }
+      bool hasResult()
+      {
+          return !parsestack.empty() && parsestack.top().get() != 0;
+      }
   };
 }}
 

@@ -128,22 +128,33 @@ namespace RTT
         int steps = 0;
         // we execute the result directly.
         ret->loaded( GlobalEngine::Instance() );
-        ret->start();
-        while (ret->execute() && ret->isRunning())
+        try
         {
-            if (ret->inError())
+            ret->start();
+            while (ret->isRunning())
             {
-                Logger::log().logf(Logger::Error, "ScriptParser",
-                                    "Script encountered an error during execution of line %d",
-                                    ret->getLineNumber());
+                const bool continue_execution = ret->execute();
+                if (ret->inError())
+                {
+                    throw parse_exception_fatal_semantic_error(
+                            "Script execution failed at line " +
+                            std::to_string(ret->getLineNumber()) + ".");
+                }
+                if (!continue_execution || !ret->isRunning())
+                    break;
+
+                ++steps;
+                if (steps > 10000)
+                {
+                    throw parse_exception_fatal_semantic_error(
+                            "Script exceeded 10000 yield statements.");
+                }
             }
-            ++steps;
-            if (steps > 10000)
-            {
-                Logger::log().logf(Logger::Error, "ScriptParser",
-                                    "Parser refuses to execute more than 10000 yield statements. Fix your program.");
-                break;
-            }
+        }
+        catch (...)
+        {
+            ret->unloaded();
+            throw;
         }
         ret->unloaded();
         statementparser->initBodyParser("script", storage, 0);
@@ -256,9 +267,24 @@ namespace RTT
             throw file_parse_exception(e.copy(), mpositer.get_position().file,
                     mpositer.get_position().line,
                     mpositer.get_position().column);
+        } catch (const std::exception& e)
+        {
+            clear();
+            throw file_parse_exception(
+                    new parse_exception_fatal_semantic_error(
+                            std::string("Script execution failed: ") + e.what()),
+                    mpositer.get_position().file,
+                    mpositer.get_position().line,
+                    mpositer.get_position().column);
         } catch (...)
         {
-            assert( false );
+            clear();
+            throw file_parse_exception(
+                    new parse_exception_fatal_semantic_error(
+                            "Script execution failed with an unknown exception."),
+                    mpositer.get_position().file,
+                    mpositer.get_position().line,
+                    mpositer.get_position().column);
         }
     }
 
