@@ -241,9 +241,17 @@ namespace RTT
  * Extern template declarations for core data source types
  * (instantiated in DataSources.cpp)
  */
-RTT_EXT_IMPL template class RTT_API RTT::internal::DataSource< bool >;
-RTT_EXT_IMPL template class RTT_API RTT::internal::AssignableDataSource< bool >;
-RTT_EXT_IMPL template class RTT_API RTT::internal::DataSource< std::string >;
-RTT_EXT_IMPL template class RTT_API RTT::internal::AssignableDataSource< std::string >;
+#ifdef _MSC_VER
+# define RTT_DATASOURCE_TEMPLATE_API RTT_API
+#else
+# define RTT_DATASOURCE_TEMPLATE_API
+#endif
+
+RTT_EXT_IMPL template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::DataSource< bool >;
+RTT_EXT_IMPL template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::AssignableDataSource< bool >;
+RTT_EXT_IMPL template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::DataSource< std::string >;
+RTT_EXT_IMPL template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::AssignableDataSource< std::string >;
+
+#undef RTT_DATASOURCE_TEMPLATE_API
 
 #endif

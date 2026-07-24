@@ -64,13 +64,21 @@ namespace RTT {
 /*
  * Explicit template instantiation for core data source types
  */
-template class RTT_API RTT::internal::DataSource< bool >;
-template class RTT_API RTT::internal::AssignableDataSource< bool >;
-template class RTT_API RTT::internal::ValueDataSource< bool >;
-template class RTT_API RTT::internal::ConstantDataSource< bool >;
-template class RTT_API RTT::internal::ReferenceDataSource< bool >;
-template class RTT_API RTT::internal::DataSource< std::string >;
-template class RTT_API RTT::internal::AssignableDataSource< std::string >;
-template class RTT_API RTT::internal::ValueDataSource< std::string >;
-template class RTT_API RTT::internal::ConstantDataSource< std::string >;
-template class RTT_API RTT::internal::ReferenceDataSource< std::string >;
+#ifdef _MSC_VER
+# define RTT_DATASOURCE_TEMPLATE_API RTT_API
+#else
+# define RTT_DATASOURCE_TEMPLATE_API
+#endif
+
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::DataSource< bool >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::AssignableDataSource< bool >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::ValueDataSource< bool >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::ConstantDataSource< bool >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::ReferenceDataSource< bool >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::DataSource< std::string >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::AssignableDataSource< std::string >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::ValueDataSource< std::string >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::ConstantDataSource< std::string >;
+template class RTT_DATASOURCE_TEMPLATE_API RTT::internal::ReferenceDataSource< std::string >;
+
+#undef RTT_DATASOURCE_TEMPLATE_API
