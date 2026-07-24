@@ -177,7 +177,7 @@ namespace RTT
             }
 
 #ifdef ORO_SIGNALLING_OPERATIONS
-            virtual Handle produceSignal( base::ActionInterface* func, const std::vector<base::DataSourceBase::shared_ptr>& args, ExecutionEngine* subscriber) const
+            virtual Handle produceSignal( base::ActionInterface*, const std::vector<base::DataSourceBase::shared_ptr>&, ExecutionEngine*) const
             {
                 throw no_asynchronous_operation_exception("cannot use produceSignal on non-signalling operations");
             }
