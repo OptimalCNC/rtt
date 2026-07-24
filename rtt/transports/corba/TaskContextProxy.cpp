@@ -213,7 +213,7 @@ namespace RTT
         synchronizeServices(this->provides(), serv.in(), tcd->mainprovider_description);
 
         CServiceRequester_var srq = tcd->mainrequester;
-        synchronizeRequesters(this->requires(), srq, tcd->mainrequester_description);
+        synchronizeRequesters(this->requests(), srq, tcd->mainrequester_description);
 
         Logger::log().logf(Logger::Debug, "TaskContextProxy",
                            "All Done.");
@@ -233,7 +233,7 @@ namespace RTT
         assert(cdescription.children.length() == cdescription.children_descriptions.length());
         for( size_t i =0; i != cdescription.children.length(); ++i) {
             CServiceRequester_ptr cobj = cdescription.children[i];
-            ServiceRequester::shared_ptr tobj = this->requires(std::string(cdescription.children_descriptions[i].name));
+            ServiceRequester::shared_ptr tobj = this->requests(std::string(cdescription.children_descriptions[i].name));
 
             // Recurse:
             this->synchronizeRequesters(tobj, cobj, cdescription.children_descriptions[i]);

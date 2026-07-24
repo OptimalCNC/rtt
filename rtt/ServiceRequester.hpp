@@ -125,16 +125,9 @@ namespace RTT
 
         base::OperationCallerBaseInvoker* getOperationCaller(const std::string& name);
 
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wc++20-compat"
-#endif
-        ServiceRequester::shared_ptr requires();
+        ServiceRequester::shared_ptr requests();
 
-        ServiceRequester::shared_ptr requires(const std::string& service_name);
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+        ServiceRequester::shared_ptr requests(const std::string& service_name);
 
         /**
          * Add a new ServiceRequester to this TaskContext.

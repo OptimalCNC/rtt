@@ -361,12 +361,12 @@ BOOST_AUTO_TEST_CASE(testConnectServicesFlatOperationCaller)
 {
     TaskContext requester("requester");
     OperationCaller<double(void)> call_m0("m0", requester.engine());
-    requester.requires("methods")->addOperationCaller(call_m0);
+    requester.requests("methods")->addOperationCaller(call_m0);
 
     BOOST_CHECK(!call_m0.ready());
     BOOST_CHECK(requester.connectServices(tc));
 
-    BOOST_CHECK(requester.requires("methods")->ready());
+    BOOST_CHECK(requester.requests("methods")->ready());
     BOOST_REQUIRE(call_m0.ready());
     BOOST_CHECK_EQUAL(-1.0, call_m0());
 }
@@ -379,13 +379,13 @@ BOOST_AUTO_TEST_CASE(testConnectServicesNestedOperationCaller)
 
     TaskContext requester("requester");
     OperationCaller<double(int)> rotate("rotate", requester.engine());
-    requester.requires("manual")->requires("spindles")->addOperationCaller(rotate);
+    requester.requests("manual")->requests("spindles")->addOperationCaller(rotate);
 
     BOOST_CHECK(!rotate.ready());
     BOOST_CHECK(requester.connectServices(&provider));
 
-    BOOST_CHECK(requester.requires("manual")->ready());
-    BOOST_CHECK(requester.requires("manual")->requires("spindles")->ready());
+    BOOST_CHECK(requester.requests("manual")->ready());
+    BOOST_CHECK(requester.requests("manual")->requests("spindles")->ready());
     BOOST_REQUIRE(rotate.ready());
     BOOST_CHECK_EQUAL(-2.0, rotate(1));
 }
@@ -397,11 +397,11 @@ BOOST_AUTO_TEST_CASE(testConnectServicesMissingNestedProvider)
 
     TaskContext requester("requester");
     OperationCaller<double(int)> rotate("rotate", requester.engine());
-    requester.requires("manual")->requires("spindles")->addOperationCaller(rotate);
+    requester.requests("manual")->requests("spindles")->addOperationCaller(rotate);
 
     BOOST_CHECK(!requester.connectServices(&provider));
-    BOOST_CHECK(!requester.requires("manual")->ready());
-    BOOST_CHECK(!requester.requires("manual")->requires("spindles")->ready());
+    BOOST_CHECK(!requester.requests("manual")->ready());
+    BOOST_CHECK(!requester.requests("manual")->requests("spindles")->ready());
     BOOST_CHECK(!rotate.ready());
 }
 
@@ -409,10 +409,10 @@ BOOST_AUTO_TEST_CASE(testRequesterReadyChecksUnresolvedChildRequesters)
 {
     TaskContext requester("requester");
     OperationCaller<double(int)> rotate("rotate", requester.engine());
-    requester.requires("manual")->requires("spindles")->addOperationCaller(rotate);
+    requester.requests("manual")->requests("spindles")->addOperationCaller(rotate);
 
-    BOOST_CHECK(!requester.requires("manual")->ready());
-    BOOST_CHECK(!requester.requires("manual")->requires("spindles")->ready());
+    BOOST_CHECK(!requester.requests("manual")->ready());
+    BOOST_CHECK(!requester.requests("manual")->requests("spindles")->ready());
 }
 
 BOOST_AUTO_TEST_CASE(testRequesterReadyAcceptsConnectedChildRequesters)
@@ -423,11 +423,11 @@ BOOST_AUTO_TEST_CASE(testRequesterReadyAcceptsConnectedChildRequesters)
 
     TaskContext requester("requester");
     OperationCaller<double(int)> rotate("rotate", requester.engine());
-    requester.requires("manual")->requires("spindles")->addOperationCaller(rotate);
+    requester.requests("manual")->requests("spindles")->addOperationCaller(rotate);
 
     BOOST_REQUIRE(requester.connectServices(&provider));
-    BOOST_CHECK(requester.requires("manual")->ready());
-    BOOST_CHECK(requester.requires("manual")->requires("spindles")->ready());
+    BOOST_CHECK(requester.requests("manual")->ready());
+    BOOST_CHECK(requester.requests("manual")->requests("spindles")->ready());
 }
 
 BOOST_AUTO_TEST_CASE(testConnectServicesDoesNotSearchDifferentDepthSameNames)
@@ -438,11 +438,11 @@ BOOST_AUTO_TEST_CASE(testConnectServicesDoesNotSearchDifferentDepthSameNames)
 
     TaskContext requester("requester");
     OperationCaller<double(int)> rotate("rotate", requester.engine());
-    requester.requires("root_service")->requires("my_service")->requires("s1")
+    requester.requests("root_service")->requests("my_service")->requests("s1")
         ->addOperationCaller(rotate);
 
     requester.connectServices(&provider);
-    BOOST_CHECK(!requester.requires("root_service")->ready());
+    BOOST_CHECK(!requester.requests("root_service")->ready());
     BOOST_CHECK(!rotate.ready());
 }
 
@@ -454,15 +454,15 @@ BOOST_AUTO_TEST_CASE(testDisconnectRecursesIntoChildRequesters)
 
     TaskContext requester("requester");
     OperationCaller<double(int)> rotate("rotate", requester.engine());
-    requester.requires("manual")->requires("spindles")->addOperationCaller(rotate);
+    requester.requests("manual")->requests("spindles")->addOperationCaller(rotate);
 
     BOOST_REQUIRE(requester.connectServices(&provider));
     BOOST_REQUIRE(rotate.ready());
 
-    requester.requires("manual")->disconnect();
+    requester.requests("manual")->disconnect();
 
-    BOOST_CHECK(!requester.requires("manual")->ready());
-    BOOST_CHECK(!requester.requires("manual")->requires("spindles")->ready());
+    BOOST_CHECK(!requester.requests("manual")->ready());
+    BOOST_CHECK(!requester.requests("manual")->requests("spindles")->ready());
     BOOST_CHECK(!rotate.ready());
 }
 

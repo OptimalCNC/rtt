@@ -198,14 +198,14 @@ namespace RTT
         bool success = true;
         const std::string& location = this->getName();
 
-        vector<string> myreqs = this->requires()->getRequesterNames();
-        vector<string> peerreqs = peer->requires()->getRequesterNames();
+        vector<string> myreqs = this->requests()->getRequesterNames();
+        vector<string> peerreqs = peer->requests()->getRequesterNames();
 
-        this->requires()->connectTo( peer->provides() );
+        this->requests()->connectTo( peer->provides() );
         for (vector<string>::iterator it = myreqs.begin();
              it != myreqs.end();
              ++it) {
-            ServiceRequester::shared_ptr sr = this->requires(*it);
+            ServiceRequester::shared_ptr sr = this->requests(*it);
             if ( !sr->ready() ) {
                 if (peer->provides()->hasService( *it ))
                     success = sr->connectTo( peer->provides(*it) ) && success;
@@ -218,11 +218,11 @@ namespace RTT
             }
         }
 
-        peer->requires()->connectTo( this->provides() );
+        peer->requests()->connectTo( this->provides() );
         for (vector<string>::iterator it = peerreqs.begin();
                 it != peerreqs.end();
                 ++it) {
-            ServiceRequester::shared_ptr sr = peer->requires(*it);
+            ServiceRequester::shared_ptr sr = peer->requests(*it);
             if ( !sr->ready() ) {
                 if (this->provides()->hasService(*it))
                     success = sr->connectTo( this->provides(*it) ) && success;

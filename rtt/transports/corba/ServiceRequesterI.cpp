@@ -121,7 +121,7 @@ char * RTT_corba_CServiceRequester_i::getRequestName (
     if ( svc == "this" )
         return _this();
 
-    ServiceRequester::shared_ptr requester = mservice->requires(svc);
+    ServiceRequester::shared_ptr requester = mservice->requests(svc);
 
     // Creates service requester
     if ( mrequests.find(svc) == mrequests.end() ) {

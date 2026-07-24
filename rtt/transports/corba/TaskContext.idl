@@ -178,7 +178,7 @@ module RTT
       
 	    /**
 	     * Get a required service.
-	     * @see RTT::TaskContext::requires()
+	     * @see RTT::TaskContext::requests()
 	     */
 	    CServiceRequester getRequester( in string service_name );
 	    /** @} */
