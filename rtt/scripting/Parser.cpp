@@ -151,7 +151,15 @@ namespace RTT
     bool skipref=true;
     try
     {
-      parse( parsebegin, parseend, parser.parser(), SKIP_PARSER );
+      const parse_info<our_pos_iter_t> result =
+          parse( parsebegin, parseend, parser.parser() >> !ch_p(';'),
+                 SKIP_PARSER );
+      if ( !result.hit )
+          throw parse_exception_parser_fail(
+              "Parser did not find a condition in text." );
+      if ( !result.full )
+          throw parse_exception_syntactic_error(
+              "Unexpected trailing input after condition." );
     }
     catch( const parse_exception& )
     {
@@ -181,7 +189,15 @@ namespace RTT
     bool skipref=true;
     try
     {
-        parse( parsebegin, parseend, parser.parser(), SKIP_PARSER );
+        const parse_info<our_pos_iter_t> result =
+            parse( parsebegin, parseend, parser.parser() >> !ch_p(';'),
+                   SKIP_PARSER );
+        if ( !result.hit )
+            throw parse_exception_parser_fail(
+                "Parser did not find a valid expression in text." );
+        if ( !result.full )
+            throw parse_exception_syntactic_error(
+                "Unexpected trailing input after expression." );
     }
     catch( const parse_exception& )
     {
@@ -218,7 +234,19 @@ namespace RTT
     bool skipref=true;
     try
     {
-        parse( parsebegin, parseend, parser.parser(), SKIP_PARSER );
+        const parse_info<our_pos_iter_t> result =
+            parse( parsebegin, parseend, parser.parser() >> !ch_p(';'),
+                   SKIP_PARSER );
+        if ( !result.hit ) {
+            parser.reset();
+            throw parse_exception_parser_fail(
+                "Parser did not find a value statement in text." );
+        }
+        if ( !result.full ) {
+            parser.reset();
+            throw parse_exception_syntactic_error(
+                "Unexpected trailing input after value statement." );
+        }
     }
     catch( const parse_exception& )
     {

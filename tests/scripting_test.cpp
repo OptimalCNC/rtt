@@ -207,6 +207,59 @@ BOOST_AUTO_TEST_CASE(TestScriptingParser)
     BOOST_CHECK_EQUAL( i, -2);
 }
 
+BOOST_AUTO_TEST_CASE(TestExpressionParserRejectsTrailingInput)
+{
+    Parser parser(caller->engine());
+    i = 0;
+
+    try {
+        DataSourceBase::shared_ptr result =
+            parser.parseExpression("test.increase()test.increase()", tc);
+        result->evaluate();
+        BOOST_FAIL("The parser accepted two adjacent calls as one expression");
+    } catch (const parse_exception&) {
+    }
+
+    BOOST_CHECK_EQUAL(i, 0);
+}
+
+BOOST_AUTO_TEST_CASE(TestExpressionParserAcceptsStatementTerminator)
+{
+    Parser parser(caller->engine());
+    i = 0;
+
+    DataSourceBase::shared_ptr result =
+        parser.parseExpression("test.increase();", tc);
+    BOOST_REQUIRE(result);
+    result->evaluate();
+
+    BOOST_CHECK_EQUAL(i, 1);
+}
+
+BOOST_AUTO_TEST_CASE(TestSingleInputParsersRequireCompleteInput)
+{
+    Parser parser(caller->engine());
+
+    BOOST_CHECK_THROW(parser.parseCondition("", tc), parse_exception);
+    BOOST_CHECK_THROW(parser.parseCondition("true false", tc), parse_exception);
+
+    const std::string partial_name = "partial_parser_value";
+    BOOST_REQUIRE(!tc->provides()->getValue(partial_name));
+    BOOST_CHECK_THROW(
+        parser.parseValueStatement(
+            "var int partial_parser_value = 1 trailing", tc),
+        parse_exception);
+    BOOST_CHECK(!tc->provides()->getValue(partial_name));
+
+    const std::string complete_name = "complete_parser_value";
+    BOOST_REQUIRE(!tc->provides()->getValue(complete_name));
+    BOOST_REQUIRE(
+        parser.parseValueStatement(
+            "var int complete_parser_value = 1;", tc));
+    BOOST_CHECK(tc->provides()->getValue(complete_name));
+    tc->provides()->removeValue(complete_name);
+}
+
 BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 {
     PluginLoader::Instance()->loadService("scripting",tc);

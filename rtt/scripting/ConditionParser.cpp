@@ -108,6 +108,9 @@ namespace RTT
 
     ConditionInterface* ConditionParser::getParseResult()
     {
+        if ( !ds_bool )
+            return 0;
+
         // wrap the datasource in a ConditionBoolDataSource..
         return new ConditionBoolDataSource( ds_bool.get() );
     }
