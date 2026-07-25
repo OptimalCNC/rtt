@@ -642,14 +642,19 @@ BOOST_AUTO_TEST_CASE(calling_error_does_not_override_a_stop_transition)
 {
     for (int i = 0; i < 100; ++i)
     {
-        calling_error_does_not_override_a_stop_transition_Task task;
-        task.start();
-        while(!task.inRunTimeError()) {
-            usleep(100);
+        BOOST_TEST_CONTEXT("iteration " << i) {
+            calling_error_does_not_override_a_stop_transition_Task task;
+            task.start();
+            while(!task.inRunTimeError()) {
+                usleep(100);
+            }
+            bool stopped = task.stop();
+            if (!stopped)
+                task.stop(); // leave the fixture destructible after a failed assertion
+            BOOST_REQUIRE(stopped);
+            BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTaskState());
+            BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTargetState());
         }
-        task.stop();
-        BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTaskState());
-        BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTargetState());
     }
 }
 
@@ -657,7 +662,6 @@ class calling_recover_does_not_override_a_stop_transition_Task : public RTT::Tas
 {
 public:
     bool mRecovered;
-    TaskState mTargetState;
     calling_recover_does_not_override_a_stop_transition_Task()
         : TaskContext("test"), mRecovered(true) {} // true is an error
     void updateHook() { error(); }
@@ -674,15 +678,20 @@ BOOST_AUTO_TEST_CASE(calling_recover_does_not_override_a_stop_transition)
 {
     for (int i = 0; i < 100; ++i)
     {
-        calling_recover_does_not_override_a_stop_transition_Task task;
-        task.start();
-        while(!task.inRunTimeError()) {
-            usleep(100);
+        BOOST_TEST_CONTEXT("iteration " << i) {
+            calling_recover_does_not_override_a_stop_transition_Task task;
+            task.start();
+            while(!task.inRunTimeError()) {
+                usleep(100);
+            }
+            bool stopped = task.stop();
+            if (!stopped)
+                task.stop(); // leave the fixture destructible after a failed assertion
+            BOOST_REQUIRE(stopped);
+            BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTaskState());
+            BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTargetState());
+            BOOST_REQUIRE(!task.mRecovered);
         }
-        task.stop();
-        BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTaskState());
-        BOOST_REQUIRE_EQUAL(RTT::TaskContext::Stopped, task.getTargetState());
-        BOOST_REQUIRE(!task.mRecovered);
     }
 }
 

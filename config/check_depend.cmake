@@ -207,6 +207,7 @@ if(OROCOS_TARGET STREQUAL "gnulinux")
 
   include(CheckLibraryExists)
   check_library_exists(pthread "pthread_setname_np" "" ORO_HAVE_PTHREAD_SETNAME_NP)
+  check_library_exists(pthread "pthread_mutex_clocklock" "" ORO_HAVE_PTHREAD_MUTEX_CLOCKLOCK)
 
   add_definitions( -Wall )
 

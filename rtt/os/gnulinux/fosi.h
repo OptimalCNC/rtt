@@ -246,22 +246,32 @@ extern "C"
 
     static inline int rtos_mutex_trylock_for( rt_mutex_t* m, NANO_TIME relative_time)
     {
+#ifdef ORO_HAVE_PTHREAD_MUTEX_CLOCKLOCK
+        TIME_SPEC arg_time = ticks2timespec( rtos_get_time_ns() + relative_time );
+        return pthread_mutex_clocklock(m, CLOCK_MONOTONIC, &arg_time);
+#else
         // pthread_mutex_timedlock() does not support relative timeouts, nor CLOCK_MONOTONIC.
         // Workaround: add the relative time period to an absolute time retrieved
         // by rtos_get_realtime_ns() using CLOCK_REALTIME (may be affected by time
         // adjustments while waiting)
         TIME_SPEC arg_time = ticks2timespec( rtos_get_realtime_ns() + relative_time );
         return pthread_mutex_timedlock(m, &arg_time);
+#endif
     }
 
     static inline int rtos_mutex_rec_trylock_for( rt_rec_mutex_t* m, NANO_TIME relative_time)
     {
+#ifdef ORO_HAVE_PTHREAD_MUTEX_CLOCKLOCK
+        TIME_SPEC arg_time = ticks2timespec( rtos_get_time_ns() + relative_time );
+        return pthread_mutex_clocklock(m, CLOCK_MONOTONIC, &arg_time);
+#else
         // pthread_mutex_timedlock() does not support relative timeouts, nor CLOCK_MONOTONIC.
         // Workaround: add the relative time period to an absolute time retrieved
         // by rtos_get_realtime_ns() using CLOCK_REALTIME (may be affected by time
         // adjustments while waiting)
         TIME_SPEC arg_time = ticks2timespec( rtos_get_realtime_ns() + relative_time );
         return pthread_mutex_timedlock(m, &arg_time);
+#endif
     }
 
     static inline int rtos_mutex_lock_until( rt_mutex_t* m, NANO_TIME abs_time)
