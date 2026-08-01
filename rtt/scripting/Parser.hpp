@@ -38,6 +38,7 @@
 #ifndef EXECUTION_PARSER_HPP
 #define EXECUTION_PARSER_HPP
 
+#include <cstddef>
 #include <iosfwd>
 #include <utility>
 #include <map>
@@ -66,6 +67,9 @@ namespace RTT
     {
         ExecutionEngine* mcaller;
     public:
+        static constexpr std::size_t MaxInputSize = 4U * 1024U * 1024U;
+        static constexpr std::size_t MaxNestingDepth = 128U;
+
         /**
          * Create a parser and allow to explicitly specify which
          * TaskContext's ExecutionEngine is calling it. This allows to generate the correct

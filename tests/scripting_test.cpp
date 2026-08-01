@@ -314,6 +314,82 @@ BOOST_AUTO_TEST_CASE(TestSingleInputParsersRequireCompleteInput)
     tc->provides()->removeValue(complete_name);
 }
 
+BOOST_AUTO_TEST_CASE(TestParserRejectsOversizedInputBeforeExecution)
+{
+    Parser parser(caller->engine());
+    std::string oversized_input = "test.increase()";
+    oversized_input.resize(Parser::MaxInputSize + 1U, ' ');
+
+    i = 0;
+    BOOST_CHECK_THROW(
+        parser.parseExpression(oversized_input, tc),
+        parse_exception);
+    BOOST_CHECK_EQUAL(i, 0);
+
+    PluginLoader::Instance()->loadService("scripting", tc);
+    boost::shared_ptr<Scripting> scripting =
+        tc->getProvider<Scripting>("scripting");
+    BOOST_REQUIRE(scripting);
+    BOOST_CHECK(!scripting->eval(oversized_input));
+    BOOST_CHECK_EQUAL(i, 0);
+
+    BOOST_REQUIRE(scripting->eval("test.increase()"));
+    BOOST_CHECK_EQUAL(i, 1);
+}
+
+BOOST_AUTO_TEST_CASE(TestParserRejectsExcessiveNestingAndRecovers)
+{
+    Parser parser(caller->engine());
+    const std::vector<std::pair<char, char> > delimiters = {
+        std::make_pair('(', ')'),
+        std::make_pair('[', ']'),
+        std::make_pair('{', '}')
+    };
+
+    i = 0;
+    for (const std::pair<char, char>& delimiter : delimiters) {
+        std::string nested(Parser::MaxNestingDepth + 1U, delimiter.first);
+        nested += "test.increase()";
+        nested.append(Parser::MaxNestingDepth + 1U, delimiter.second);
+
+        try {
+            parser.parseExpression(nested, tc);
+            BOOST_FAIL("The parser accepted excessive nesting");
+        } catch (const parse_exception& error) {
+            BOOST_CHECK(
+                error.what().find("nesting depth limit") !=
+                std::string::npos);
+        }
+    }
+    BOOST_CHECK_EQUAL(i, 0);
+
+    DataSourceBase::shared_ptr result =
+        parser.parseExpression("test.increase()", tc);
+    BOOST_REQUIRE(result);
+    result->evaluate();
+    BOOST_CHECK_EQUAL(i, 1);
+}
+
+BOOST_AUTO_TEST_CASE(TestParserNestingGuardIgnoresLiteralsAndComments)
+{
+    Parser parser(caller->engine());
+    const std::string delimiters(Parser::MaxNestingDepth + 1U, '(');
+
+    DataSourceBase::shared_ptr literal =
+        parser.parseExpression("\"" + delimiters + "\"", tc);
+    BOOST_REQUIRE(literal);
+
+    i = 0;
+    const std::vector<std::string> scripts = {
+        "# " + delimiters + "\ntest.increase()",
+        "// " + delimiters + "\ntest.increase()",
+        "/* " + delimiters + " */\ntest.increase()"
+    };
+    for (const std::string& script : scripts)
+        parser.runScript(script, tc, 0, "delimiter-comments");
+    BOOST_CHECK_EQUAL(i, 3);
+}
+
 BOOST_AUTO_TEST_CASE(TestCallResultIndexing)
 {
     Parser parser(caller->engine());

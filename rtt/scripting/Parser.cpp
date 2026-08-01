@@ -63,6 +63,15 @@ namespace RTT
 
   namespace
   {
+    enum class InputRegion
+    {
+      Code,
+      StringLiteral,
+      CharacterLiteral,
+      LineComment,
+      BlockComment
+    };
+
     TaskContext* requireTaskContext(TaskContext* context)
     {
       if (!context) {
@@ -70,6 +79,106 @@ namespace RTT
             "Parser requires a valid TaskContext.");
       }
       return context;
+    }
+
+    void validateParserInput(const std::string& input)
+    {
+      if (input.size() > Parser::MaxInputSize) {
+        throw parse_exception_syntactic_error(
+            "Script input exceeds the " +
+            std::to_string(Parser::MaxInputSize) + " byte limit.");
+      }
+
+      std::size_t nesting_depth = 0;
+      std::size_t parentheses = 0;
+      std::size_t brackets = 0;
+      std::size_t braces = 0;
+      InputRegion region = InputRegion::Code;
+      bool escaped = false;
+
+      const auto openDelimiter = [&](std::size_t& delimiter_depth) {
+        ++delimiter_depth;
+        ++nesting_depth;
+        if (nesting_depth > Parser::MaxNestingDepth) {
+          throw parse_exception_syntactic_error(
+              "Script input exceeds the nesting depth limit of " +
+              std::to_string(Parser::MaxNestingDepth) + ".");
+        }
+      };
+      const auto closeDelimiter = [&](std::size_t& delimiter_depth) {
+        if (delimiter_depth != 0) {
+          --delimiter_depth;
+          --nesting_depth;
+        }
+      };
+
+      for (std::size_t index = 0; index < input.size(); ++index) {
+        const char current = input[index];
+
+        if (region == InputRegion::LineComment) {
+          if (current == '\n' || current == '\r')
+            region = InputRegion::Code;
+          continue;
+        }
+        if (region == InputRegion::BlockComment) {
+          if (current == '*' && index + 1U < input.size() &&
+              input[index + 1U] == '/') {
+            region = InputRegion::Code;
+            ++index;
+          }
+          continue;
+        }
+        if (region == InputRegion::StringLiteral ||
+            region == InputRegion::CharacterLiteral) {
+          if (escaped) {
+            escaped = false;
+          } else if (current == '\\') {
+            escaped = true;
+          } else if ((region == InputRegion::StringLiteral && current == '"') ||
+                     (region == InputRegion::CharacterLiteral && current == '\'')) {
+            region = InputRegion::Code;
+          }
+          continue;
+        }
+
+        if (current == '#') {
+          region = InputRegion::LineComment;
+        } else if (current == '/' && index + 1U < input.size() &&
+                   input[index + 1U] == '/') {
+          region = InputRegion::LineComment;
+          ++index;
+        } else if (current == '/' && index + 1U < input.size() &&
+                   input[index + 1U] == '*') {
+          region = InputRegion::BlockComment;
+          ++index;
+        } else if (current == '"') {
+          region = InputRegion::StringLiteral;
+        } else if (current == '\'') {
+          region = InputRegion::CharacterLiteral;
+        } else if (current == '(') {
+          openDelimiter(parentheses);
+        } else if (current == '[') {
+          openDelimiter(brackets);
+        } else if (current == '{') {
+          openDelimiter(braces);
+        } else if (current == ')') {
+          closeDelimiter(parentheses);
+        } else if (current == ']') {
+          closeDelimiter(brackets);
+        } else if (current == '}') {
+          closeDelimiter(braces);
+        }
+      }
+    }
+
+    void validateFileParserInput(
+        const std::string& input, const std::string& filename)
+    {
+      try {
+        validateParserInput(input);
+      } catch (const parse_exception& error) {
+        throw file_parse_exception(error.copy(), filename, 1, 1);
+      }
     }
   }
 
@@ -84,6 +193,7 @@ namespace RTT
 
   void Parser::runScript(std::string const& code, TaskContext* mowner, ScriptingService*, std::string const& filename ) {
       mowner = requireTaskContext(mowner);
+      validateFileParserInput(code, filename);
       our_buffer_t script(code + "\n"); // work around mandatory trailing newline/eos for statements.
       our_pos_iter_t parsebegin( script.begin(), script.end(), filename );
       our_pos_iter_t parseend( script.end(), script.end(), filename );
@@ -105,6 +215,7 @@ namespace RTT
   Parser::ParsedFunctions Parser::parseFunction( const std::string& text, TaskContext* c, const std::string& filename)
   {
     c = requireTaskContext(c);
+    validateFileParserInput(text, filename);
     our_buffer_t function(text);
     our_pos_iter_t parsebegin( function.begin(), function.end(), filename );
     our_pos_iter_t parseend( function.end(), function.end(), filename );
@@ -118,6 +229,7 @@ namespace RTT
   Parser::ParsedPrograms Parser::parseProgram( const std::string& text, TaskContext* c, const std::string& filename)
   {
     c = requireTaskContext(c);
+    validateFileParserInput(text, filename);
     our_buffer_t program(text);
     our_pos_iter_t parsebegin( program.begin(), program.end(), filename );
     our_pos_iter_t parseend( program.end(),program.end(),filename );
@@ -135,6 +247,7 @@ namespace RTT
       // This code is copied from parseProgram()
 
     c = requireTaskContext(c);
+    validateFileParserInput(text, filename);
 
     our_buffer_t program(text);
     our_pos_iter_t parsebegin( program.begin(), program.end(), filename );
@@ -160,6 +273,7 @@ namespace RTT
                                               TaskContext* tc )
   {
     tc = requireTaskContext(tc);
+    validateParserInput(s);
     our_buffer_t scopy(s);
     our_pos_iter_t parsebegin( scopy.begin(), scopy.end(), "teststring" );
     our_pos_iter_t parseend( scopy.end(), scopy.end(), "teststring" );
@@ -198,6 +312,7 @@ namespace RTT
                                            TaskContext* tc )
   {
     tc = requireTaskContext(tc);
+    validateParserInput(_s);
     std::string s( _s );
 
     our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
@@ -244,6 +359,7 @@ namespace RTT
                                                        TaskContext* tc )
   {
     tc = requireTaskContext(tc);
+    validateParserInput(_s);
     std::string s( _s );
 
     our_pos_iter_t parsebegin( s.begin(), s.end(), "teststring" );
