@@ -43,6 +43,7 @@
 #include "DataSource.hpp"
 #include "DataSourceTypeInfo.hpp"
 #include "Reference.hpp"
+#include <stdexcept>
 #include <vector>
 
 namespace RTT
@@ -652,7 +653,7 @@ namespace RTT
                 return BoundType::clone();
             }
 
-            virtual UnboundDataSource<BoundType>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& replace) const;
+            virtual BoundType* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& replace) const;
         };
 
   /**

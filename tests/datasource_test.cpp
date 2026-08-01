@@ -31,6 +31,8 @@
 
 #include <boost/serialization/array.hpp>
 
+#include <type_traits>
+
 #include <os/fosi.h>
 #include "datasource_fixture.hpp"
 
@@ -67,6 +69,23 @@ BOOST_AUTO_TEST_CASE( testValueDataSource )
     BOOST_CHECK_EQUAL( d->set(), atype );
     atype.a = -atype.a;
     BOOST_CHECK_EQUAL( d->set(), atype_orig );
+}
+
+BOOST_AUTO_TEST_CASE( testUnboundDataSourceReusesBoundReplacement )
+{
+    typedef ValueDataSource<bool> BoundDataSource;
+    typedef UnboundDataSource<BoundDataSource> UnboundBoolDataSource;
+
+    UnboundBoolDataSource::shared_ptr unbound =
+        new UnboundBoolDataSource(true);
+    BoundDataSource::shared_ptr bound(unbound->clone());
+    std::map<const base::DataSourceBase*, base::DataSourceBase*> replacements;
+    replacements[unbound.get()] = bound.get();
+
+    static_assert(std::is_same<
+        decltype(unbound->copy(replacements)), BoundDataSource*>::value,
+        "UnboundDataSource::copy must also accept bound clone replacements");
+    BOOST_CHECK_EQUAL(unbound->copy(replacements), bound.get());
 }
 
 // Test constant DataSource.
@@ -184,4 +203,3 @@ BOOST_AUTO_TEST_CASE( testArrayPartDataSource )
 
 
 BOOST_AUTO_TEST_SUITE_END()
-

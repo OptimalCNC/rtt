@@ -228,11 +228,18 @@ namespace RTT
         }
 
         template< typename BoundT>
-        UnboundDataSource<BoundT>* UnboundDataSource<BoundT>::copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& replace) const {
-            if ( replace[this] != 0 )
-                return static_cast<UnboundDataSource<BoundT>*>(replace[this]);
-            replace[this] = new UnboundDataSource<BoundT>( this->get() );
-            return static_cast<UnboundDataSource<BoundT>*>(replace[this]);
+        BoundT* UnboundDataSource<BoundT>::copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& replace) const {
+            typename std::map<const base::DataSourceBase*, base::DataSourceBase*>::iterator existing = replace.find(this);
+            if ( existing != replace.end() && existing->second != 0 ) {
+                BoundT* bound = dynamic_cast<BoundT*>(existing->second);
+                if ( !bound )
+                    throw std::runtime_error("UnboundDataSource replacement has an incompatible type");
+                return bound;
+            }
+
+            BoundT* copy = new UnboundDataSource<BoundT>( this->get() );
+            replace[this] = copy;
+            return copy;
         }
     }
 }
