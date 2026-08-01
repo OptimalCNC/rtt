@@ -48,7 +48,7 @@ using namespace RTT::detail;
 using namespace std;
 
 PortInterface::PortInterface(const std::string& name)
-    : name(name), fullName(name), iface(0), cmanager(this) {}
+    : name(name), fullName(name), iface(0), connection_lock(), cmanager(this) {}
 
 PortInterface::~PortInterface() {}
 

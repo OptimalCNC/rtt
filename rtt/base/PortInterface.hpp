@@ -66,8 +66,10 @@ namespace RTT
 
     protected:
         DataFlowInterface* iface;
-        internal::ConnectionManager cmanager;
+        // ConnectionManager locks this mutex from its destructor, so the
+        // mutex must be constructed first and destroyed last.
         os::MutexRecursive connection_lock;
+        internal::ConnectionManager cmanager;
         friend class internal::PortConnectionLock;
 
         PortInterface(const std::string& name);
