@@ -24,6 +24,8 @@
 #include <PropertyBag.hpp>
 #include <types/PropertyComposition.hpp>
 
+#include <fstream>
+
 #include "unit.hpp"
 
 class PropertyMarshTest
@@ -82,6 +84,34 @@ BOOST_AUTO_TEST_CASE( testPropMarsh )
     BOOST_CHECK( pi.get() == -1 );
     BOOST_CHECK( pi.getDescription() == "p1d" );
     deletePropertyBag( target );
+}
+
+BOOST_AUTO_TEST_CASE( testPropMarshPreservesSplitCharacterData )
+{
+    const std::string filename = "testPropMarshSplitCharacters.tst";
+    {
+        std::ofstream file(filename.c_str());
+        BOOST_REQUIRE(file);
+        file << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+             << "<!DOCTYPE properties SYSTEM \"cpf.dtd\">\n"
+             << "<properties>\n"
+             << "  <simple name=\"text\" type=\"string\">\n"
+             << "    <description>left&amp;right</description>\n"
+             << "    <value>alpha&amp;omega</value>\n"
+             << "  </simple>\n"
+             << "</properties>\n";
+    }
+
+    PropertyBag target;
+    PropertyDemarshaller demarshaller(filename);
+    BOOST_REQUIRE(demarshaller.deserialize(target));
+
+    Property<std::string> text = target.getProperty("text");
+    BOOST_REQUIRE(text.ready());
+    BOOST_CHECK_EQUAL(text.getDescription(), "left&right");
+    BOOST_CHECK_EQUAL(text.get(), "alpha&omega");
+
+    deletePropertyBag(target);
 }
 
 //! Test writing a vector to file and back in.

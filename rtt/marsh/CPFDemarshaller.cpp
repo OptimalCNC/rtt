@@ -86,6 +86,14 @@ namespace RTT
         return false;
     }
 
+    template <typename Size>
+    inline bool XMLChToStdString(const XMLCh* const c, Size length, std::string& res)
+    {
+        std::vector<XMLCh> terminated(c, c + length);
+        terminated.push_back(0);
+        return XMLChToStdString(terminated.data(), res);
+    }
+
     inline std::string  XMLgetString(const XMLCh* const c)
     {
         std::string res;
@@ -129,9 +137,9 @@ namespace RTT
                 bag_stack.push(std::make_pair(&bag, dummy));
             }
 
-            void endElement( const XMLCh* const uri,
-                             const XMLCh* const localname,
-                             const XMLCh* const qname )
+            void endElement( const XMLCh* const,
+                             const XMLCh* const,
+                             const XMLCh* const )
             {
                 //char *ln = XMLString::transcode( localname );
 
@@ -270,9 +278,9 @@ namespace RTT
             }
 
 
-            void startElement( const XMLCh* const uri,
+            void startElement( const XMLCh* const,
                                const XMLCh* const localname,
-                               const XMLCh* const qname,
+                               const XMLCh* const,
                                const Attributes& attributes )
             {
                 std::string ln;
@@ -382,15 +390,17 @@ namespace RTT
             void characters( const XMLCh* const chars, const XMLSize_t length )
 #endif
             {
-                //char *ln = XMLString::transcode( chars );
+                std::string chunk;
+                if (!XMLChToStdString(chars, length, chunk))
+                    return;
                 switch ( tag_stack.top() )
                 {
                     case TAG_DESCRIPTION:
-                        XMLChToStdString( chars, description);
+                        description += chunk;
                         break;
 
                     case TAG_VALUE:
-                        XMLChToStdString( chars, value_string);
+                        value_string += chunk;
                         break;
                     case TAG_STRUCT:
                     case TAG_SIMPLE:
