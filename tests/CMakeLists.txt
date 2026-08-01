@@ -2,6 +2,10 @@
 Include(AddUnitTest.cmake)
 
 IF (BUILD_TESTING)
+   if(ENABLE_SCRIPTING_FUZZING AND NOT PLUGINS_ENABLE_SCRIPTING)
+     message(FATAL_ERROR
+       "ENABLE_SCRIPTING_FUZZING requires PLUGINS_ENABLE_SCRIPTING=ON.")
+   endif()
    if (NOT RUNTIME_OUTPUT_DIRECTORY)
         set(RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
    endif()
@@ -240,6 +244,45 @@ IF (BUILD_TESTING)
     ADD_UNIT_TEST(slave_test ORO_EXTRA_TESTS "${TEST_LIBRARIES}" )
     if(PLUGINS_ENABLE_SCRIPTING)
         ADD_UNIT_TEST(scripting_test ORO_EXTRA_TESTS "${TEST_LIBRARIES};${SCRIPTING_LIBRARIES}" )
+        FILE(GLOB SCRIPTING_FUZZ_SEEDS
+          "${CMAKE_CURRENT_SOURCE_DIR}/fuzz/corpus/*")
+        ADD_EXECUTABLE(scripting_fuzz_seed_test
+          scripting_fuzz.cpp
+          scripting_fuzz_seed_test.cpp)
+        TARGET_COMPILE_DEFINITIONS(scripting_fuzz_seed_test PRIVATE
+          ${COMPILE_DEFS}
+          RTT_FUZZ_COMPONENT_PATH="${PROJ_BINARY_DIR}/rtt")
+        TARGET_LINK_LIBRARIES(scripting_fuzz_seed_test
+          orocos-rtt-${OROCOS_TARGET}_dynamic
+          rtt-typekit-${OROCOS_TARGET}_plugin
+          ${SCRIPTING_LIBRARIES}
+          ${OROCOS-RTT_USER_LINK_LIBS})
+        ADD_TEST(scripting_fuzz_seed_test
+          ${RUNTIME_OUTPUT_DIRECTORY}/scripting_fuzz_seed_test
+          ${SCRIPTING_FUZZ_SEEDS})
+        LIST(APPEND ORO_EXTRA_TESTS scripting_fuzz_seed_test)
+
+        if(ENABLE_SCRIPTING_FUZZING)
+          if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            MESSAGE(FATAL_ERROR
+              "ENABLE_SCRIPTING_FUZZING requires Clang with libFuzzer support.")
+          endif()
+          ADD_EXECUTABLE(scripting_fuzzer scripting_fuzz.cpp)
+          TARGET_COMPILE_DEFINITIONS(scripting_fuzzer PRIVATE
+            ${COMPILE_DEFS}
+            RTT_FUZZ_COMPONENT_PATH="${PROJ_BINARY_DIR}/rtt")
+          TARGET_COMPILE_OPTIONS(scripting_fuzzer PRIVATE
+            -fno-omit-frame-pointer
+            -fsanitize=fuzzer-no-link,address,undefined)
+          SET_PROPERTY(TARGET scripting_fuzzer APPEND_STRING PROPERTY
+            LINK_FLAGS " -fsanitize=fuzzer,address,undefined")
+          TARGET_LINK_LIBRARIES(scripting_fuzzer
+            orocos-rtt-${OROCOS_TARGET}_dynamic
+            rtt-typekit-${OROCOS_TARGET}_plugin
+            ${SCRIPTING_LIBRARIES}
+            ${OROCOS-RTT_USER_LINK_LIBS})
+        endif()
+
         ADD_UNIT_TEST(types_test ORO_EXTRA_TESTS "${TEST_LIBRARIES};${SCRIPTING_LIBRARIES}" )
         ADD_UNIT_TEST(program_test ORO_EXTRA_TESTS "${TEST_LIBRARIES};${SCRIPTING_LIBRARIES}" )
         ADD_UNIT_TEST(state_test ORO_EXTRA_TESTS "${TEST_LIBRARIES};${SCRIPTING_LIBRARIES}" )

@@ -1,0 +1,4 @@
+4StateMachine FuzzMachine {
+  initial state ready {}
+}
+RootMachine FuzzMachine fuzz_machine;

@@ -87,6 +87,13 @@ ENDIF(BUILD_TESTING)
 # turn on code coverage of tests
 include (CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(BUILD_ENABLE_COVERAGE "Turn on code coverage of all tests." OFF "ENABLE_TESTS" OFF)
+OPTION(ENABLE_SCRIPTING_FUZZING
+  "Build the Clang libFuzzer target for the scripting parser."
+  OFF)
+IF(ENABLE_SCRIPTING_FUZZING AND NOT ENABLE_TESTS)
+  MESSAGE(FATAL_ERROR
+    "ENABLE_SCRIPTING_FUZZING requires ENABLE_TESTS=ON.")
+ENDIF()
 IF (BUILD_ENABLE_COVERAGE)
   # coverage requires test
   SET(ENABLE_TESTS ON CACHE BOOL "" FORCE)
