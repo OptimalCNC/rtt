@@ -54,7 +54,7 @@ namespace RTT
     using namespace std;
     using namespace boost;
 
-    error_status<> PeerParser::handle_no_peer(scanner_t const& scan, parser_error<PeerErrors, iter_t>&e )
+    error_status<> PeerParser::handle_no_peer(scanner_t const& scan, parser_error<PeerErrors, iter_t>& )
     {
         int length = advance_on_error;
         // before, this was not necessary !

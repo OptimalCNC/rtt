@@ -396,7 +396,7 @@ namespace RTT
         return ok;
     }
 
-    bool ExecutionEngine::stopTask(TaskCore* task) {
+    bool ExecutionEngine::stopTask(TaskCore*) {
         // stop and start where former will call breakLoop() in case of non-periodic.
         // this is a forced synchronization point, since stop() will only return when
         // step() returned.

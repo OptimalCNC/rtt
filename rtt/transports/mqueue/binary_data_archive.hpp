@@ -157,7 +157,7 @@ namespace RTT
              * @param new_address
              * @param old_address
              */
-            void reset_object_address(const void * new_address, const void * old_address) {}
+            void reset_object_address(const void*, const void*) {}
 
             /**
              * Loading Archive Concept::delete_created_pointers()
@@ -180,8 +180,8 @@ namespace RTT
              * @param bos
              */
             void load_object(
-                void *t,
-                const /* BOOST_ARCHIVE_DECL(BOOST_PP_EMPTY()) */ boost::archive::detail::basic_iserializer & bis
+                void*,
+                const /* BOOST_ARCHIVE_DECL(BOOST_PP_EMPTY()) */ boost::archive::detail::basic_iserializer&
             ) {
                 assert(false);
             }
@@ -430,8 +430,8 @@ namespace RTT
              * @param bos
              */
             void save_object(
-                const void *x,
-                const boost::archive::detail::basic_oserializer & bos
+                const void*,
+                const boost::archive::detail::basic_oserializer&
             ) {
                 assert(false);
                 //(bos.save_object_data)(*this, x);
@@ -495,11 +495,11 @@ namespace RTT
             }
 
 #if BOOST_VERSION >= 104600
-            binary_data_oarchive &save_a_type(const boost::serialization::version_type & t,boost::mpl::true_){
+            binary_data_oarchive &save_a_type(const boost::serialization::version_type&,boost::mpl::true_){
                 // ignored, the load function is never called, so we don't store it.
                 return *this;
             }
-            binary_data_oarchive &save_a_type(const boost::serialization::item_version_type & t,boost::mpl::true_){
+            binary_data_oarchive &save_a_type(const boost::serialization::item_version_type&,boost::mpl::true_){
                 // ignored, the load function is never called, so we don't store it.
                 return *this;
             }

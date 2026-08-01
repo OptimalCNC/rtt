@@ -94,7 +94,7 @@ namespace RTT
          * Create a lock-based list wich can store \a lsize elements.
          * @param lsize the initial capacity of the list.
          */
-        ListLocked(unsigned int lsize, unsigned int unused = 0 )
+        ListLocked(unsigned int lsize, unsigned int = 0 )
             :required(lsize)
         {
             for(unsigned int i=0; i <lsize; ++i)

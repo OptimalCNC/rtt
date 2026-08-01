@@ -88,8 +88,8 @@ namespace RTT
                 return in.mnames;
             }
 
-            virtual base::DataSourceBase::shared_ptr getMember(base::DataSourceBase::shared_ptr item,
-                                                             base::DataSourceBase::shared_ptr id) const {
+            virtual base::DataSourceBase::shared_ptr getMember(base::DataSourceBase::shared_ptr,
+                                                             base::DataSourceBase::shared_ptr) const {
                 // user tried to pass the member name by data source, but we can't read out this datasource after getMember() returns.
                 // ie, we could only read out id as a string and then call the getMember below.
                 // type_discovery requires the name right now and does not allow to delay the name, unless we discover the whole type,
@@ -142,7 +142,7 @@ namespace RTT
                 return false;
             }
 
-        virtual bool resize(base::DataSourceBase::shared_ptr arg, int size) const
+        virtual bool resize(base::DataSourceBase::shared_ptr, int) const
             {
                 return false;
             }

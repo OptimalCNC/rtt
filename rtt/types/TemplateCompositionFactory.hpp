@@ -100,7 +100,7 @@ namespace RTT {
         /**
          * User, implement this function in case you want to control reading the XML data format.
          */
-        virtual bool composeTypeImpl(const PropertyBag& source,  typename internal::AssignableDataSource<T>::reference_t result) const {
+        virtual bool composeTypeImpl(const PropertyBag&, typename internal::AssignableDataSource<T>::reference_t) const {
             return false;
         }
 
@@ -108,7 +108,7 @@ namespace RTT {
          * User, implement this function in case you want to control writing the XML data format.
          * Add the structural elements of source to targetbag.
          */
-        virtual bool decomposeTypeImpl( typename internal::AssignableDataSource<T>::const_reference_t source, PropertyBag& targetbag ) const {
+        virtual bool decomposeTypeImpl( typename internal::AssignableDataSource<T>::const_reference_t, PropertyBag& ) const {
             return false;
         }
 

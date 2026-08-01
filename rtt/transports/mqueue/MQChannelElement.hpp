@@ -148,7 +148,7 @@ namespace RTT
              * @param sample stores the resulting data sample.
              * @return true if an item could be read.
              */
-            FlowStatus read(typename base::ChannelElement<T>::reference_t sample, bool copy_old_data)
+            FlowStatus read(typename base::ChannelElement<T>::reference_t, bool)
             {
                 throw std::runtime_error("not implemented");
             }

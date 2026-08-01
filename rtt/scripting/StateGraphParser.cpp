@@ -902,7 +902,7 @@ namespace RTT
         saveStartPos = mpositer;
     }
 
-    void StateGraphParser::saveText( iter_t begin, iter_t end ) {
+    void StateGraphParser::saveText( iter_t, iter_t end ) {
         assert( curmachinename.length() != 0 );
         //cerr << std::string(begin, end)<<endl;
         if ( machinebuilders.count( curmachinename ) == 0 )

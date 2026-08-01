@@ -82,7 +82,7 @@ namespace RTT
       }
   }
 
-  void Parser::runScript(std::string const& code, TaskContext* mowner, ScriptingService* service, std::string const& filename ) {
+  void Parser::runScript(std::string const& code, TaskContext* mowner, ScriptingService*, std::string const& filename ) {
       mowner = requireTaskContext(mowner);
       our_buffer_t script(code + "\n"); // work around mandatory trailing newline/eos for statements.
       our_pos_iter_t parsebegin( script.begin(), script.end(), filename );

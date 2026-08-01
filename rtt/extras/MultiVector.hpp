@@ -155,6 +155,8 @@ namespace RTT
                 data[ i ] = 0;
         }
 
+        MultiVector(const MultiVector&) = default;
+
         /**
          * Creates a vector from a std::vector.
          * If there are more items in vect than the size of this

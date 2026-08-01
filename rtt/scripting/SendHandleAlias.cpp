@@ -67,7 +67,7 @@ namespace RTT
     }
     SendHandleAlias* SendHandleAlias::copy(std::map<
             const base::DataSourceBase*, base::DataSourceBase*>& replacements,
-                                           bool inst)
+                                           [[maybe_unused]] bool inst)
     {
         // BIG NOTE: Instantiating a SendHandleAlias may/WILL happen too soon, not giving a chance
         // to the arguments to instantiate during copy... Once instantiation is over, we

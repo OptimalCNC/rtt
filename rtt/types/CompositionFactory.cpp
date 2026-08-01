@@ -41,7 +41,7 @@
 using namespace RTT;
 using namespace RTT::types;
 
-base::DataSourceBase::shared_ptr CompositionFactory::convertType(base::DataSourceBase::shared_ptr source) const
+base::DataSourceBase::shared_ptr CompositionFactory::convertType(base::DataSourceBase::shared_ptr) const
 {
     return base::DataSourceBase::shared_ptr();
 }
@@ -51,4 +51,3 @@ base::DataSourceBase::shared_ptr CompositionFactory::decomposeType(base::DataSou
     // return deprecated api in case user did not implement this.
     return convertType(source);
 }
-

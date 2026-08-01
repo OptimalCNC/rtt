@@ -403,7 +403,7 @@ namespace RTT
         throw_(iter_t(), reason);
     }
 
-    static error_status<> fail_rule(scanner_t const& scan, parser_error<std::string, iter_t>&e )
+    static error_status<> fail_rule(scanner_t const&, parser_error<std::string, iter_t>& )
     {
         return error_status<>( error_status<>::fail );
     }

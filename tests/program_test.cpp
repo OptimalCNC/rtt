@@ -664,7 +664,7 @@ void ProgramTest::loopProgram( ProgramInterfacePtr f)
 }
 
 
-void ProgramTest::finishProgram(TaskContext* tc, std::string prog_name)
+void ProgramTest::finishProgram(TaskContext*, std::string prog_name)
 {
     BOOST_REQUIRE( sa->getProgram(prog_name) );
     BOOST_CHECK( sa->getProgram( prog_name )->stop() );

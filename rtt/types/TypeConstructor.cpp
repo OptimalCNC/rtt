@@ -46,7 +46,7 @@ namespace RTT
 
     TypeConstructor::~TypeConstructor() {}
 
-    base::DataSourceBase::shared_ptr TypeConstructor::convert(base::DataSourceBase::shared_ptr arg) const
+    base::DataSourceBase::shared_ptr TypeConstructor::convert(base::DataSourceBase::shared_ptr) const
     {
         return base::DataSourceBase::shared_ptr();
     }

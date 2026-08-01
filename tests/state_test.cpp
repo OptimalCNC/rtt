@@ -1954,7 +1954,7 @@ void StateTest::doState(  const std::string& name, const std::string& prog, Task
     checkState(name, tc, test);
 }
 
-void StateTest::parseState(const std::string& prog, TaskContext* tc, bool test )
+void StateTest::parseState(const std::string& prog, TaskContext*, bool test )
 {
     // Alternative way: test ScriptingService as well.
     try {

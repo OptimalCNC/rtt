@@ -54,7 +54,7 @@ namespace RTT
     using namespace boost;
 
 
-    error_status<> PropertyParser::handle_no_property(scanner_t const& scan, parser_error<PropertyErrors, iter_t>&e )
+    error_status<> PropertyParser::handle_no_property(scanner_t const&, parser_error<PropertyErrors, iter_t>& )
     {
         //std::cerr<<"Returning accept"<<std::endl;
         // ok, got as far as possible, _property contains the furthest we got.
@@ -126,4 +126,3 @@ namespace RTT
         return propertylocator;
     }
 }
-

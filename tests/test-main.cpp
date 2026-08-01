@@ -20,7 +20,7 @@
 #include <os/main.h>
 #include <Logger.hpp>
 
-int ORO_main(int argc, char** argv)
+int ORO_main(int, char**)
 {
     RTT::Logger::log().logf(RTT::Logger::Info, "test-main",
                             "Hello ORO_main()");

@@ -187,7 +187,7 @@ namespace RTT
             return &lastSample;
         }
 
-        void Release(value_t *item)
+        void Release([[maybe_unused]] value_t *item)
         {
             //we do not need to release any memory, but we can check
             //if the other side messed up

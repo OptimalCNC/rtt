@@ -55,7 +55,7 @@ namespace RTT {
         pbi->introspect( *this );
     }
 
-    void PropertyIntrospection::introspect(PropertyBase* p )
+    void PropertyIntrospection::introspect(PropertyBase*)
     {
     	// nop
     }

@@ -32,7 +32,7 @@ struct MyStruct
     static bool copied;
 
     MyStruct() {}
-    MyStruct(MyStruct const& s) { copied = true; }
+    MyStruct(MyStruct const&) { copied = true; }
     ~MyStruct() { deleted = true; }
     MyStruct const* get_this() const { return this; }
 };

@@ -57,7 +57,7 @@ namespace RTT {
     //void ActionInterface::readArguments() {
     //}
 
-  ActionInterface* ActionInterface::copy( std::map<const DataSourceBase*, DataSourceBase*>& alreadyCloned ) const {
+  ActionInterface* ActionInterface::copy( std::map<const DataSourceBase*, DataSourceBase*>& ) const {
     return clone();
   }
 }

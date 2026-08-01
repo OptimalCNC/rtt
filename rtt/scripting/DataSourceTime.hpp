@@ -79,7 +79,7 @@ namespace RTT
             return new DataSourceTime();
         }
 
-        DataSourceTime* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& alreadyCloned ) const {
+        DataSourceTime* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& ) const {
             return new DataSourceTime();
         }
 

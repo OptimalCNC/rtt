@@ -127,7 +127,7 @@ namespace RTT {
         return getTypeInfo()->getMember( this, part_name );
     }
 
-    DataSourceBase::shared_ptr DataSourceBase::getMember( DataSourceBase::shared_ptr part_id, DataSourceBase::shared_ptr offset) {
+    DataSourceBase::shared_ptr DataSourceBase::getMember( DataSourceBase::shared_ptr part_id, DataSourceBase::shared_ptr) {
         return getTypeInfo()->getMember( this, part_id );
     }
 

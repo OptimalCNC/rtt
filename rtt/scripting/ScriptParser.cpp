@@ -74,7 +74,7 @@ namespace RTT
 
     }
 
-    error_status<> ScriptParser::handle_no_function(scanner_t const& scan, parser_error<std::string, iter_t>&e )
+    error_status<> ScriptParser::handle_no_function(scanner_t const&, parser_error<std::string, iter_t>& )
     {
         // only fail if the parser could not make sense of it, otherwise, rethrow:
         if ( programparser->parserUsed() == false )

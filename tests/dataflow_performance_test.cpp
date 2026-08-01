@@ -437,7 +437,7 @@ template <typename T, PortTypes> struct Adaptor;
 #ifndef _stringify
   #define _stringify(x) _stringify2(x)
   #ifndef _stringify2
-    #define _stringify2(x...) #x
+    #define _stringify2(...) #__VA_ARGS__
   #endif
 #endif
 
@@ -536,8 +536,9 @@ static void ResizeSample(T &sample, std::size_t size)
 }
 
 template <typename T, std::size_t N>
-static void ResizeSample(CopyAndAssignmentCounted<boost::array<T,N> > &sample, std::size_t size)
+static void ResizeSample(CopyAndAssignmentCounted<boost::array<T,N> > &, std::size_t size)
 {
+    (void)size;
     assert(size == N);
 }
 

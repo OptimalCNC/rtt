@@ -176,7 +176,7 @@ namespace RTT
             /**
              * Use getMember() for decomposition...
              */
-            virtual base::DataSourceBase::shared_ptr decomposeType(base::DataSourceBase::shared_ptr source) const
+            virtual base::DataSourceBase::shared_ptr decomposeType(base::DataSourceBase::shared_ptr) const
             {
                 return base::DataSourceBase::shared_ptr();
             }

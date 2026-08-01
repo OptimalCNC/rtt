@@ -219,7 +219,7 @@ namespace RTT
              * @param new_address
              * @param old_address
              */
-            void reset_object_address(const void * new_address, const void * old_address) {}
+            void reset_object_address(const void*, const void*) {}
 
             /**
              * Loading Archive Concept::delete_created_pointers()
@@ -240,7 +240,7 @@ namespace RTT
              * @param x
              * @param bos
              */
-            void load_object(void *x, const boost::archive::detail::basic_oserializer & bos)
+            void load_object(void*, const boost::archive::detail::basic_oserializer&)
             {
                 assert(false);
             }

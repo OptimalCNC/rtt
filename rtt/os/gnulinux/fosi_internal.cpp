@@ -206,7 +206,7 @@ namespace RTT
         return rv;
 	}
 
-	INTERNAL_QUAL void rtos_task_yield(RTOS_TASK* t) {
+	INTERNAL_QUAL void rtos_task_yield(RTOS_TASK*) {
 #if 0
         //under plain gnulinux, sched_yield may have little influence, so sleep
         // to force rescheduling of other threads.

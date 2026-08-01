@@ -66,7 +66,7 @@ namespace RTT {
         return false;
     }
 
-    void RunnableInterface::work(WorkReason reason) {}
+    void RunnableInterface::work(WorkReason) {}
 
     void RunnableInterface::setActivity( ActivityInterface* task ) {
         if (owner_act) {

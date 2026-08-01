@@ -320,7 +320,7 @@ namespace RTT
       rootc->provides()->addService( ptsk );
   }
 
-  void ProgramGraphParser::programtext( iter_t begin, iter_t end )
+  void ProgramGraphParser::programtext( iter_t, iter_t )
   {
       // we set it in the parse() function. It is set to the whole script such that line numbers are correct.
       //program_text = std::string(begin, end);

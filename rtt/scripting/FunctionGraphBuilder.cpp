@@ -83,7 +83,7 @@ namespace RTT {
         return func;
     }
 
-    void FunctionGraphBuilder::returnFunction( ConditionInterface* cond, int line )
+    void FunctionGraphBuilder::returnFunction( ConditionInterface* cond, int )
     {
         // connect the build node to the exitNode under a condition,
         // for example, the build implicit term condition.

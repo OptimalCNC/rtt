@@ -408,7 +408,7 @@ namespace RTT {
         return false;
     }
 
-    void StateMachine::changeState(StateInterface* newState, ProgramInterface* transProg, bool stepping) {
+    void StateMachine::changeState(StateInterface* newState, ProgramInterface* transProg, bool) {
         if ( newState == current )
             {
                 // this is only true if current state was selected in a transition of current.
@@ -499,7 +499,7 @@ namespace RTT {
 
     }
 
-    bool StateMachine::createEventTransition( ServicePtr sp, ExecutionEngine* target_engine,
+    bool StateMachine::createEventTransition( ServicePtr sp, ExecutionEngine*,
                                               const std::string& ename, vector<DataSourceBase::shared_ptr> args,
                                               StateInterface* from, StateInterface* to,
                                               ConditionInterface* guard, boost::shared_ptr<ProgramInterface> transprog,
@@ -565,7 +565,7 @@ namespace RTT {
         return true;
     }
 
-    bool StateMachine::eventTransition(StateInterface* from, ConditionInterface* c, ProgramInterface* p, StateInterface* to, ProgramInterface* elsep, StateInterface* elseto )
+    bool StateMachine::eventTransition(StateInterface* from, ConditionInterface* c, ProgramInterface* p, StateInterface* to, ProgramInterface*, StateInterface* )
     {
         // called by event to begin Transition to 'to'.
         // This interrupts the current run program at yield point

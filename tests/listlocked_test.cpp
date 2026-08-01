@@ -28,7 +28,7 @@ using namespace std;
 using namespace RTT;
 using namespace boost;
 
-void foo(double d)
+void foo(double)
 {
 }
 
@@ -42,7 +42,7 @@ struct ListTest
 
     BufferType mlist;
 
-    void mfoo(double d)
+    void mfoo(double)
     {}
 
     double mcfoo(Cont& c)
@@ -65,11 +65,11 @@ struct ListTest
     }
 };
 
-void cfoo(ListTest::Cont& c)
+void cfoo(ListTest::Cont&)
 {
 }
 
-bool iffoo(double d)
+bool iffoo(double)
 {
     return true;
 }
@@ -118,4 +118,3 @@ BOOST_AUTO_TEST_CASE( test_apply )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

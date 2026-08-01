@@ -47,7 +47,7 @@ FileDescriptorSimulationActivity::FileDescriptorSimulationActivity(int priority,
     (void)name;
 }
 
-FileDescriptorSimulationActivity::FileDescriptorSimulationActivity(int scheduler,
+FileDescriptorSimulationActivity::FileDescriptorSimulationActivity(int,
                                                                    int priority,
                                                                    base::RunnableInterface* _r,
                                                                    const std::string& name) :
@@ -124,7 +124,7 @@ bool FileDescriptorSimulationActivity::isWatched(int fd) const
     return false;
 }
 
-bool FileDescriptorSimulationActivity::isUpdated(int fd) const
+bool FileDescriptorSimulationActivity::isUpdated(int) const
 {
     return (base::RunnableInterface::IOReady == lastReason);
 }

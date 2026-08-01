@@ -65,7 +65,7 @@ namespace RTT
             MQSerializationProtocol() {
             }
 
-            virtual std::pair<void const*,int> fillBlob( base::DataSourceBase::shared_ptr source, void* blob, int size, void* cookie) const
+            virtual std::pair<void const*,int> fillBlob( base::DataSourceBase::shared_ptr source, void* blob, int size, void*) const
             {
                 namespace io = boost::iostreams;
                 typename internal::DataSource<T>::shared_ptr d = boost::dynamic_pointer_cast< internal::DataSource<T> >( source );
@@ -83,7 +83,7 @@ namespace RTT
             /**
             * Update \a target with the contents of \a blob which is an object of a \a protocol.
             */
-            virtual bool updateFromBlob(const void* blob, int size, base::DataSourceBase::shared_ptr target, void* cookie) const {
+            virtual bool updateFromBlob(const void* blob, int size, base::DataSourceBase::shared_ptr target, void*) const {
                 namespace io = boost::iostreams;
                 typename internal::AssignableDataSource<T>::shared_ptr ad = internal::AssignableDataSource<T>::narrow( target.get() );
                 if ( ad ) {
@@ -95,7 +95,7 @@ namespace RTT
                 return false;
             }
 
-            virtual unsigned int getSampleSize(base::DataSourceBase::shared_ptr sample, void* cookie) const {
+            virtual unsigned int getSampleSize(base::DataSourceBase::shared_ptr sample, void*) const {
                 typename internal::DataSource<T>::shared_ptr tsample = boost::dynamic_pointer_cast< internal::DataSource<T> >( sample );
                 if ( ! tsample ) {
                     Logger::log().logf(Logger::Error, "MQSerializationProtocol",

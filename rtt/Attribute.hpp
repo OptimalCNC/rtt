@@ -356,7 +356,7 @@ namespace RTT
             return new Constant<T>( mname, data.get() );
         }
 
-        Constant<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& replacements, bool instantiate )
+        Constant<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>&, bool )
         {
             // 'symbolic' copy, internal::ConstantDataSource returns 'this' on copy...
             Constant<T>* ret = new Constant<T>( mname, data.get() );

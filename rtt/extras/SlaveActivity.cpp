@@ -107,7 +107,7 @@ namespace RTT {
         return ~0;
     }
 
-    bool SlaveActivity::setCpuAffinity(unsigned cpu)
+    bool SlaveActivity::setCpuAffinity(unsigned)
     {
         return false;
     }
@@ -126,7 +126,7 @@ namespace RTT {
     {
     }
 
-    void SlaveActivity::work(base::RunnableInterface::WorkReason reason)
+    void SlaveActivity::work(base::RunnableInterface::WorkReason)
     {
     }
 

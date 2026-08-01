@@ -81,7 +81,7 @@ bool OutputPortInterface::addConnection(ConnID* port_id, ChannelElementBase::sha
     return false;
 }
 
-WriteStatus OutputPortInterface::write(DataSourceBase::shared_ptr source)
+WriteStatus OutputPortInterface::write(DataSourceBase::shared_ptr)
 { throw std::runtime_error("calling default OutputPortInterface::write(datasource) implementation"); }
 
 bool OutputPortInterface::createDataConnection( InputPortInterface& input, int lock_policy )
@@ -118,4 +118,3 @@ void OutputPortInterface::traceWrite()
 {
     tracepoint(orocos_rtt, OutputPort_write, getFullName().c_str());
 }
-

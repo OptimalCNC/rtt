@@ -307,7 +307,7 @@ namespace RTT
         return os;
     }
 
-    std::istream& operator>>(std::istream& is, PropertyBag& bag) { return is; }
+    std::istream& operator>>(std::istream& is, PropertyBag&) { return is; }
 
 
     PropertyBase* findProperty(const PropertyBag& bag, const std::string& nameSequence, const std::string& separator)

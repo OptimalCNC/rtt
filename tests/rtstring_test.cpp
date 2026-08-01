@@ -204,7 +204,7 @@ void RtStringStateTest::doState(  const std::string& name, const std::string& pr
     checkState(name, tc, test);
 }
 
-void RtStringStateTest::parseState(const std::string& prog, TaskContext* tc, bool test )
+void RtStringStateTest::parseState(const std::string& prog, TaskContext*, bool test )
 {
     // Alternative way: test ScriptingService as well.
     try {

@@ -482,7 +482,7 @@ void FunctionsFixture::doFunction( const std::string& prog, TaskContext* tc, boo
     }
 }
 
-void FunctionsFixture::finishFunction(TaskContext* tc, std::string prog_name)
+void FunctionsFixture::finishFunction(TaskContext*, std::string prog_name)
 {
     BOOST_REQUIRE( sa->getProgram(prog_name) );
     sa->getProgram( prog_name )->stop();

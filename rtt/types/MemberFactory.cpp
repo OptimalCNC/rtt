@@ -43,7 +43,7 @@ using namespace std;
 using namespace RTT;
 using namespace RTT::detail;
 
-bool MemberFactory::resize(base::DataSourceBase::shared_ptr arg, int size) const {
+bool MemberFactory::resize(base::DataSourceBase::shared_ptr, int) const {
     return false;
 }
 
@@ -52,7 +52,7 @@ bool MemberFactory::resize(base::DataSourceBase::shared_ptr arg, int size) const
         return vector<string>();
     }
 
-bool MemberFactory::getMember(internal::Reference* ref, DataSourceBase::shared_ptr item, const std::string& part_name) const
+bool MemberFactory::getMember(internal::Reference*, DataSourceBase::shared_ptr, const std::string&) const
 {
     return false;
 }        
@@ -78,7 +78,7 @@ bool MemberFactory::getMember(internal::Reference* ref, DataSourceBase::shared_p
             return DataSourceBase::shared_ptr();
     }
 
-    DataSourceBase::shared_ptr MemberFactory::getMember(DataSourceBase::shared_ptr item, DataSourceBase::shared_ptr id) const
+    DataSourceBase::shared_ptr MemberFactory::getMember(DataSourceBase::shared_ptr, DataSourceBase::shared_ptr) const
     {
         /** ** Strong typed data **
          *
@@ -95,5 +95,4 @@ bool MemberFactory::getMember(internal::Reference* ref, DataSourceBase::shared_p
          */
         return DataSourceBase::shared_ptr();
     }
-
 

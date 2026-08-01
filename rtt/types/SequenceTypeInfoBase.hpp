@@ -196,7 +196,7 @@ namespace RTT
             /**
              * Use getMember() for decomposition...
              */
-            base::DataSourceBase::shared_ptr decomposeType(base::DataSourceBase::shared_ptr source) const
+            base::DataSourceBase::shared_ptr decomposeType(base::DataSourceBase::shared_ptr) const
             {
                 return base::DataSourceBase::shared_ptr();
             }
@@ -261,7 +261,7 @@ namespace RTT
                 if ( !id_name && ! id_indx)
                     Logger::log().logf(Logger::Error, "SequenceTypeInfo",
                                        "Not a member or index : %p:%s",
-                                       id.get(),
+                                       static_cast<void*>(id.get()),
                                        id->getTypeName().c_str());
                 return base::DataSourceBase::shared_ptr();
             }

@@ -95,7 +95,7 @@ namespace RTT
 
         template <typename ScannerT>
         std::ptrdiff_t
-        operator()(ScannerT const& scan, result_t& result) const {
+        operator()(ScannerT const& scan, result_t&) const {
             if (scan.at_end() || skipeol == false )
                 return -1;
 

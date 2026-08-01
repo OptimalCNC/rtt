@@ -67,7 +67,7 @@ namespace RTT
              */
             virtual void* createCookie() const { return 0; }
             /** Called to delete a cookie created with createCookie */
-            virtual void deleteCookie(void* cookie) const {}
+            virtual void deleteCookie(void*) const {}
             /**
              * Create an transportable object for a \a protocol which contains the value of \a source.
              * This must be a real-time function which does not allocate memory

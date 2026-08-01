@@ -122,22 +122,22 @@ public:
     // plain argument tests:
     void   func() { return; }
     double func0() { return 1.0; }
-    double func1(int i) { return 2.0; }
-    double func2(int i, double d) { return 3.0; }
-    double func3(int i, double d, bool c) { return 4.0; }
-    double func4(int i, double d, bool c, std::string s) { return 5.0; }
-    double func5(int i, double d, bool c, std::string s, float f) { return 6.0; }
+    double func1(int) { return 2.0; }
+    double func2(int, double) { return 3.0; }
+    double func3(int, double, bool) { return 4.0; }
+    double func4(int, double, bool, std::string) { return 5.0; }
+    double func5(int, double, bool, std::string, float) { return 6.0; }
 
     // The return values of signals are intentionally distinct than these above.
     double sig0() { return sig=-1.0; }
-    double sig1(int i) { return (sig=-2.0); }
-    double sig2(int i, double d) { return sig=-3.0; }
-    double sig3(int i, double d, bool c) { return (sig=-4.0); }
-    double sig4(int i, double d, bool c, std::string s) { return sig=-5.0; }
-    double sig5(int i, double d, bool c, std::string s, float f) { return sig=-6.0; }
+    double sig1(int) { return (sig=-2.0); }
+    double sig2(int, double) { return sig=-3.0; }
+    double sig3(int, double, bool) { return (sig=-4.0); }
+    double sig4(int, double, bool, std::string) { return sig=-5.0; }
+    double sig5(int, double, bool, std::string, float) { return sig=-6.0; }
 
     static double freefunc0(void) { return 1.0; }
-    static double freefunc1(int i) { return 2.0; }
+    static double freefunc1(int) { return 2.0; }
 
     bool noexceptNoArgs() noexcept { return true; }
     int noexceptAdd(int lhs, int rhs) const noexcept { return lhs + rhs; }

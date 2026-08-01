@@ -62,7 +62,7 @@ namespace RTT
         {
         }
 
-        bool installTypeInfoObject(TypeInfo* ti) {
+        bool installTypeInfoObject(TypeInfo*) {
             return true;
         }
 

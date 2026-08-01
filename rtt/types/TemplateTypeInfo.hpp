@@ -100,9 +100,9 @@ namespace RTT
 
 
         virtual base::ChannelElementBase::shared_ptr buildRemoteChannelOutput(
-                base::OutputPortInterface& output_port,
-                types::TypeInfo const* type_info,
-                base::InputPortInterface& input, const ConnPolicy& policy) {
+                base::OutputPortInterface&,
+                types::TypeInfo const*,
+                base::InputPortInterface&, const ConnPolicy&) {
             return base::ChannelElementBase::shared_ptr();
         }
 

@@ -70,7 +70,7 @@ namespace RTT {
       return ~0;
     }
 
-    bool SequentialActivity::setCpuAffinity(unsigned cpu)
+    bool SequentialActivity::setCpuAffinity(unsigned)
     {
       return false;
     }

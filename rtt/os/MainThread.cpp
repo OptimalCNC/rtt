@@ -116,12 +116,12 @@ namespace RTT
         return rtos_task_get_cpu_affinity(&main_task);
     }
 
-    bool MainThread::setPeriod(Seconds period)
+    bool MainThread::setPeriod(Seconds)
     {
         return false;
     }
 
-        void MainThread::setMaxOverrun( int m )
+        void MainThread::setMaxOverrun( int )
         {
         }
 
@@ -142,5 +142,4 @@ namespace RTT
 
     unsigned int MainThread::threadNumber() const { return 0; }
 }}
-
 

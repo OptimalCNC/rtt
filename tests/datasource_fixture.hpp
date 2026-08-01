@@ -158,7 +158,7 @@ namespace boost {
 namespace serialization {
 
 template<class Archive>
-void serialize(Archive & ar, AType & g, const unsigned int version)
+void serialize(Archive & ar, AType & g, const unsigned int)
 {
     ar & make_nvp("a", g.a);
     ar & make_nvp("b", g.b);
@@ -168,7 +168,7 @@ void serialize(Archive & ar, AType & g, const unsigned int version)
 }
 
 template<class Archive>
-void serialize(Archive & ar, BType & g, const unsigned int version)
+void serialize(Archive & ar, BType & g, const unsigned int)
 {
     ar & make_nvp("a", g.a);
     ar & make_nvp("b", g.b);
@@ -180,7 +180,7 @@ void serialize(Archive & ar, BType & g, const unsigned int version)
 }
 
 template<class Archive>
-void serialize(Archive & ar, CType & g, const unsigned int version)
+void serialize(Archive & ar, CType & g, const unsigned int)
 {
     ar & make_nvp("a", g.a);
     ar & make_nvp("b", g.b);
@@ -232,7 +232,7 @@ void serialize(Archive & ar, CType & g, const unsigned int version)
 
         virtual UpdatedReferenceDataSource<T>* clone() const { return new UpdatedReferenceDataSource(mref); }
 
-        virtual UpdatedReferenceDataSource<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& alreadyCloned ) const { return clone(); }
+        virtual UpdatedReferenceDataSource<T>* copy( std::map<const base::DataSourceBase*, base::DataSourceBase*>& ) const { return clone(); }
 
     };
 

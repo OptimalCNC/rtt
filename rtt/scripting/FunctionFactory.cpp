@@ -264,7 +264,7 @@ namespace RTT {
             return 0;
         }
 #ifdef ORO_SIGNALLING_OPERATIONS
-        Handle FunctionFactory::produceSignal(base::ActionInterface* func, const std::vector<base::DataSourceBase::shared_ptr>& args, ExecutionEngine* subscriber
+        Handle FunctionFactory::produceSignal(base::ActionInterface*, const std::vector<base::DataSourceBase::shared_ptr>&, ExecutionEngine*
                                    ) const {
         	throw no_asynchronous_operation_exception("Signal not yet implemented for scripting functions.");
             return Handle();

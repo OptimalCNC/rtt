@@ -77,14 +77,14 @@ namespace RTT {
         this->init();
     }
 
-    PeriodicActivity::PeriodicActivity(Seconds period, TimerThreadPtr thread, RunnableInterface* r )
+    PeriodicActivity::PeriodicActivity(Seconds, TimerThreadPtr thread, RunnableInterface* r )
         : ActivityInterface(r), running(false), active(false),
           thread_(thread)
     {
         this->init();
     }
 
-    PeriodicActivity::PeriodicActivity(secs s, nsecs ns, TimerThreadPtr thread, RunnableInterface* r )
+    PeriodicActivity::PeriodicActivity(secs, nsecs, TimerThreadPtr thread, RunnableInterface* r )
         : ActivityInterface(r),
           running(false), active(false),
           thread_(thread)
@@ -161,7 +161,7 @@ namespace RTT {
         return thread_->getPeriod();
     }
 
-    bool PeriodicActivity::setPeriod(Seconds s) {
+    bool PeriodicActivity::setPeriod(Seconds) {
         return false;
     }
 

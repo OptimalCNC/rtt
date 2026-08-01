@@ -146,7 +146,7 @@ namespace RTT
             return use_ostream;
         }
 
-        virtual bool composeType( base::DataSourceBase::shared_ptr source, base::DataSourceBase::shared_ptr result) const {
+        virtual bool composeType( base::DataSourceBase::shared_ptr, base::DataSourceBase::shared_ptr) const {
             return false;
         }
 
@@ -158,7 +158,7 @@ namespace RTT
             return source;
         }
 
-        virtual bool decomposeType( base::DataSourceBase::shared_ptr source, PropertyBag& targetbag ) const {
+        virtual bool decomposeType( base::DataSourceBase::shared_ptr, PropertyBag& ) const {
             return false;
         }
     };

@@ -119,7 +119,7 @@ void InputPortInterface::signalInterface(bool true_false)
 }
 #endif
 
-FlowStatus InputPortInterface::read(DataSourceBase::shared_ptr source, bool copy_old_data)
+FlowStatus InputPortInterface::read(DataSourceBase::shared_ptr, bool)
 { throw std::runtime_error("calling default InputPortInterface::read(datasource) implementation"); }
 
 /** Returns true if this port is connected */
@@ -128,7 +128,7 @@ bool InputPortInterface::connected() const
     return getEndpoint()->connected();
 }
 
-void InputPortInterface::traceRead(RTT::FlowStatus status)
+void InputPortInterface::traceRead([[maybe_unused]] RTT::FlowStatus status)
 {
     tracepoint(orocos_rtt, InputPort_read, status, getFullName().c_str());
 }
@@ -149,9 +149,9 @@ bool InputPortInterface::createConnection( internal::SharedConnectionBase::share
 }
 
 base::ChannelElementBase::shared_ptr InputPortInterface::buildRemoteChannelOutput(
-                base::OutputPortInterface& output_port,
-                types::TypeInfo const* type_info,
-                base::InputPortInterface& input, const ConnPolicy& policy)
+                base::OutputPortInterface&,
+                types::TypeInfo const*,
+                base::InputPortInterface&, const ConnPolicy&)
 {
     return base::ChannelElementBase::shared_ptr();
 }

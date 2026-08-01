@@ -150,7 +150,7 @@ namespace RTT {
     }
 
 
-    void Timer::timeout(TimerId timer_id)
+    void Timer::timeout(TimerId)
     {
         // User must implement this method.
     }
