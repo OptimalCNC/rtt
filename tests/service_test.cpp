@@ -466,4 +466,18 @@ BOOST_AUTO_TEST_CASE(testDisconnectRecursesIntoChildRequesters)
     BOOST_CHECK(!rotate.ready());
 }
 
+BOOST_AUTO_TEST_CASE(testNestedServicesDoNotKeepParentAlive)
+{
+    boost::weak_ptr<Service> parent;
+    {
+        Service::shared_ptr root = Service::Create("root");
+        parent = root;
+        Service::shared_ptr child = root->provides("child");
+        child->provides("grandchild");
+        BOOST_CHECK_EQUAL(child->getParent(), root);
+    }
+
+    BOOST_CHECK(parent.expired());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

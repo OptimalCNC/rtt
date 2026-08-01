@@ -52,6 +52,7 @@
 #include "ConfigurationInterface.hpp"
 #include "Operation.hpp"
 #include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/function_traits.hpp>
 #include <boost/function_types/components.hpp>
@@ -169,7 +170,7 @@ namespace RTT
         /**
          * The parent is the direct parent of this service.
          */
-        shared_ptr getParent() const { return parent; }
+        shared_ptr getParent() const { return parent.lock(); }
 
         /**
          * Return a standard container which contains all the sub-service names
@@ -573,7 +574,7 @@ namespace RTT
         std::string mname;
         std::string mdescription;
         TaskContext* mowner;
-        shared_ptr parent;
+        boost::weak_ptr<Service> parent;
     };
 }
 
