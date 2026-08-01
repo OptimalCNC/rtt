@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_CASE( testInt64 )
 {
     string prog = string("program x {\n") +
         "var Int64 ll = 9223372036854775807ll\n" +
-        "do test.assert( -(ll + 2) == 9223372036854775807ll )\n" +
+        "do test.assert( ll - 2 == 9223372036854775805ll )\n" +
         "var UInt64 ull = 18446744073709551615ull\n" +
         "do test.assert( ull + 1 == 0 )\n" +
         "var Float64 d = ll\n" +

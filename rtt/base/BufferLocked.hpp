@@ -83,7 +83,7 @@ namespace RTT
          * @param initial_value A data sample with which each preallocated data element is initialized.
          */
         BufferLocked( size_type size, param_t initial_value, const Options &options = Options() )
-            : cap(size), buf(), mcircular(options.circular()), droppedSamples(0)
+            : cap(size), buf(), mcircular(options.circular()), initialized(false), droppedSamples(0)
         {
             data_sample(initial_value);
         }

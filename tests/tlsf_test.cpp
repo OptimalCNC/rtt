@@ -21,13 +21,8 @@
 #include "unit.hpp"
 #include <rtt/os/tlsf/tlsf.h>
 #include <signal.h>
-
-void signal_handler(int sig_num){
-    if(sig_num == SIGABRT){
-        BOOST_TEST_MESSAGE("Catched SIGABRT. That is what is expected.");
-        exit(0);
-    }
-}
+#include <sys/wait.h>
+#include <unistd.h>
 
 class TLSFTest
 {
@@ -85,6 +80,7 @@ BOOST_AUTO_TEST_CASE(testUseSecondaryMemPool){
     BOOST_CHECK(b);
     free_ex(b,rtMem_p);
     destroy_memory_pool(rtMem_p);
+    free(rtMem_p);
     oro_rt_free(a);
     a = 0;
     a = oro_rt_malloc(500);
@@ -94,11 +90,20 @@ BOOST_AUTO_TEST_CASE(testUseSecondaryMemPool){
 
 BOOST_AUTO_TEST_CASE(testDoubleFree)
 {
-    signal(SIGABRT,&signal_handler);
-    void* a = oro_rt_malloc(500);
-    oro_rt_free(a);
-    oro_rt_free(a);
-    BOOST_FAIL("Double free undetected");
+    const pid_t child = fork();
+    BOOST_REQUIRE(child >= 0);
+    if (child == 0) {
+        signal(SIGABRT, SIG_DFL);
+        void* a = oro_rt_malloc(500);
+        oro_rt_free(a);
+        oro_rt_free(a);
+        _exit(1);
+    }
+
+    int status = 0;
+    BOOST_REQUIRE_EQUAL(waitpid(child, &status, 0), child);
+    BOOST_REQUIRE(WIFSIGNALED(status));
+    BOOST_CHECK_EQUAL(WTERMSIG(status), SIGABRT);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

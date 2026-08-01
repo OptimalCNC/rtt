@@ -325,12 +325,12 @@ static __inline__ int ms_bit(int i)
 
 static __inline__ void set_bit(int nr, u32_t * addr)
 {
-    addr[nr >> 5] |= 1 << (nr & 0x1f);
+    addr[nr >> 5] |= ((u32_t) 1) << (nr & 0x1f);
 }
 
 static __inline__ void clear_bit(int nr, u32_t * addr)
 {
-    addr[nr >> 5] &= ~(1 << (nr & 0x1f));
+    addr[nr >> 5] &= ~(((u32_t) 1) << (nr & 0x1f));
 }
 
 static __inline__ void MAPPING_SEARCH(size_t * _r, int *_fl, int *_sl)
