@@ -47,6 +47,7 @@
 #include "ConditionFalse.hpp"
 #include "ConditionTrue.hpp"
 #include <boost/graph/copy.hpp>
+#include <stdexcept>
 #include <utility>
 
 namespace RTT {
@@ -77,11 +78,15 @@ namespace RTT {
         for ( it=v1; it != v2; ++it)
             if ( get( vertex_exec, program, *it) == VertexNode::func_start_node )
                 break;
-        startv = *v1;
+        if (it == v2)
+            throw std::logic_error("Cannot copy a function graph without a start node.");
+        startv = *it;
         for ( it=v1; it != v2; ++it)
             if ( get( vertex_exec, program, *it) == VertexNode::func_exit_node )
                 break;
-        exitv = *v1;
+        if (it == v2)
+            throw std::logic_error("Cannot copy a function graph without an exit node.");
+        exitv = *it;
 
         // Copy-clone over the TAB pointers.
         std::vector<AttributeBase*> argsvect = orig.getArguments();

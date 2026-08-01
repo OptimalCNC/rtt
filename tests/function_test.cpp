@@ -49,6 +49,23 @@ public:
 BOOST_FIXTURE_TEST_SUITE( FunctionsFixtureSuite, FunctionsFixture )
 // Registers the fixture into the 'registry'
 
+BOOST_AUTO_TEST_CASE( testFunctionGraphClonePreservesBoundaryNodes )
+{
+    FunctionGraph original("original", false);
+    original.finish();
+
+    FunctionGraph cloned(original);
+    const FunctionGraph::Graph& graph = cloned.getGraph();
+
+    BOOST_CHECK(cloned.startNode() != cloned.exitNode());
+    BOOST_CHECK_EQUAL(
+        get(vertex_exec, graph, cloned.startNode()),
+        VertexNode::func_start_node);
+    BOOST_CHECK_EQUAL(
+        get(vertex_exec, graph, cloned.exitNode()),
+        VertexNode::func_exit_node);
+}
+
 BOOST_AUTO_TEST_CASE( testSimpleFunction)
 {
     string prog = string("function foo { \n")
