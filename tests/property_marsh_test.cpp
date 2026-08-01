@@ -156,6 +156,7 @@ BOOST_AUTO_TEST_CASE( testPropMarshVect )
     BOOST_CHECK_EQUAL( p1->rvalue().size() , 7 );
     BOOST_CHECK_EQUAL( p1->rvalue()[0] , 1.234 );
 
+    deletePropertyBag( composed );
     deletePropertyBag( target );
     deletePropertyBag( source );
 }
@@ -193,7 +194,9 @@ BOOST_AUTO_TEST_CASE( testPropMarshVectLegacy )
     BOOST_CHECK_EQUAL( p1->rvalue().size() , 6 );
     BOOST_CHECK_EQUAL( p1->rvalue()[0] , 1 );
 
+    deletePropertyBag( composed );
     deletePropertyBag( source );
+    deletePropertyBag( target );
 }
 
 BOOST_AUTO_TEST_SUITE_END()

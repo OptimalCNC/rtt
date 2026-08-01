@@ -27,6 +27,7 @@
 #include "unit.hpp"
 
 #include <cstdint>
+#include <memory>
 #include <type_traits>
 
 #include <types/TemplateTypeInfo.hpp>
@@ -70,8 +71,8 @@ BOOST_AUTO_TEST_CASE( testComposeDecompose )
         TypeInfo* ti = Types()->type(*it);
         BOOST_REQUIRE(ti);
         // might return null in case of void:
-        PropertyBase* input = ti->buildProperty("A","B");
-        PropertyBase* output = ti->buildProperty("C","D");
+        std::unique_ptr<PropertyBase> input(ti->buildProperty("A", "B"));
+        std::unique_ptr<PropertyBase> output(ti->buildProperty("C", "D"));
         // if it's decomposable, compose it as well.
         if ( input && output && ti->decomposeType(input->getDataSource()) ) {
             BOOST_CHECK_MESSAGE( ti->composeType( ti->decomposeType(input->getDataSource()), output->getDataSource()), "Decomposition/Composition of " + *it + " failed!" );

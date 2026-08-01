@@ -237,6 +237,7 @@ BOOST_AUTO_TEST_CASE( testCreateUpdateChar )
     BOOST_CHECK( temp->update( &pc1 ) );
     // step 3 : add result to target bag.
     target.add( temp );
+    deletePropertyBag( target );
 }
 
 BOOST_AUTO_TEST_CASE( testfindProperty )

@@ -19,6 +19,7 @@
 #include "unit.hpp"
 
 #include <iostream>
+#include <memory>
 #include <scripting/FunctionGraph.hpp>
 #include <OperationCaller.hpp>
 #include <extras/SimulationActivity.hpp>
@@ -67,7 +68,9 @@ BOOST_FIXTURE_TEST_SUITE(  TypesTestSuite,  TypesTest )
 //! Tests the preservation of the capacity of a string in the type system.
 BOOST_AUTO_TEST_CASE( testStringCapacity )
 {
-    Attribute<string> str = Types()->type("String")->buildVariable("str",10);
+    std::unique_ptr<base::AttributeBase> variable(
+        Types()->type("String")->buildVariable("str", 10));
+    Attribute<string> str = variable.get();
     size_t strCapacity=str.get().capacity();
     // check size hint:
     BOOST_CHECK_EQUAL( str.get().size() , 10 );
