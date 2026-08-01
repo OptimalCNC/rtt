@@ -153,14 +153,8 @@
 #define BLOCK_SIZE	((intptr_t)~PTR_MASK)
 
 
-/* Dereferencing type-punned pointers will break strict aliasing.*/
-#ifdef __GNUC__
-/* GCC guarantees that casting through a union is valid. */
-#define TYPE_PUN(dsttype, srctype, x)           \
-    (((union {srctype *a; dsttype *b;})(x)).b)
-#else
-#define TYPE_PUN(dsttype, srctype, x)    ( (dsttype*)(x) )
-#endif /* __GNUC__ */
+/* Allocator storage is aligned for every header type used below. */
+#define TYPE_PUN(dsttype, srctype, x) ((dsttype *)(void *)(srctype *)(x))
 
 #define GET_NEXT_BLOCK(_addr, _r) TYPE_PUN(bhdr_t, char, (char *) (_addr) + (_r))
 
@@ -190,15 +184,15 @@
 
 #ifdef USE_PRINTF
 #include <stdio.h>
-#define PRINT_MSG(fmt, args...) printf(fmt, ## args)
-#define FPRINT_MSG(ff, fmt, args...) fprintf(ff, fmt, ## args)
-#define ERROR_MSG(fmt, args...) printf(fmt, ## args)
+#define PRINT_MSG(...) printf(__VA_ARGS__)
+#define FPRINT_MSG(...) fprintf(__VA_ARGS__)
+#define ERROR_MSG(...) printf(__VA_ARGS__)
 #else
 # if !defined(PRINT_MSG)
-#  define PRINT_MSG(fmt, args...)
+#  define PRINT_MSG(...) ((void)0)
 # endif
 # if !defined(ERROR_MSG)
-#  define ERROR_MSG(fmt, args...)
+#  define ERROR_MSG(...) ((void)0)
 # endif
 #endif
 
