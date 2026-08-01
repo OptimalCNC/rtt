@@ -39,6 +39,7 @@
 #ifndef ORO_CONN_FACTORY_HPP
 #define ORO_CONN_FACTORY_HPP
 
+#include <memory>
 #include <string>
 #include "Channels.hpp"
 #include "ConnInputEndPoint.hpp"
@@ -606,14 +607,15 @@ namespace RTT
         {
             PortConnectionLock lock_output_port(&output_port);
 
-            StreamConnID *sid = new StreamConnID(policy.name_id);
+            std::unique_ptr<StreamConnID> sid(new StreamConnID(policy.name_id));
             // Stream channel inputs are always unbuffered (push). It's the transport that has to add a buffer element if required.
             RTT::base::ChannelElementBase::shared_ptr chan = buildChannelInput( output_port, policy, /* force_unbuffered = */ true );
             if (!chan) return false;
-            if (!bool(createAndCheckStream(output_port, policy, chan, sid))) {
+            if (!bool(createAndCheckStream(output_port, policy, chan, sid.get()))) {
                 chan->disconnect(false);
                 return false;
             }
+            sid.release();
             return true;
         }
 
@@ -629,13 +631,14 @@ namespace RTT
         {
             PortConnectionLock lock_input_port(&input_port);
 
-            StreamConnID *sid = new StreamConnID(policy.name_id);
+            std::unique_ptr<StreamConnID> sid(new StreamConnID(policy.name_id));
             RTT::base::ChannelElementBase::shared_ptr outhalf = buildChannelOutput( input_port, policy );
             if (!outhalf) return false;
-            if (!bool(createAndCheckStream(input_port, policy, outhalf, sid))) {
+            if (!bool(createAndCheckStream(input_port, policy, outhalf, sid.get()))) {
                 outhalf->disconnect(true);
                 return false;
             }
+            sid.release();
             return true;
         }
 
@@ -670,14 +673,18 @@ namespace RTT
             RTT::base::ChannelElementBase::shared_ptr channel_input = buildChannelInput( output_port, policy, /* force_unbuffered = */ true );
             if (!channel_input) return false;
 
-            RTT::base::ChannelElementBase::shared_ptr stream_input = createAndCheckStream(output_port, policy, channel_input, new StreamConnID(policy.name_id));
+            std::unique_ptr<StreamConnID> input_id(new StreamConnID(policy.name_id));
+            RTT::base::ChannelElementBase::shared_ptr stream_input = createAndCheckStream(output_port, policy, channel_input, input_id.get());
             if (!stream_input) return false;
+            input_id.release();
 
             RTT::base::ChannelElementBase::shared_ptr channel_output = ConnFactory::buildChannelOutput<T>(input_port, policy, output_port.getLastWrittenValue());
             if (!channel_output) return false;
 
-            RTT::base::ChannelElementBase::shared_ptr stream_output = createAndCheckStream(input_port, policy, channel_output, new StreamConnID(policy.name_id));
+            std::unique_ptr<StreamConnID> output_id(new StreamConnID(policy.name_id));
+            RTT::base::ChannelElementBase::shared_ptr stream_output = createAndCheckStream(input_port, policy, channel_output, output_id.get());
             if (!stream_output) return false;
+            output_id.release();
 
             return stream_input->getOutputEndPoint()->connectTo(stream_output->getInputEndPoint(), policy.mandatory);
         }
