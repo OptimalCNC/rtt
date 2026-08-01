@@ -45,6 +45,8 @@
 #include "../base/AttributeBase.hpp"
 #include "ProgramInterface.hpp"
 
+#include <boost/weak_ptr.hpp>
+
 namespace RTT
 { namespace scripting {
 
@@ -115,7 +117,7 @@ namespace RTT
         bool executeUntil();
         bool executeStep();
 
-        ServicePtr context;
+        boost::weak_ptr<Service> context;
     public:
         /**
          * Create a FunctionGraph with a given name.

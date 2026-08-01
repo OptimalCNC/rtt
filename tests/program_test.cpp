@@ -98,6 +98,22 @@ BOOST_AUTO_TEST_CASE(testEmptyProgram)
         }
 }
 
+BOOST_AUTO_TEST_CASE(testParsedProgramDoesNotOutliveOwningTask)
+{
+    boost::weak_ptr<ProgramInterface> parsed_program;
+    {
+        TaskContext owner("temporary_program_owner");
+        Parser local_parser(owner.engine());
+        Parser::ParsedPrograms programs = local_parser.parseProgram(
+            "program discarded {}", &owner);
+
+        BOOST_REQUIRE_EQUAL(programs.size(), 1U);
+        parsed_program = programs.front();
+    }
+
+    BOOST_CHECK(parsed_program.expired());
+}
+
 BOOST_AUTO_TEST_CASE(testReturnProgram)
 {
     string prog = "program x { return \n }";

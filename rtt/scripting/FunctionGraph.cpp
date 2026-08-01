@@ -152,12 +152,13 @@ namespace RTT {
         // this function is called in a real-time context when execute() returns false.
         // for functions that have a context object, these should never return false
         // in execute(). See the munload_on_stop flag.
-        if ( !context )
+        ServicePtr program_service = context.lock();
+        if ( !program_service )
             return; // plain function
         // The case for program scripts: they are managed by the ScriptingService, which will
         // take care of unloading.
-        if (context->getParent() ) {
-            context->getParent()->removeService(context->getName());
+        if (program_service->getParent() ) {
+            program_service->getParent()->removeService(program_service->getName());
         }
         context.reset();
     }
