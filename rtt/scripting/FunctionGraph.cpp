@@ -67,7 +67,9 @@ namespace RTT {
     }
 
     FunctionGraph::FunctionGraph( const FunctionGraph& orig )
-        :  program( orig.getGraph() ), myName( orig.getName() )
+        : program(orig.getGraph()), myName(orig.getName()), _text(orig._text),
+          retn(0), pausing(false), mstep(false),
+          munload_on_stop(orig.munload_on_stop), context(orig.context)
     {
         // The nodes are copied, which causes a clone of their contents.
         graph_traits<Graph>::vertex_iterator v1,v2, it;
@@ -120,7 +122,7 @@ namespace RTT {
         std::vector<AttributeBase*>::iterator it = args.begin();
         for ( ; it != args.end(); ++it)
             delete *it;
-
+        delete retn;
     }
 
     void FunctionGraph::setProgramService(Service::shared_ptr myservice)

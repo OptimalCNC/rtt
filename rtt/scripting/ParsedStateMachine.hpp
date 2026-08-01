@@ -87,6 +87,9 @@ namespace RTT
 
         void setService(boost::shared_ptr<StateMachineService> tc);
 
+        /** Break the service ownership cycle for parser-owned machines. */
+        void releaseServices();
+
         bool inState( const std::string& name );
         /**
          * Call this function if the state machine is parsed.

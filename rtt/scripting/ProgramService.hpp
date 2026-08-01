@@ -68,6 +68,9 @@ namespace RTT
 
         ~ProgramService();
 
+        /** Break the program/service ownership cycle after a parse abort. */
+        void disconnectProgram();
+
         /**
          * Returns the Program of this service.
          */

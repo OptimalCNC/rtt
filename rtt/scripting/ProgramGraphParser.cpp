@@ -807,8 +807,13 @@ namespace RTT
 
   void ProgramGraphParser::cleanup(bool unload_service)
   {
-      if (unload_service && rootc && context)
+      if (unload_service && rootc && context) {
+          ProgramServicePtr program_service =
+              boost::dynamic_pointer_cast<ProgramService>(context);
+          if (program_service)
+              program_service->disconnectProgram();
           rootc->provides()->removeService( context->getName() );
+      }
       // after an exception, we can be in any state, so cleanup
       // all temp objects.
       delete argsparser;
@@ -849,6 +854,11 @@ namespace RTT
 
   void ProgramGraphParser::seentrystatement()
   {
+      // A catch block is optional. Discard the unused condition from a
+      // preceding try before storing the result of this one.
+      delete try_cond;
+      try_cond = 0;
+
       // a try expression/method call.
       ActionInterface*   command;
       DataSourceBase::shared_ptr expr  = expressionparser.getResult().get();

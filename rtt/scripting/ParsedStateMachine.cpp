@@ -305,6 +305,17 @@ namespace RTT {
         object = tc;
     }
 
+    void ParsedStateMachine::releaseServices() {
+        for (ChildList::const_iterator i = getChildren().begin();
+             i != getChildren().end(); ++i) {
+            ParsedStateMachinePtr child =
+                boost::dynamic_pointer_cast<ParsedStateMachine>(*i);
+            if (child)
+                child->releaseServices();
+        }
+        object.reset();
+    }
+
     bool ParsedStateMachine::inState( const std::string& name ) {
         StateInterface* copy = this->currentState();
         if (copy == 0)

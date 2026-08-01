@@ -819,6 +819,8 @@ namespace RTT
         selectln = 0;
         transProgram.reset();
         elseProgram.reset();
+        delete progParser;
+        progParser = 0;
         delete argsparser;
         argsparser = 0;
         delete curcondition;
@@ -829,7 +831,19 @@ namespace RTT
         curnonprecstate = 0;
         // we own curmachinebuilder, but not through this pointer...
         curmachinebuilder = 0;
+        if ( curinstantiatedmachine )
+            curinstantiatedmachine->releaseServices();
         curinstantiatedmachine.reset();
+
+        for ( machinenamemap_t::iterator i = rootmachines.begin();
+              i != rootmachines.end(); ++i ) {
+            if ( i->second->getService() )
+                context->provides()->removeService(
+                    i->second->getService()->getName());
+            i->second->releaseServices();
+        }
+        rootmachines.clear();
+
         // If non null, there was a parse-error, undo all :
         if ( curtemplate )
         {
@@ -843,7 +857,11 @@ namespace RTT
               }
           }
           // remove all 'this' data factories
-          curtemplate->getService()->clear();
+          if ( curtemplate->getService() )
+              curtemplate->getService()->clear();
+
+          curtemplate->releaseServices();
+          curobject.reset();
 
           // will also delete all children :
           curtemplate.reset();

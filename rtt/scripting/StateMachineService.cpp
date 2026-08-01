@@ -105,6 +105,7 @@ namespace RTT
                 // See SendHandleAlias::copy() for more details.
                 for ( ConfigurationInterface::map_t::iterator it = values.begin(); it != values.end(); ) {
                     if (dynamic_cast<SendHandleAlias*>(*it)) {
+                        delete *it;
                         it = values.erase(it);
                     } else {
                         ++it;
@@ -139,4 +140,3 @@ namespace RTT
     //ExecutionEngine* StateMachineService::engine() const { return mtc->engine(); }
 
 }
-

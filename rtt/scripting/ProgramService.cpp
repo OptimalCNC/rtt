@@ -73,11 +73,14 @@ namespace RTT
         addOperationDS("isPaused", &ProgramInterface::isPaused,ptr).doc("Is this program running but paused ?");
     }
 
+    void ProgramService::disconnectProgram() {
+        FunctionGraphPtr prog = function;
+        if ( prog )
+            prog->setProgramService( ProgramServicePtr() );
+    }
+
     ProgramService::~ProgramService() {
         // When the this Service is deleted, make sure the program does not reference us.
-        FunctionGraphPtr prog = function;
-        if ( prog ) {
-            prog->setProgramService( ProgramServicePtr() );
-        }
+        disconnectProgram();
     }
 }

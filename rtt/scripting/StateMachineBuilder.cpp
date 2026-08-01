@@ -50,6 +50,7 @@ namespace RTT {
 
   StateMachineBuilder::~StateMachineBuilder()
   {
+    templatecontext->releaseServices();
   }
 
   ParsedStateMachinePtr StateMachineBuilder::build(bool instantiate)

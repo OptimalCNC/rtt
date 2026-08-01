@@ -382,6 +382,25 @@ BOOST_AUTO_TEST_CASE(TestParserRejectsNullContext)
         parse_exception);
 }
 
+BOOST_AUTO_TEST_CASE(TestStateMachineParserRollsBackEarlierRoots)
+{
+    Parser parser(caller->engine());
+    const std::string service_name = "rollback_machine";
+    const std::string script = MULTILINE_STRING(
+        StateMachine ValidMachine {
+            initial state ready {}
+        }
+        RootMachine ValidMachine rollback_machine;
+        StateMachine InvalidMachine {
+    );
+
+    BOOST_REQUIRE(!tc->provides()->hasService(service_name));
+    BOOST_CHECK_THROW(
+        parser.parseStateMachine(script, tc),
+        file_parse_exception);
+    BOOST_CHECK(!tc->provides()->hasService(service_name));
+}
+
 BOOST_AUTO_TEST_CASE(TestScriptingFunction)
 {
     PluginLoader::Instance()->loadService("scripting",tc);
