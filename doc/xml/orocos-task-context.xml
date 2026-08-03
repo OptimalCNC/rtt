@@ -2426,7 +2426,7 @@ Hello [R]&gt;
     </para>
     <example><title>Using a Service</title>
     <para>The only difference between setting up a service and
-      adding a OperationCaller object, is by adding requires("servicename")
+      adding a OperationCaller object, is by adding requests("servicename")
       in front of addOperationCaller.
     </para>
     <programlisting>   #include &lt;rtt/TaskContext.hpp>
@@ -2441,14 +2441,14 @@ Hello [R]&gt;
     MyClient() : TaskContext("client"), counter(0),
        showErrorMsg("showErrorMsg"), clearErrors("clearErrors")
     {
-       this-><emphasis>requires("display")</emphasis>
+       this-><emphasis>requests("display")</emphasis>
              ->addOperationCaller(showErrorMsg);
-       this-><emphasis>requires("display")</emphasis>
+       this-><emphasis>requests("display")</emphasis>
              ->addOperationCaller(clearErrors);
        this->setPeriod(0.1);
     }
     bool configureHook() {
-       return this->requires("display")->ready();
+       return this->requests("display")->ready();
     }
 
     void updateHook() {
@@ -2473,8 +2473,8 @@ Hello [R]&gt;
       <function>connectTo(Service*)</function> which does this connection from
       OperationCaller object to operation. If you wanted to hardcode this, it would look like:
       <programlisting>  bool configureHook() {
-     requires("display")->connectTo( getPeer("server")->provides("display") );
-     return requires("display")->ready();
+     requests("display")->connectTo( getPeer("server")->provides("display") );
+     return requests("display")->ready();
   }</programlisting>
       In practice, you will use the deployer application to do the connection for
       you at run-time. See the DeploymentComponent documentation for the syntax.
@@ -3339,4 +3339,3 @@ Hello [R]&gt;
     </section>
   </section>
 </article>
-
