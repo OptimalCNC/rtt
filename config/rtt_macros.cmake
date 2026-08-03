@@ -88,11 +88,16 @@ macro(ADD_RTT_TYPEKIT name version)
   else()
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/types"
-          COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/types"
-          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          COMMAND ${CMAKE_COMMAND} -E remove -f
+                  "${PROJ_BINARY_DIR}/rtt/types/$<TARGET_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
+                  "${PROJ_BINARY_DIR}/rtt/types/$<TARGET_LINKER_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
+          COMMAND ${CMAKE_COMMAND} -E create_symlink
+                  "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>"
+                  "${PROJ_BINARY_DIR}/rtt/types/$<TARGET_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
+          COMMAND ${CMAKE_COMMAND} -E create_symlink
                   "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>"
                   "${PROJ_BINARY_DIR}/rtt/types/$<TARGET_LINKER_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
-          COMMENT "Copying $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> to ${PROJ_BINARY_DIR}/rtt/types" VERBATIM)
+          COMMENT "Linking $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> into ${PROJ_BINARY_DIR}/rtt/types" VERBATIM)
   endif()
   
 endmacro(ADD_RTT_TYPEKIT name)
@@ -155,11 +160,16 @@ macro(ADD_RTT_PLUGIN name version)
   else()
       add_custom_command(TARGET ${name}-${OROCOS_TARGET}_plugin POST_BUILD
           COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJ_BINARY_DIR}/rtt/plugins"
-          COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>" "${PROJ_BINARY_DIR}/rtt/plugins"
-          COMMAND ${CMAKE_COMMAND} -E copy_if_different
+          COMMAND ${CMAKE_COMMAND} -E remove -f
+                  "${PROJ_BINARY_DIR}/rtt/plugins/$<TARGET_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
+                  "${PROJ_BINARY_DIR}/rtt/plugins/$<TARGET_LINKER_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
+          COMMAND ${CMAKE_COMMAND} -E create_symlink
+                  "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>"
+                  "${PROJ_BINARY_DIR}/rtt/plugins/$<TARGET_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
+          COMMAND ${CMAKE_COMMAND} -E create_symlink
                   "$<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin>"
                   "${PROJ_BINARY_DIR}/rtt/plugins/$<TARGET_LINKER_FILE_NAME:${name}-${OROCOS_TARGET}_plugin>"
-          COMMENT "Copying $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> to ${PROJ_BINARY_DIR}/rtt/plugins" VERBATIM)
+          COMMENT "Linking $<TARGET_FILE:${name}-${OROCOS_TARGET}_plugin> into ${PROJ_BINARY_DIR}/rtt/plugins" VERBATIM)
   endif()
   
 endmacro(ADD_RTT_PLUGIN name)
