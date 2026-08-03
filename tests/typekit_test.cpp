@@ -37,6 +37,9 @@
 
 #include <types/SequenceTypeInfo.hpp>
 #include <typekit/RealTimeTypekit.hpp>
+#ifdef OS_RT_MALLOC
+#include <rtt/rt_string.hpp>
+#endif
 
 struct TypekitFixture
 {
@@ -54,12 +57,15 @@ BOOST_FIXTURE_TEST_SUITE( TypekitTestSuite, TypekitFixture )
 //! Tests the SequenceTypeInfo class.
 BOOST_AUTO_TEST_CASE( testVectorTypeInfo )
 {
-    Types()->addType( new types::SequenceTypeInfo<std::vector<std::string> >("strings") );
+    BOOST_REQUIRE(Types()->type("StringArray"));
+    BOOST_CHECK(Types()->type("StringArray") ==
+                Types()->getTypeInfo<std::vector<std::string>>());
 #if 0 // not supported
     Types()->addType( new types::SequenceTypeInfo<std::vector<bool> >("bools") );
 #endif
-
-    Types()->addType( new types::SequenceTypeInfo<std::vector<int> >("ints") );
+    BOOST_REQUIRE(Types()->type("Int32Array"));
+    BOOST_CHECK(Types()->type("Int32Array") ==
+                Types()->getTypeInfo<std::vector<std::int32_t>>());
 }
 
 //! This test tries to compose/decompose a default built variable of
@@ -84,7 +90,11 @@ BOOST_AUTO_TEST_CASE( testCanonicalBuiltinTypesAreRegistered )
 {
     const std::vector<std::string> canonical_names = {
         "Bool", "Int8", "UInt8", "Int16", "UInt16", "Int32", "UInt32",
-        "Int64", "UInt64", "Float32", "Float64", "Char", "String", "Void"
+        "Int64", "UInt64", "Float32", "Float64", "Char", "String", "Void",
+        "Float64Array", "Int32Array", "StringArray"
+#ifdef OS_RT_MALLOC
+        , "RtString"
+#endif
     };
     for (const std::string& name : canonical_names) {
         BOOST_CHECK_MESSAGE(Types()->type(name), "Missing canonical type " + name);
@@ -93,7 +103,8 @@ BOOST_AUTO_TEST_CASE( testCanonicalBuiltinTypesAreRegistered )
     const std::vector<std::string> legacy_names = {
         "bool", "int8", "uint8", "short", "ushort", "int16", "uint16",
         "int", "uint", "int32", "uint32", "llong", "ullong", "int64",
-        "uint64", "float", "double", "char", "string", "void"
+        "uint64", "float", "double", "char", "string", "void", "array",
+        "ints", "strings", "rt_string"
     };
     for (const std::string& name : legacy_names) {
         BOOST_CHECK_MESSAGE(!Types()->type(name), "Legacy type is still registered: " + name);
@@ -117,6 +128,12 @@ BOOST_AUTO_TEST_CASE( testCanonicalBuiltinTypesAreRegistered )
     RTT_CHECK_CANONICAL_TYPE(char, "Char");
     RTT_CHECK_CANONICAL_TYPE(std::string, "String");
     RTT_CHECK_CANONICAL_TYPE(void, "Void");
+    RTT_CHECK_CANONICAL_TYPE(std::vector<double>, "Float64Array");
+    RTT_CHECK_CANONICAL_TYPE(std::vector<std::int32_t>, "Int32Array");
+    RTT_CHECK_CANONICAL_TYPE(std::vector<std::string>, "StringArray");
+#ifdef OS_RT_MALLOC
+    RTT_CHECK_CANONICAL_TYPE(RTT::rt_string, "RtString");
+#endif
 
 #undef RTT_CHECK_CANONICAL_TYPE
 

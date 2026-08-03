@@ -88,10 +88,9 @@ BOOST_AUTO_TEST_CASE( testCTypeArray )
     BOOST_CHECK_EQUAL( a2->get(), tester[2] );
 }
 
-// Test the SequenceTypeInfo for ints
+// Test the canonical SequenceTypeInfo for 32-bit integers.
 BOOST_AUTO_TEST_CASE( testContainerType )
 {
-    Types()->addType( new SequenceTypeInfo< std::vector<int> >("ints") );
     vector<int> tester;
     tester.push_back( 3 );
     tester.push_back( 2 );
@@ -99,7 +98,7 @@ BOOST_AUTO_TEST_CASE( testContainerType )
 
     AssignableDataSource< vector<int> >::shared_ptr atype = new ReferenceDataSource< vector<int> >( tester );
 
-    BOOST_REQUIRE( Types()->type("ints") == atype->getTypeInfo() );
+    BOOST_REQUIRE( Types()->type("Int32Array") == atype->getTypeInfo() );
 
     // check the part names lookup:
     vector<string> names = atype->getMemberNames();

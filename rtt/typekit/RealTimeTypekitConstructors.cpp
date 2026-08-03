@@ -289,8 +289,8 @@ namespace RTT
 
         ti->type("String")->addConstructor( newConstructor( string_ctor() ) );
 #ifdef OS_RT_MALLOC
-        ti->type("rt_string")->addConstructor( newConstructor( rt_string_ctor_int() ) );
-        ti->type("rt_string")->addConstructor( newConstructor( rt_string_ctor_string() ) );
+        ti->type("RtString")->addConstructor( newConstructor( rt_string_ctor_int() ) );
+        ti->type("RtString")->addConstructor( newConstructor( rt_string_ctor_string() ) );
         ti->type("String")->addConstructor( newConstructor( string_ctor_rt_string() ) );
 #endif
         TypeInfo* bool_type = ti->type("Bool");

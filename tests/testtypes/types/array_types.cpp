@@ -11,8 +11,6 @@ void loadArrayTypes()
     // 3 types of arrays: carray, boost array and std::vector
     Types()->addType( new CArrayTypeInfo< carray<int> >("int[]") );
     Types()->addType( new BoostArrayTypeInfo< boost::array<int,5> >("int5") );
-    Types()->addType( new SequenceTypeInfo< vector<int> >("ints") );
-
     Types()->addType( new CArrayTypeInfo< carray<double> >("double[]") );
     Types()->addType( new CArrayTypeInfo< carray<char> >("char[]") );
 }

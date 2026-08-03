@@ -191,11 +191,11 @@ namespace RTT {
 #ifndef RTT_NO_STD_TYPES
             if ( name == "String" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<std::string>() );
-            if ( name == "array" )
+            if ( name == "Float64Array" )
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol< std::vector<double> >() );
 #endif
 #ifdef OS_RT_MALLOC
-            if ( name == "rt_string")
+            if ( name == "RtString")
                 return ti->addProtocol(ORO_CORBA_PROTOCOL_ID, new CorbaTemplateProtocol<rt_string>() );
 #endif
             if ( name == "Void" )

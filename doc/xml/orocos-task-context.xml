@@ -1720,7 +1720,7 @@ Hello [R]&gt;
 	      <row>
 		<entry>C++ Container types : std::string, std::vector&lt;double&gt;</entry>
 		<entry><emphasis>(const) &amp;</emphasis></entry>
-		<entry>string, array</entry>
+		<entry>String, Float64Array</entry>
 	      </row>
 	      <row>
 		<entry>Orocos Fixed Container types : RTT::Double6D, KDL::[Frame | Rotation | Twist | ... ]</entry>

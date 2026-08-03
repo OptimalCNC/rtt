@@ -50,7 +50,7 @@ namespace RTT
         struct RTStringTypeInfo: public SequenceTypeInfo<rt_string, true>
         {
             RTStringTypeInfo() :
-                SequenceTypeInfo<rt_string, true> ("rt_string")
+                SequenceTypeInfo<rt_string, true> ("RtString")
             {
             }
 

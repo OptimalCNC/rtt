@@ -38,6 +38,8 @@
 
 #include "rtt-typekit-config.h"
 
+#include <cstdint>
+
 #include "RealTimeTypekit.hpp"
 #ifndef RTT_NO_STD_TYPES
 #include "StdStringTypeInfo.hpp"
@@ -57,7 +59,9 @@ namespace RTT
         // from a c-style string obviously disables a copy-on-write connection.
 #ifndef RTT_NO_STD_TYPES
         ti->addType( new StdStringTypeInfo("String") );
-        ti->addType( new SequenceTypeInfo<std::vector<double> >("array") );
+        ti->addType( new SequenceTypeInfo<std::vector<double> >("Float64Array") );
+        ti->addType( new SequenceTypeInfo<std::vector<std::int32_t> >("Int32Array") );
+        ti->addType( new SequenceTypeInfo<std::vector<std::string> >("StringArray") );
 #endif
 #ifdef OS_RT_MALLOC
         ti->addType( new RTStringTypeInfo() );

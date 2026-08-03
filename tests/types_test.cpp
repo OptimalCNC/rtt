@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE( testTypes )
         "do test.assert( bc == false )\n" +
         "const String sc= \"hello\"\n"+
         "do test.assert( sc == \"hello\" )\n" +
-        "var array ar(10)\n"+ // size hint syntax != constructor syntax
+        "var Float64Array ar(10)\n"+ // size hint syntax != constructor syntax
         "do test.assert( ar.size == 10)\n"+
         // 20:
         "do test.assert( ar.capacity == 10)\n"+
@@ -178,20 +178,20 @@ BOOST_AUTO_TEST_CASE( testTypes )
         // 30:
         "do test.assert( ar[9] == 9.0 )\n"+
         "do test.assert( ar[10] == 0.0 )\n"+
-        "var array ar1 = array(12,2.0)\n"+
+        "var Float64Array ar1 = Float64Array(12,2.0)\n"+
         "do test.assert(ar1.size == 12)\n"+
 //        "do test.print(ar1[11])\n"+
         "do test.assert(ar1[0] == 2.0)\n"+
-        "var array ar2 = array(5,3.0)\n"+
+        "var Float64Array ar2 = Float64Array(5,3.0)\n"+
         "do test.assert(ar2.size == 5)\n"+
         "do test.assert(ar2[0] == 3.0)\n"+
-        "var array ar3(3) = array(2.0,3.0,4.0)\n"+
+        "var Float64Array ar3(3) = Float64Array(2.0,3.0,4.0)\n"+
         "do test.assert(ar3.size == 3)\n"+
         //40:
         "do test.assert(ar3[0]==2.0)\n"+
         "do test.assert(ar3[1]==3.0)\n"+
         "do test.assert(ar3[2]==4.0)\n"+
-        "var array ar4 = array(2.0,3.0,4.0,5.0)\n"+
+        "var Float64Array ar4 = Float64Array(2.0,3.0,4.0,5.0)\n"+
         "do test.assert(ar4.size == 4)\n"+
         "do test.assert(ar4[0]==2.0)\n"+
         "do test.assert(ar4[1]==3.0)\n"+
@@ -222,17 +222,17 @@ BOOST_AUTO_TEST_CASE( testTypes )
         "do test.assert( str[9] == '\\0' )\n"+
         "do test.assert( str[10] == '\\0' )\n"+
         // various array constructors
-        "set ar2 = array(10.,5.)\n"+ // keeps capacity
+        "set ar2 = Float64Array(10.,5.)\n"+ // keeps capacity
         "do test.assertEqual( ar2.size, 2)\n"+
         "do test.assertEqual( ar2.capacity, 5)\n"+
         "do test.assert( ar2[0] == 10.0 )\n"+
         "do test.assert( ar2[1] == 5.0 )\n"+
-        "set ar3 = array(10.)\n"+
+        "set ar3 = Float64Array(10.)\n"+
         "do test.assert( ar3.size == 1)\n"+
         // 70:
         "do test.assert( ar3.capacity >= 1)\n"+
         "do test.assert( ar3[0] == 10.0 )\n"+
-        "set ar4 = array(2, 7.)\n"+
+        "set ar4 = Float64Array(2, 7.)\n"+
         "do test.assert( ar4.size == 2)\n"+
         "do test.assert( ar4.capacity >= 2)\n"+
         "do test.assert( ar4[0] == 7.0 )\n"+
@@ -245,7 +245,7 @@ BOOST_AUTO_TEST_CASE( testTypes )
         "do test.assert( ar2[0] == 7.0 )\n"+
         "do test.assert( ar2[1] == 7.0 )\n"+
         "do test.assert( ar.capacity == 10)\n"+ // pre-condition
-        "var array ar7(7) = array(7)\n"+
+        "var Float64Array ar7(7) = Float64Array(7)\n"+
         "set ar = ar7\n"+                       // assignment must keep capacity and only change size
         //"do test.print( ar.size )\n"+
         "do test.assert( ar.size == 7)\n"+
@@ -357,7 +357,7 @@ BOOST_AUTO_TEST_CASE( testOperators )
         "do  test.assertMsg( s == \"  string  10 false\", \"Unexpected string:\'\" + s +\"' instead of '  string  10 false'\")\n"+
         "set b = b\n ||\n b\n &&\n true\n && false\n || true\n"+
         "do test.assert( b == false )\n" +
-        "var array a1 = array(2, 7.)\n"+
+        "var Float64Array a1 = Float64Array(2, 7.)\n"+
         "do test.assert( a1.size == 2 )\n" +
         "do test.assert( a1.capacity == 2 )\n" +
 //         "set s = s+\"abc\"\n"+
@@ -378,7 +378,7 @@ BOOST_AUTO_TEST_CASE( testDotsAndIndexes )
     Types()->addType( new SequenceTypeInfo<std::vector<CType>,false >("cstructv"));
     Types()->addType( new SequenceTypeInfo<std::vector<AType>,false >("astructv"));
     string prog = string("program x {\n") +
-        "var matrix m = matrix(8,array(10))\n" + // 8 by 10 matrix
+        "var matrix m = matrix(8,Float64Array(10))\n" + // 8 by 10 matrix
         "test.assertMsg(m.size == 8, \"Matrix column size is wrong.\")\n" +
         "test.assertMsg(m[0].size == 10, \"Matrix row size is wrong.\")\n" +
         "m[0][0] = 3.33\n" +

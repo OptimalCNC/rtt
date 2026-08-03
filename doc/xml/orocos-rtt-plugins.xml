@@ -134,7 +134,9 @@ Deployer [S]> <command>import("myrobot")</command>
        <command>.types</command> and <command>.typekits</command> commands:
        <screen>
 Deployer [S]> <command>.types</command>
-Available data types:  ConnPolicy FlowStatus PropertyBag SendHandle SendStatus TaskContext array bool char double float int rt_string string uint void
+Available data types: Bool Char ConnPolicy Float32 Float64 Float64Array FlowStatus
+Int8 Int16 Int32 Int32Array Int64 PropertyBag RtString SendHandle SendStatus
+String StringArray TaskContext UInt8 UInt16 UInt32 UInt64 Void
 Deployer [S]> <command>.services</command>
 Available Services:  scripting marshalling
 Deployer [S]> 

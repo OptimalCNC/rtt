@@ -321,7 +321,8 @@
 	  <para>
 	    Variables, constants and aliases can use any registered RTT type.
 	    The built-in names are Bool, Int8, UInt8, Int16, UInt16, Int32,
-	    UInt32, Int64, UInt64, Float32, Float64, Char, String, Void and array.
+	    UInt32, Int64, UInt64, Float32, Float64, Char, String, Void,
+	    Float64Array, Int32Array, StringArray and RtString.
 	    The Orocos Typekit System allows any application or
 	    library to extend these types.
 	  </para>
@@ -330,7 +331,7 @@
 	  <title>Strings and Arrays</title>
 	  <para>
 	    For convenience, two variable size types have been
-	    added to the parser : <type>String</type> and <type>array</type>.
+	    added to the parser : <type>String</type> and <type>Float64Array</type>.
 	    They are special because their contents have variable size.
 	    For example a string can be empty or contain 10 characters. The
 	    same holds for an array, which contains doubles. String and array
@@ -348,7 +349,7 @@
 	    constructors:
 	  </para>
 	<table frame="all">
-	  <title>array and String constructors</title>
+	  <title>Float64Array and String constructors</title>
 	  <tgroup cols="3">
 	    <thead>
 	      <row>
@@ -369,23 +370,23 @@
 		<entry>Creates a string with contents "Hello World".</entry>
 	      </row>
 	      <row>
-		<entry><programlisting>var array x = array()</programlisting></entry>
-		<entry><programlisting>var array x</programlisting></entry>
+		<entry><programlisting>var Float64Array x = Float64Array()</programlisting></entry>
+		<entry><programlisting>var Float64Array x</programlisting></entry>
 		<entry>Creates an empty array. (<type>std::vector&lt;double&gt;)</type></entry>
 	      </row>
 	      <row>
-		<entry><programlisting>var array x = array(10)</programlisting></entry>
-		<entry><programlisting>var array x(10)</programlisting></entry>
+		<entry><programlisting>var Float64Array x = Float64Array(10)</programlisting></entry>
+		<entry><programlisting>var Float64Array x(10)</programlisting></entry>
 		<entry>Creates an array with 10 elements, all equal to 0.0.</entry>
 	      </row>
 	      <row>
-		<entry><programlisting>var array x = array(10, 3.0)</programlisting></entry>
-		<entry><programlisting>var array x(10, 3.0)</programlisting></entry>
+		<entry><programlisting>var Float64Array x = Float64Array(10, 3.0)</programlisting></entry>
+		<entry><programlisting>var Float64Array x(10, 3.0)</programlisting></entry>
 		<entry>Creates an array with 10 elements, all equal to 3.0.</entry>
 	      </row>
 	      <row>
-		<entry><programlisting>var array x = array(1.0, 2.0, 3.0)</programlisting></entry>
-		<entry><programlisting>var array x(1.0, 2.0, 3.0)</programlisting></entry>
+		<entry><programlisting>var Float64Array x = Float64Array(1.0, 2.0, 3.0)</programlisting></entry>
+		<entry><programlisting>var Float64Array x(1.0, 2.0, 3.0)</programlisting></entry>
 		<entry>Creates an array with 3 elements: {1.0, 2.0, 3.0}. Any number of
 		arguments may be given.</entry>
 	      </row>
@@ -401,7 +402,7 @@
   var String applestring = &quot;apples&quot;
 
   // values is expanded to contain 15 elements (non real-time)
-  var array  values      = array(15)         
+  var Float64Array values = Float64Array(15)
 
   // A fixed string and fixed array :
   var String fixstring(10)  // may contain a string of maximum 10 characters
@@ -410,36 +411,36 @@
   fixstring  = "0123456789x" // allocates new memory (non real-time).
 
 
-  var array  fixvalues(10)  // fixvalues pre-allocated 10 elements
-  var array  morevalues(20) // arrays are initialised with n doubles of value 0.0 
+  var Float64Array fixvalues(10)  // fixvalues pre-allocated 10 elements
+  var Float64Array morevalues(20) // arrays are initialised with n doubles of value 0.0
 
   fixvalues  = morevalues  // will cause allocation in 'fixvalues'
   morevalues = fixvalues   // ok, morevalues has enough capacity, now contains 10 doubles
 
   fixvalues  = morevalues  // ok, since morevalues only contains 10 items.
 
-  values     = array(20)   // expand values to contain 20 doubles. (non real-time) 
+  values     = Float64Array(20)   // expand values to contain 20 doubles. (non real-time)
 
-  var array list(1.0, 2.0, 3.0, 4.0) // list contains {1.0, 2.0, 3.0, 4.0}
-  var array biglist;                 // creates an empty array
+  var Float64Array list(1.0, 2.0, 3.0, 4.0) // list contains {1.0, 2.0, 3.0, 4.0}
+  var Float64Array biglist;                 // creates an empty array
   biglist = list           // 'biglist' is now equal to 'list' (non real-time)
 	  </programlisting>
 	</example>
 	  <important>
 	    <para>
-	      The 'size' value given upon construction (array(10) or String(17)) must be a
+	      The 'size' value given upon construction (Float64Array(10) or String(17)) must be a
 	      <emphasis>legal expression at parse time and is only
 	      evaluated once</emphasis>. The safest method is using a
 	      literal integer ( i.e. (10) like in the examples ), but if you
 	      create a Task constant or variable which holds an
 	      integer, you can also use it as in :
-	      <programlisting>  var array example( 5 * numberOfItems )</programlisting>
+	      <programlisting>  var Float64Array example( 5 * numberOfItems )</programlisting>
 	      The expression may not contain any
 	      program variables, these will all be zero upon parse
 	      time ! The following example is <emphasis>a common mistake</emphasis>
 	      also :
 	      <programlisting>  numberOfItems = 10
-  var array example( 5 * numberOfItems )</programlisting>
+  var Float64Array example( 5 * numberOfItems )</programlisting>
               Which will not lead to '50', but to '5 times the
 	      value of numberOfItems, being still zero, when the program is parsed.
 	    </para>
@@ -497,8 +498,8 @@
   // retrieve size and capacity of a string :
   var Int32 size = s1.size
   var Int32 cap  = s1.capacity</programlisting>
-	    <programlisting>  var array a1( 10 )
-  var array a2(20) = a1
+	    <programlisting>  var Float64Array a1( 10 )
+  var Float64Array a2(20) = a1
 
   // retrieve size and capacity of a array :
   var Int32 size = a2.size      // 10
@@ -1983,7 +1984,7 @@
       var Bool stop                  = true
     
       const Float64 pi = 3.14159265358979
-      var array pos = array(6,0.0)
+      var Float64Array pos = Float64Array(6,0.0)
     
     
       initial state StartRobotState {
@@ -2030,7 +2031,7 @@
         entry {
           nAxesGeneratorPos.start()
           nAxesControllerPosVel.start() 
-          pos = array(6,0.0)
+          pos = Float64Array(6,0.0)
           nAxesGeneratorPos.moveTo(pos,0.0)
           pos[0]=-pi/2.0
           pos[1]=-pi/2.0

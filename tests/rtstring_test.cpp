@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( testCreateRtString )
 {
     string prog = string("StateMachine X {\n")
         + "   initial state INIT {\n"
-        + "     var rt_string s1\n"
+        + "     var RtString s1\n"
         + "     transitions { select FINI }\n"
         + "   }\n"
         + "   final state FINI {\n"
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( testCreateRtstringOfFixedSize )
 {
     string prog = string("StateMachine X {\n")
         + "   initial state INIT {\n"
-        + "     var rt_string s1(22)\n"
+        + "     var RtString s1(22)\n"
         + "     transitions { select FINI }\n"
         + "   }\n"
         + "   final state FINI {\n"
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE( testCreateRtstringFromCharPtr )
 {
     string prog = string("StateMachine X {\n")
         + "   initial state INIT {\n"
-        + "     var rt_string s1(\"hello world\")\n"
+        + "     var RtString s1(\"hello world\")\n"
         + "     transitions { select FINI }\n"
         + "   }\n"
         + "   final state FINI {\n"
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE( testCreateRtstringFromRtString )
 {
     string prog = string("StateMachine X {\n")
         + "   initial state INIT {\n"
-        + "     var rt_string s1 = rt_string(\"hello world\")\n"
+        + "     var RtString s1 = RtString(\"hello world\")\n"
         + "     transitions { select FINI }\n"
         + "   }\n"
         + "   final state FINI {\n"
@@ -138,13 +138,13 @@ BOOST_AUTO_TEST_CASE( testConcatRtstring )
 {
     string prog = string("StateMachine X {\n")
         + "   initial state INIT {\n"
-        + "     var rt_string s1\n"
+        + "     var RtString s1\n"
         + "     entry {\n"
-        + "       s1 =  rt_string(\"Multiply \")\n"
+        + "       s1 =  RtString(\"Multiply \")\n"
         + "       s1 =  s1 + 10\n"
-        + "       s1 =  s1 + rt_string(\" times \")\n"
+        + "       s1 =  s1 + RtString(\" times \")\n"
         + "       s1 =  s1 + 33.3\n"
-        + "       s1 =  rt_string(\"Now: \") + 1 + rt_string(\"st \") + s1 + '!'\n"
+        + "       s1 =  RtString(\"Now: \") + 1 + RtString(\"st \") + s1 + '!'\n"
         + "     }\n"
         + "     transitions { select FINI }\n"
         + "   }\n"
@@ -162,23 +162,23 @@ BOOST_AUTO_TEST_CASE( testRtstringConversion )
 {
     string prog = string("StateMachine X {\n")
         + "   initial state INIT {\n"
-        + "     var rt_string rts1\n"
+        + "     var RtString rts1\n"
         + "     var String s1\n"
         + "     entry {\n"
         + "       s1 =  \"s1\"\n"
-        + "       rts1 =  rt_string(\"rts1\")\n"
+        + "       rts1 =  RtString(\"rts1\")\n"
         + "       test.assert(s1 ==  \"s1\")\n"
-        + "       test.assert(rts1 ==  rt_string(\"rts1\"))\n"
+        + "       test.assert(rts1 ==  RtString(\"rts1\"))\n"
         + "       s1 = String(rts1)\n"
         + "       test.assert(s1 == String(rts1))\n"
         + "       test.assert(s1 == \"rts1\")\n"
         + "       s1 =  \"s1\"\n"
-        + "       rts1 = rt_string(s1)\n"
-        + "       test.assert(rts1 == rt_string(\"s1\"))\n"
-        + "       s1 =  String( rt_string(\" s1 \") )\n"
-        + "       rts1 =  rt_string( String(\" rts1 \") )\n"
+        + "       rts1 = RtString(s1)\n"
+        + "       test.assert(rts1 == RtString(\"s1\"))\n"
+        + "       s1 =  String( RtString(\" s1 \") )\n"
+        + "       rts1 =  RtString( String(\" rts1 \") )\n"
         + "       test.assert(s1 ==  \" s1 \")\n"
-        + "       test.assert(rts1 ==  rt_string(\" rts1 \"))\n"
+        + "       test.assert(rts1 ==  RtString(\" rts1 \"))\n"
         + "     }\n"
         + "     transitions { select FINI }\n"
         + "   }\n"

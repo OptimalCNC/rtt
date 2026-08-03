@@ -101,8 +101,6 @@ BOOST_AUTO_TEST_CASE( testCTypeStruct )
     Types()->addType( new SequenceTypeInfo< vector<BType> >("bs") );
     Types()->addType( new CArrayTypeInfo< carray<int> >("cints") );
     Types()->addType( new BoostArrayTypeInfo< boost::array<int,5> >("int5") );
-    Types()->addType( new SequenceTypeInfo< vector<int> >("ints") );
-
     AssignableDataSource<CType>::shared_ptr atype = new ValueDataSource<CType>( CType(true) );
 
     // decompose a complex type
@@ -149,4 +147,3 @@ BOOST_AUTO_TEST_CASE( testCTypeStruct )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
-

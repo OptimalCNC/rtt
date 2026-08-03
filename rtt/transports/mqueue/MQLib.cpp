@@ -80,7 +80,7 @@ namespace RTT {
             //    return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<PropertyBag>() );
             if ( name == "Bool" )
                 return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQTemplateProtocol<bool>() );
-            if ( name == "array" )
+            if ( name == "Float64Array" )
                 return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQSerializationProtocol< std::vector<double> >() );
             //if ( name == "Void" )
             //    return ti->addProtocol(ORO_MQUEUE_PROTOCOL_ID, new MQFallBackProtocol(false)); // warn=false
