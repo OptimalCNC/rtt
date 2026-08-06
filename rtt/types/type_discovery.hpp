@@ -183,8 +183,8 @@ namespace RTT
 
             /**
              * This function discovers a single part of a serializable struct
-             * and returns an assignable datasource to that member of that struct, or a null
-             * ptr if no such member exists or if the member is not assignable.
+             * and returns a datasource with the configured writability, or a
+             * null ptr if no such member exists.
              */
             template<class T>
             base::DataSourceBase::shared_ptr discoverMember( T& t, const std::string name) {

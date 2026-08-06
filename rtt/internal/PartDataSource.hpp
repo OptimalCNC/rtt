@@ -39,6 +39,9 @@
 #ifndef ORO_PARTDATASOURCE_HPP_
 #define ORO_PARTDATASOURCE_HPP_
 
+#include <cstddef>
+#include <memory>
+
 #include "DataSource.hpp"
 #include "../types/carray.hpp"
 
@@ -140,6 +143,26 @@ namespace RTT
         {
             typename DataSource<T>::value_t mvalue;
             base::DataSourceBase::shared_ptr mparent;
+            std::ptrdiff_t moffset;
+
+            static std::ptrdiff_t memberOffset(
+                const void* member, base::DataSourceBase::shared_ptr parent)
+            {
+                const void* parent_value = parent->getRawConstPointer();
+                assert(parent_value != 0 && "Read-only part requires a readable parent.");
+                if (parent_value == 0) {
+                    throw std::runtime_error(
+                        "PartDataSource.hpp: Read-only part has no readable parent.");
+                }
+                return reinterpret_cast<const unsigned char*>(member) -
+                       reinterpret_cast<const unsigned char*>(parent_value);
+            }
+
+            ReadOnlyPartDataSource(
+                typename DataSource<T>::const_reference_t value,
+                base::DataSourceBase::shared_ptr parent,
+                std::ptrdiff_t offset)
+                : mvalue(value), mparent(parent), moffset(offset) {}
 
         public:
             typedef boost::intrusive_ptr<ReadOnlyPartDataSource<T> > shared_ptr;
@@ -147,7 +170,8 @@ namespace RTT
             ReadOnlyPartDataSource(
                 typename DataSource<T>::const_reference_t value,
                 base::DataSourceBase::shared_ptr parent)
-                : mvalue(value), mparent(parent) {}
+                : mvalue(value), mparent(parent),
+                  moffset(memberOffset(&value, parent)) {}
 
             typename DataSource<T>::result_t get() const { return mvalue; }
             typename DataSource<T>::result_t value() const { return mvalue; }
@@ -155,7 +179,7 @@ namespace RTT
 
             ReadOnlyPartDataSource<T>* clone() const override
             {
-                return new ReadOnlyPartDataSource<T>(mvalue, mparent);
+                return new ReadOnlyPartDataSource<T>(mvalue, mparent, moffset);
             }
 
             ReadOnlyPartDataSource<T>* copy(
@@ -165,8 +189,133 @@ namespace RTT
                 if (replace[this] != 0) {
                     return static_cast<ReadOnlyPartDataSource<T>*>(replace[this]);
                 }
-                replace[this] = new ReadOnlyPartDataSource<T>(mvalue, mparent);
+                base::DataSourceBase::shared_ptr parent_copy =
+                    mparent->copy(replace);
+                const void* parent_value = parent_copy->getRawConstPointer();
+                assert(parent_value != 0 && "Copied read-only part requires a readable parent.");
+                if (parent_value == 0) {
+                    throw std::runtime_error(
+                        "PartDataSource.hpp: Copied read-only part has no readable parent.");
+                }
+                const typename DataSource<T>::value_t* value_copy =
+                    reinterpret_cast<const typename DataSource<T>::value_t*>(
+                        reinterpret_cast<const unsigned char*>(parent_value) + moffset);
+                replace[this] =
+                    new ReadOnlyPartDataSource<T>(*value_copy, parent_copy, moffset);
                 return static_cast<ReadOnlyPartDataSource<T>*>(replace[this]);
+            }
+        };
+
+        template <typename T>
+        class ReadOnlyPartDataSource< types::carray<T> >
+            : public DataSource< types::carray<T> >
+        {
+            std::size_t mcount;
+            std::unique_ptr<T[]> mvalue;
+            mutable std::unique_ptr<T[]> mpresentation;
+            mutable types::carray<T> mview;
+            base::DataSourceBase::shared_ptr mparent;
+            std::ptrdiff_t moffset;
+
+            static std::ptrdiff_t memberOffset(
+                types::carray<T> value,
+                base::DataSourceBase::shared_ptr parent)
+            {
+                if (value.count() == 0) {
+                    return 0;
+                }
+                const void* parent_value = parent->getRawConstPointer();
+                assert(parent_value != 0 && "Read-only array part requires a readable parent.");
+                if (parent_value == 0) {
+                    throw std::runtime_error(
+                        "PartDataSource.hpp: Read-only array part has no readable parent.");
+                }
+                return reinterpret_cast<const unsigned char*>(value.address()) -
+                       reinterpret_cast<const unsigned char*>(parent_value);
+            }
+
+            ReadOnlyPartDataSource(
+                const T* value, std::size_t count,
+                base::DataSourceBase::shared_ptr parent,
+                std::ptrdiff_t offset)
+                : mcount(count), mvalue(count ? new T[count] : 0),
+                  mpresentation(count ? new T[count] : 0), mview(),
+                  mparent(parent), moffset(offset)
+            {
+                for (std::size_t i = 0; i != count; ++i) {
+                    mvalue[i] = value[i];
+                }
+            }
+
+            void refreshView() const
+            {
+                for (std::size_t i = 0; i != mcount; ++i) {
+                    mpresentation[i] = mvalue[i];
+                }
+                mview.init(mpresentation.get(), mcount);
+            }
+
+        public:
+            typedef boost::intrusive_ptr<
+                ReadOnlyPartDataSource< types::carray<T> > > shared_ptr;
+
+            ReadOnlyPartDataSource(
+                typename DataSource< types::carray<T> >::const_reference_t value,
+                base::DataSourceBase::shared_ptr parent)
+                : mcount(value.count()),
+                  mvalue(mcount ? new T[mcount] : 0),
+                  mpresentation(mcount ? new T[mcount] : 0), mview(),
+                  mparent(parent), moffset(memberOffset(value, parent))
+            {
+                for (std::size_t i = 0; i != value.count(); ++i) {
+                    mvalue[i] = value.address()[i];
+                }
+            }
+
+            types::carray<T> get() const
+            {
+                refreshView();
+                return mview;
+            }
+
+            types::carray<T> value() const
+            {
+                refreshView();
+                return mview;
+            }
+
+            types::carray<T> const& rvalue() const
+            {
+                refreshView();
+                return mview;
+            }
+
+            ReadOnlyPartDataSource* clone() const override
+            {
+                return new ReadOnlyPartDataSource(
+                    mvalue.get(), mcount, mparent, moffset);
+            }
+
+            ReadOnlyPartDataSource* copy(
+                std::map<const base::DataSourceBase*, base::DataSourceBase*>& replace)
+                const override
+            {
+                if (replace[this] != 0) {
+                    return static_cast<ReadOnlyPartDataSource*>(replace[this]);
+                }
+                base::DataSourceBase::shared_ptr parent_copy =
+                    mparent->copy(replace);
+                const void* parent_value = parent_copy->getRawConstPointer();
+                assert(parent_value != 0 && "Copied read-only array part requires a readable parent.");
+                if (parent_value == 0) {
+                    throw std::runtime_error(
+                        "PartDataSource.hpp: Copied read-only array part has no readable parent.");
+                }
+                const T* value_copy = reinterpret_cast<const T*>(
+                    reinterpret_cast<const unsigned char*>(parent_value) + moffset);
+                replace[this] = new ReadOnlyPartDataSource(
+                    value_copy, mcount, parent_copy, moffset);
+                return static_cast<ReadOnlyPartDataSource*>(replace[this]);
             }
         };
 

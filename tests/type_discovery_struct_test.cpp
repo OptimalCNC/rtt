@@ -170,4 +170,104 @@ BOOST_AUTO_TEST_CASE( testCTypeStruct )
     BOOST_CHECK(!nested->isAssignable());
 }
 
+BOOST_AUTO_TEST_CASE( testReadOnlyArrayViewsCannotMutateSnapshots )
+{
+    Types()->addType( new StructTypeInfo<AType>("AType") );
+    Types()->addType( new StructTypeInfo<BType>("BType") );
+
+    DataSourceBase::shared_ptr boost_array_member;
+    DataSourceBase::shared_ptr c_array_member;
+    {
+        DataSource<AType>::shared_ptr boost_array_parent =
+            new ConstantDataSource<AType>(AType(true));
+        DataSource<BType>::shared_ptr c_array_parent =
+            new ConstantDataSource<BType>(BType(true));
+        boost_array_member = boost_array_parent->getMember("ai");
+        c_array_member = c_array_parent->getMember("ai");
+    }
+
+    DataSource<carray<int> >::shared_ptr readable_boost_array =
+        DataSource<carray<int> >::narrow(boost_array_member.get());
+    DataSource<carray<int> >::shared_ptr readable_c_array =
+        DataSource<carray<int> >::narrow(c_array_member.get());
+    BOOST_REQUIRE(readable_boost_array);
+    BOOST_REQUIRE(readable_c_array);
+
+    carray<int> boost_array_view = readable_boost_array->get();
+    carray<int> c_array_view = readable_c_array->get();
+    BOOST_REQUIRE(boost_array_view.address());
+    BOOST_REQUIRE(c_array_view.address());
+    boost_array_view.address()[3] = 7;
+    c_array_view.address()[3] = 8;
+
+    BOOST_CHECK_EQUAL(readable_boost_array->get().address()[3], 99);
+    BOOST_CHECK_EQUAL(readable_c_array->get().address()[3], 99);
+}
+
+BOOST_AUTO_TEST_CASE( testReadOnlyArrayCloneKeepsCanonicalValue )
+{
+    Types()->addType( new StructTypeInfo<AType>("AType") );
+
+    DataSource<AType>::shared_ptr parent =
+        new ConstantDataSource<AType>(AType(true));
+    DataSourceBase::shared_ptr member = parent->getMember("ai");
+    DataSource<carray<int> >::shared_ptr readable =
+        DataSource<carray<int> >::narrow(member.get());
+    BOOST_REQUIRE(readable);
+
+    carray<int> escaped = readable->get();
+    BOOST_REQUIRE(escaped.address());
+    escaped.address()[3] = 7;
+
+    DataSourceBase::shared_ptr cloned_base(member->clone());
+    DataSource<carray<int> >::shared_ptr cloned =
+        DataSource<carray<int> >::narrow(cloned_base.get());
+    BOOST_REQUIRE(cloned);
+    parent.reset();
+    member.reset();
+
+    BOOST_CHECK_EQUAL(cloned->get().address()[3], 99);
+    BOOST_CHECK(!cloned->isAssignable());
+}
+
+BOOST_AUTO_TEST_CASE( testReadOnlyMemberCopiesUseReplacementParent )
+{
+    AssignableDataSource<AType>::shared_ptr source =
+        new ValueDataSource<AType>(AType(true));
+    type_discovery discovery(source, false);
+    DataSourceBase::shared_ptr source_scalar =
+        discovery.discoverMember(source->set(), "a");
+
+    type_discovery array_discovery(source, false);
+    DataSourceBase::shared_ptr source_array =
+        array_discovery.discoverMember(source->set(), "ai");
+    BOOST_REQUIRE(source_scalar);
+    BOOST_REQUIRE(source_array);
+
+    AssignableDataSource<AType>::shared_ptr replacement =
+        new ValueDataSource<AType>(AType(true));
+    replacement->set().a = 42;
+    replacement->set().ai[3] = 123;
+
+    std::map<const DataSourceBase*, DataSourceBase*> replacements;
+    replacements[source.get()] = replacement.get();
+    DataSourceBase::shared_ptr copied_scalar(source_scalar->copy(replacements));
+    DataSourceBase::shared_ptr copied_array(source_array->copy(replacements));
+
+    DataSource<int>::shared_ptr readable_scalar =
+        DataSource<int>::narrow(copied_scalar.get());
+    DataSource<carray<int> >::shared_ptr readable_array =
+        DataSource<carray<int> >::narrow(copied_array.get());
+    BOOST_REQUIRE(readable_scalar);
+    BOOST_REQUIRE(readable_array);
+    BOOST_CHECK_EQUAL(readable_scalar->get(), 42);
+    BOOST_CHECK_EQUAL(readable_array->get().address()[3], 123);
+
+    carray<int> escaped = readable_array->get();
+    BOOST_REQUIRE(escaped.address());
+    escaped.address()[3] = 7;
+    BOOST_CHECK_EQUAL(readable_array->get().address()[3], 123);
+    BOOST_CHECK_EQUAL(replacement->get().ai[3], 123);
+}
+
 BOOST_AUTO_TEST_SUITE_END()
