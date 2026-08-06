@@ -84,6 +84,7 @@
 
 #include <vector>
 #include <string>
+#include <type_traits>
 #include "../base/DataSourceBase.hpp"
 #include "../internal/PartDataSource.hpp"
 #include "../internal/DataSources.hpp"
@@ -280,6 +281,34 @@ namespace RTT
                 } else {
                     mparts.push_back(
                         new internal::ReadOnlyPartDataSource<T>(value, mparent));
+                }
+            }
+
+            template <typename T>
+            void addReadOnlyArrayPart(carray<T>& value, std::true_type)
+            {
+                mparts.push_back(
+                    new internal::ReadOnlyPartDataSource<carray<T> >(
+                        value, mparent));
+            }
+
+            template <typename T>
+            void addReadOnlyArrayPart(carray<T>&, std::false_type)
+            {
+            }
+
+            template <typename T>
+            void addPart(carray<T>& value)
+            {
+                if (!mparent) {
+                    return;
+                }
+                if (mparts_assignable) {
+                    mparts.push_back(
+                        new internal::PartDataSource<carray<T> >(value, mparent));
+                } else {
+                    addReadOnlyArrayPart(
+                        value, typename std::is_copy_constructible<T>::type());
                 }
             }
 
