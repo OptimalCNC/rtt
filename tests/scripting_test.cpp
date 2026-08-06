@@ -42,6 +42,26 @@ using namespace RTT::detail;
 // Registers the fixture into the 'registry'
 BOOST_FIXTURE_TEST_SUITE(  ScriptingTestSuite,  OperationsFixture )
 
+BOOST_AUTO_TEST_CASE(TestScriptingStatusOperationsUseCanonicalTypes)
+{
+    PluginLoader::Instance()->loadService("scripting",tc);
+    Service::shared_ptr service = tc->provides("scripting");
+    BOOST_REQUIRE(service);
+
+    OperationInterfacePart* program_status =
+        service->getOperation("getProgramStatus");
+    OperationInterfacePart* state_machine_status =
+        service->getOperation("getStateMachineStatus");
+    BOOST_REQUIRE(program_status);
+    BOOST_REQUIRE(state_machine_status);
+    BOOST_REQUIRE(program_status->getArgumentType(0));
+    BOOST_REQUIRE(state_machine_status->getArgumentType(0));
+    BOOST_CHECK_EQUAL(program_status->getArgumentType(0)->getTypeName(),
+                      "Int32");
+    BOOST_CHECK_EQUAL(state_machine_status->getArgumentType(0)->getTypeName(),
+                      "Int32");
+}
+
 //! Tests the scripting service's functions
 BOOST_AUTO_TEST_CASE(TestGetProvider)
 {

@@ -142,6 +142,11 @@ namespace RTT {
          return StateMachineStatus::unloaded;
      }
 
+     std::int32_t ScriptingService::getStateMachineStatusCode(const string& name) const
+     {
+         return static_cast<std::int32_t>(getStateMachineStatus(name));
+     }
+
      string ScriptingService::getStateMachineStatusStr(const string& name) const
      {
         switch ( getStateMachineStatus( name ))
@@ -336,6 +341,11 @@ namespace RTT {
         return ProgramStatus::unknown;
     }
 
+    std::int32_t ScriptingService::getProgramStatusCode(const string& name) const
+    {
+        return static_cast<std::int32_t>(getProgramStatus(name));
+    }
+
     string ScriptingService::getProgramStatusStr(const string& name) const
     {
        switch ( getProgramStatus( name ))
@@ -463,7 +473,7 @@ namespace RTT {
 
         // Query OperationCallers for programs
         addOperation("getProgramList", &ScriptingService::getProgramList, this).doc("Get a list of all loaded program scripts.");
-        addOperation("getProgramStatus", &ScriptingService::getProgramStatus, this).doc("Get the status of a program?").arg("Name", "The Name of the loaded Program");
+        addOperation("getProgramStatus", &ScriptingService::getProgramStatusCode, this).doc("Get the numeric status of a program.").arg("Name", "The Name of the loaded Program");
         addOperation("getProgramStatusStr", &ScriptingService::getProgramStatusStr, this).doc("Get the status of a program as a human readable string.").arg("Name", "The Name of the loaded Program");
         addOperation("getProgramLine", &ScriptingService::getProgramLine, this).doc("Get the current line of execution of a program?").arg("Name", "The Name of the loaded Program");
         addOperation("getProgramText", &ScriptingService::getProgramText, this).doc("Get the script of a program.").arg("Name", "The Name of the loaded Program");
@@ -475,7 +485,7 @@ namespace RTT {
 
         // Query OperationCallers for state machines
         addOperation("getStateMachineList", &ScriptingService::getStateMachineList, this).doc("Get a list of all loaded state machines");
-        addOperation("getStateMachineStatus", &ScriptingService::getStateMachineStatus, this).doc("Get the status of a state machine?").arg("Name", "The Name of the loaded State Machine");
+        addOperation("getStateMachineStatus", &ScriptingService::getStateMachineStatusCode, this).doc("Get the numeric status of a state machine.").arg("Name", "The Name of the loaded State Machine");
         addOperation("getStateMachineStatusStr", &ScriptingService::getStateMachineStatusStr, this).doc("Get the status of a state machine as a human readable string.");
         addOperation("getStateMachineLine", &ScriptingService::getStateMachineLine, this).doc("Get the current line of execution of a state machine?").arg("Name", "The Name of the loaded State Machine");
         addOperation("getStateMachineText", &ScriptingService::getStateMachineText, this).doc("Get the script of a StateMachine.").arg("Name", "The Name of the loaded StateMachine");

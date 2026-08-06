@@ -39,6 +39,7 @@
 #ifndef ORO_EXECUTION_SCRIPTING_ACCESS
 #define ORO_EXECUTION_SCRIPTING_ACCESS
 
+#include <cstdint>
 #include <vector>
 #include <map>
 #include <string>
@@ -547,6 +548,9 @@ namespace RTT
     protected:
         StatementProcessor* sproc;
         bool doExecute(const std::string& code);
+
+        std::int32_t getProgramStatusCode(const std::string& name) const;
+        std::int32_t getStateMachineStatusCode(const std::string& name) const;
 
         bool evalInternal(const std::string& filename, const std::string& code);
         bool doLoadPrograms( const std::string& filename );

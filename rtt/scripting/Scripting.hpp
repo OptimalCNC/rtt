@@ -43,10 +43,31 @@
 #include "ProgramInterface.hpp"
 #include "StateMachine.hpp"
 #include "../OperationCaller.hpp"
+#include <cstdint>
 #include <string>
 
 namespace RTT
 {
+
+    namespace detail
+    {
+        template<class StatusT>
+        class StatusOperationCaller
+            : public OperationCaller<std::int32_t (const std::string&)>
+        {
+            typedef OperationCaller<std::int32_t (const std::string&)> Base;
+
+        public:
+            explicit StatusOperationCaller(const std::string& name)
+                : Base(name)
+            {}
+
+            StatusT operator()(const std::string& name)
+            {
+                return static_cast<StatusT>(Base::operator()(name));
+            }
+        };
+    }
 
     /**
      * The method interface of the scripting plugin.
@@ -62,7 +83,7 @@ namespace RTT
 
         OperationCaller<bool (const std::string& )> unloadProgram;
 
-        OperationCaller<ProgramStatus::ProgramStatus (const std::string& )> getProgramStatus;
+        detail::StatusOperationCaller<ProgramStatus::ProgramStatus> getProgramStatus;
 
         OperationCaller<std::string (const std::string& )> getProgramStatusStr;
 
@@ -70,7 +91,7 @@ namespace RTT
 
         OperationCaller<bool ( const std::string&  )> unloadStateMachine;
 
-        OperationCaller<StateMachineStatus::StateMachineStatus (const std::string& )> getStateMachineStatus;
+        detail::StatusOperationCaller<StateMachineStatus::StateMachineStatus> getStateMachineStatus;
 
         OperationCaller<std::string (const std::string& )> getStateMachineStatusStr;
 
