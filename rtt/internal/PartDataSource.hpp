@@ -41,6 +41,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <type_traits>
 #include <utility>
 
 #include "DataSource.hpp"
@@ -266,10 +267,26 @@ namespace RTT
             const T* data() const { return mdata; }
             std::size_t size() const { return mconstructed; }
 
-            void replace(const T* source, std::size_t count)
+            void initialize(const T* source, std::size_t count)
             {
-                CopyConstructedBuffer replacement(source, count);
-                swap(replacement);
+                CopyConstructedBuffer initialized(source, count);
+                swap(initialized);
+            }
+
+            void copyAssign(const T* source)
+            {
+                for (std::size_t index = 0; index != mconstructed; ++index) {
+                    mdata[index] = source[index];
+                }
+            }
+
+            void reconstruct(const T* source) noexcept
+            {
+                for (std::size_t index = 0; index != mconstructed; ++index) {
+                    allocator_traits::destroy(mallocator, mdata + index);
+                    allocator_traits::construct(
+                        mallocator, mdata + index, source[index]);
+                }
             }
 
             void swap(CopyConstructedBuffer& other) noexcept
@@ -289,6 +306,19 @@ namespace RTT
             mutable types::carray<T> mview;
             base::DataSourceBase::shared_ptr mparent;
             std::ptrdiff_t moffset;
+
+            void refreshPresentation(std::true_type) const
+            {
+                mpresentation.copyAssign(mvalue.data());
+            }
+
+            void refreshPresentation(std::false_type) const
+            {
+                static_assert(
+                    std::is_nothrow_copy_constructible<T>::value,
+                    "non-assignable read-only array elements must be nothrow copy constructible");
+                mpresentation.reconstruct(mvalue.data());
+            }
 
             static std::ptrdiff_t memberOffset(
                 types::carray<T> value,
@@ -317,7 +347,14 @@ namespace RTT
 
             void refreshView() const
             {
-                mpresentation.replace(mvalue.data(), mvalue.size());
+                if (mvalue.size() != 0) {
+                    if (mpresentation.size() == 0) {
+                        mpresentation.initialize(mvalue.data(), mvalue.size());
+                    } else {
+                        refreshPresentation(
+                            typename std::is_copy_assignable<T>::type());
+                    }
+                }
                 mview.init(mpresentation.data(), mpresentation.size());
             }
 

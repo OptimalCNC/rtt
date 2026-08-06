@@ -307,8 +307,13 @@ namespace RTT
                     mparts.push_back(
                         new internal::PartDataSource<carray<T> >(value, mparent));
                 } else {
-                    addReadOnlyArrayPart(
-                        value, typename std::is_copy_constructible<T>::type());
+                    typedef std::integral_constant<
+                        bool,
+                        std::is_copy_constructible<T>::value &&
+                            (std::is_copy_assignable<T>::value ||
+                             std::is_nothrow_copy_constructible<T>::value)>
+                        supports_read_only_snapshot;
+                    addReadOnlyArrayPart(value, supports_read_only_snapshot());
                 }
             }
 

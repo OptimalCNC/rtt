@@ -38,9 +38,10 @@ using namespace boost::serialization;
 
 struct CopyConstructibleArrayElement
 {
-    explicit CopyConstructibleArrayElement(int value)
+    explicit CopyConstructibleArrayElement(int value) noexcept
         : value(value) {}
-    CopyConstructibleArrayElement(const CopyConstructibleArrayElement& other)
+    CopyConstructibleArrayElement(
+        const CopyConstructibleArrayElement& other) noexcept
         : value(other.value) {}
     CopyConstructibleArrayElement& operator=(
         const CopyConstructibleArrayElement&) = delete;
@@ -94,6 +95,31 @@ struct OpaqueArrayType
     OpaqueArrayElement values[2];
 };
 
+struct ThrowingCopyOnlyArrayElement
+{
+    explicit ThrowingCopyOnlyArrayElement(int value)
+        : value(value) {}
+    ThrowingCopyOnlyArrayElement(
+        const ThrowingCopyOnlyArrayElement& other) noexcept(false)
+        : value(other.value) {}
+    ThrowingCopyOnlyArrayElement& operator=(
+        const ThrowingCopyOnlyArrayElement&) = delete;
+
+    int value;
+};
+
+struct ThrowingCopyOnlyArrayType
+{
+    ThrowingCopyOnlyArrayType()
+        : values{ThrowingCopyOnlyArrayElement(11),
+                 ThrowingCopyOnlyArrayElement(22)} {}
+    ThrowingCopyOnlyArrayType(const ThrowingCopyOnlyArrayType& other)
+        : values{ThrowingCopyOnlyArrayElement(other.values[0]),
+                 ThrowingCopyOnlyArrayElement(other.values[1])} {}
+
+    ThrowingCopyOnlyArrayElement values[2];
+};
+
 namespace boost
 {
     namespace serialization
@@ -121,6 +147,13 @@ namespace boost
 
         template <class Archive>
         void serialize(Archive& archive, OpaqueArrayType& value,
+                       const unsigned int)
+        {
+            archive & make_nvp("values", make_array(value.values, 2));
+        }
+
+        template <class Archive>
+        void serialize(Archive& archive, ThrowingCopyOnlyArrayType& value,
                        const unsigned int)
         {
             archive & make_nvp("values", make_array(value.values, 2));
@@ -385,6 +418,37 @@ BOOST_AUTO_TEST_CASE( testReadOnlyArraySupportsCopyConstructionOnlyElements )
     BOOST_CHECK_EQUAL(source.values[0].value, 11);
 }
 
+BOOST_AUTO_TEST_CASE( testReadOnlyArrayViewsKeepStableAddresses )
+{
+    CopyConstructibleArrayType source;
+    DataSource<CopyConstructibleArrayType>::shared_ptr parent =
+        new ConstReferenceDataSource<CopyConstructibleArrayType>(source);
+    type_discovery discovery(parent, false);
+    DataSourceBase::shared_ptr member =
+        discovery.discoverMember(source, "values");
+    DataSource<carray<CopyConstructibleArrayElement> >::shared_ptr readable =
+        DataSource<carray<CopyConstructibleArrayElement> >::narrow(member.get());
+    BOOST_REQUIRE(readable);
+
+    carray<CopyConstructibleArrayElement> first = readable->get();
+    BOOST_REQUIRE(first.address());
+    CopyConstructibleArrayElement* stable_address = first.address();
+    carray<CopyConstructibleArrayElement> second = readable->get();
+    carray<CopyConstructibleArrayElement> from_value = readable->value();
+    const carray<CopyConstructibleArrayElement>& from_rvalue =
+        readable->rvalue();
+
+    BOOST_REQUIRE_EQUAL(second.address(), stable_address);
+    BOOST_REQUIRE_EQUAL(from_value.address(), stable_address);
+    BOOST_REQUIRE_EQUAL(from_rvalue.address(), stable_address);
+    BOOST_CHECK_EQUAL(first.address()[0].value, 11);
+
+    first.address()[0].value = 99;
+    carray<CopyConstructibleArrayElement> refreshed = readable->get();
+    BOOST_REQUIRE_EQUAL(refreshed.address(), stable_address);
+    BOOST_CHECK_EQUAL(first.address()[0].value, 11);
+}
+
 BOOST_AUTO_TEST_CASE( testReadOnlyBoolAndEmptyArraysRemainReadable )
 {
     BoolArrayType bool_source;
@@ -422,6 +486,16 @@ BOOST_AUTO_TEST_CASE( testNonCopyConstructibleArrayElementsRemainOpaque )
     OpaqueArrayType source;
     DataSource<OpaqueArrayType>::shared_ptr parent =
         new ConstReferenceDataSource<OpaqueArrayType>(source);
+    type_discovery discovery(parent, false);
+
+    BOOST_CHECK(!discovery.discoverMember(source, "values"));
+}
+
+BOOST_AUTO_TEST_CASE( testThrowingCopyOnlyArrayElementsRemainOpaque )
+{
+    ThrowingCopyOnlyArrayType source;
+    DataSource<ThrowingCopyOnlyArrayType>::shared_ptr parent =
+        new ConstReferenceDataSource<ThrowingCopyOnlyArrayType>(source);
     type_discovery discovery(parent, false);
 
     BOOST_CHECK(!discovery.discoverMember(source, "values"));
