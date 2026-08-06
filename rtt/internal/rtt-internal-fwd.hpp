@@ -202,6 +202,8 @@ namespace RTT {
         template<typename T>
         class PartDataSource;
         template<typename T>
+        class ReadOnlyPartDataSource;
+        template<typename T>
         class ReferenceDataSource;
         template<typename T>
         class TsPool;

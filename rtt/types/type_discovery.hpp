@@ -105,6 +105,7 @@ namespace RTT
              *  The parent struct we're deserializing
              */
             base::DataSourceBase::shared_ptr mparent;
+            bool mparts_assignable;
 
             typedef std::vector<base::DataSourceBase::shared_ptr> Parts;
             typedef std::vector<std::string> PartNames;
@@ -143,8 +144,9 @@ namespace RTT
              * Constructor which inspects part names and creates
              * part data sources.
              */
-            type_discovery(base::DataSourceBase::shared_ptr parent) :
-                mparent(parent), mref(0)
+            type_discovery(base::DataSourceBase::shared_ptr parent,
+                           bool parts_assignable = true) :
+                mparent(parent), mparts_assignable(parts_assignable), mref(0)
             {
             }
 
@@ -153,7 +155,7 @@ namespace RTT
              * No parts will be created.
              */
             type_discovery() :
-                mparent(), mref(0)
+                mparent(), mparts_assignable(false), mref(0)
             {
             }
 
@@ -267,6 +269,20 @@ namespace RTT
                 return this->operator>>(t);
             }
 
+            template <typename T>
+            void addPart(T& value)
+            {
+                if (!mparent) {
+                    return;
+                }
+                if (mparts_assignable) {
+                    mparts.push_back(new internal::PartDataSource<T>(value, mparent));
+                } else {
+                    mparts.push_back(
+                        new internal::ReadOnlyPartDataSource<T>(value, mparent));
+                }
+            }
+
             /**
              * Specialisation for writing out primitive types.
              * @param t primitive data (bool, int,...)
@@ -275,10 +291,7 @@ namespace RTT
             template<class T>
             type_discovery &load_a_type(T &t, boost::mpl::true_)
             {
-                // stores the part
-                if (mparent) {
-                    mparts.push_back(new internal::PartDataSource<T> (t, mparent));
-                }
+                addPart(t);
                 return *this;
             }
 
@@ -290,7 +303,7 @@ namespace RTT
             template<class T>
             type_discovery &load_a_type(T &t, boost::mpl::false_)
             {
-                mparts.push_back(new internal::PartDataSource<T> (t, mparent));
+                addPart(t);
                 return *this;
             }
 
@@ -306,7 +319,8 @@ namespace RTT
             type_discovery &load_a_type(const boost::serialization::array<T> &t, boost::mpl::false_)
 #endif
             {
-                mparts.push_back(new internal::PartDataSource< carray<T> > ( carray<T>(t), mparent) );
+                carray<T> value(t);
+                addPart(value);
                 return *this;
             }
 
@@ -318,7 +332,8 @@ namespace RTT
             template<class T, std::size_t N>
             type_discovery &load_a_type(boost::array<T,N> &t, boost::mpl::false_)
             {
-                mparts.push_back(new internal::PartDataSource< carray<T> > ( carray<T>(t), mparent) );
+                carray<T> value(t);
+                addPart(value);
                 return *this;
             }
 

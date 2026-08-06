@@ -135,6 +135,41 @@ namespace RTT
             }
         };
 
+        template <typename T>
+        class ReadOnlyPartDataSource : public DataSource<T>
+        {
+            typename DataSource<T>::value_t mvalue;
+            base::DataSourceBase::shared_ptr mparent;
+
+        public:
+            typedef boost::intrusive_ptr<ReadOnlyPartDataSource<T> > shared_ptr;
+
+            ReadOnlyPartDataSource(
+                typename DataSource<T>::const_reference_t value,
+                base::DataSourceBase::shared_ptr parent)
+                : mvalue(value), mparent(parent) {}
+
+            typename DataSource<T>::result_t get() const { return mvalue; }
+            typename DataSource<T>::result_t value() const { return mvalue; }
+            typename DataSource<T>::const_reference_t rvalue() const { return mvalue; }
+
+            ReadOnlyPartDataSource<T>* clone() const override
+            {
+                return new ReadOnlyPartDataSource<T>(mvalue, mparent);
+            }
+
+            ReadOnlyPartDataSource<T>* copy(
+                std::map<const base::DataSourceBase*, base::DataSourceBase*>& replace)
+                const override
+            {
+                if (replace[this] != 0) {
+                    return static_cast<ReadOnlyPartDataSource<T>*>(replace[this]);
+                }
+                replace[this] = new ReadOnlyPartDataSource<T>(mvalue, mparent);
+                return static_cast<ReadOnlyPartDataSource<T>*>(replace[this]);
+            }
+        };
+
         /**
          * Partial specialisation of PartDataSource for carray<T> types.
          */

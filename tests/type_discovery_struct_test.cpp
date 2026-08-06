@@ -89,6 +89,18 @@ BOOST_AUTO_TEST_CASE( testATypeStruct )
     a->set(10);
     BOOST_CHECK_EQUAL( a->get(), 10 );
     BOOST_CHECK_EQUAL( a->get(), atype->get().a );
+
+    DataSource<AType>::shared_ptr constant =
+        new ConstantDataSource<AType>(AType(true));
+    DataSourceBase::shared_ptr constant_a = constant->getMember("a");
+
+    BOOST_REQUIRE(constant_a);
+    DataSource<int>::shared_ptr readable_a =
+        DataSource<int>::narrow(constant_a.get());
+    BOOST_REQUIRE(readable_a);
+    BOOST_CHECK_EQUAL(readable_a->get(), constant->get().a);
+    BOOST_CHECK(!constant_a->isAssignable());
+    BOOST_CHECK(!AssignableDataSource<int>::narrow(constant_a.get()));
 }
 
 //! Tests complex type introspection (sequence of structs)
@@ -144,6 +156,18 @@ BOOST_AUTO_TEST_CASE( testCTypeStruct )
     BOOST_CHECK_EQUAL( avi3->get(), atype->get().av[3].ai[3] );
     BOOST_CHECK_EQUAL( bvi3->get(), 20 );
     BOOST_CHECK_EQUAL( bvi3->get(), atype->get().bv[3].ai[3] );
+
+    DataSource<CType>::shared_ptr constant =
+        new ConstantDataSource<CType>(CType(true));
+    DataSourceBase::shared_ptr constant_a = constant->getMember("a");
+    BOOST_REQUIRE(constant_a);
+    DataSourceBase::shared_ptr nested = constant_a->getMember("a");
+
+    BOOST_REQUIRE(nested);
+    DataSource<int>::shared_ptr readable = DataSource<int>::narrow(nested.get());
+    BOOST_REQUIRE(readable);
+    BOOST_CHECK_EQUAL(readable->get(), constant->get().a.a);
+    BOOST_CHECK(!nested->isAssignable());
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -100,18 +100,17 @@ namespace RTT
 
             virtual base::DataSourceBase::shared_ptr getMember(base::DataSourceBase::shared_ptr item, const std::string& name) const {
                 typename internal::AssignableDataSource<T>::shared_ptr adata = boost::dynamic_pointer_cast< internal::AssignableDataSource<T> >( item );
-                // Use a copy in case our parent is not assignable:
-                if ( !adata ) {
-                    // is it non-assignable ?
-                    typename internal::DataSource<T>::shared_ptr data = boost::dynamic_pointer_cast< internal::DataSource<T> >( item );
-                    if ( data ) {
-                        // create a copy
-                        adata = new internal::ValueDataSource<T>( data->get() );
-                    }
-                }
                 if (adata) {
-                    type_discovery in( adata );
+                    type_discovery in(adata, true);
                     return in.discoverMember( adata->set(), name );
+                }
+                typename internal::DataSource<T>::shared_ptr data =
+                    boost::dynamic_pointer_cast<internal::DataSource<T> >(item);
+                if (data) {
+                    typename internal::AssignableDataSource<T>::shared_ptr snapshot =
+                        new internal::ValueDataSource<T>(data->get());
+                    type_discovery in(snapshot, false);
+                    return in.discoverMember(snapshot->set(), name);
                 }
                 Logger::log().logf(Logger::Error, "StructTypeInfo",
                                    "Wrong call to type info function %s's getMember() can not process %s",
@@ -122,18 +121,14 @@ namespace RTT
 
             virtual bool getMember(internal::Reference* ref, base::DataSourceBase::shared_ptr item, const std::string& name) const {
                 typename internal::AssignableDataSource<T>::shared_ptr adata = boost::dynamic_pointer_cast< internal::AssignableDataSource<T> >( item );
-                // Use a copy in case our parent is not assignable:
-                if ( !adata ) {
-                    // is it non-assignable ?
-                    typename internal::DataSource<T>::shared_ptr data = boost::dynamic_pointer_cast< internal::DataSource<T> >( item );
-                    if ( data ) {
-                        // create a copy -> this is the only place & case where we allocate -> how to fix ?
-                        adata = new internal::ValueDataSource<T>( data->get() );
-                    }
-                }
                 if (adata) {
-                    type_discovery in( adata );
+                    type_discovery in(adata, true);
                     return in.referenceMember( ref, adata->set(), name );
+                }
+                typename internal::DataSource<T>::shared_ptr data =
+                    boost::dynamic_pointer_cast<internal::DataSource<T> >(item);
+                if (data) {
+                    return false;
                 }
                 Logger::log().logf(Logger::Error, "StructTypeInfo",
                                    "Wrong call to type info function %s's getMember() can not process %s",
