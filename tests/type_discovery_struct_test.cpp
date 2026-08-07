@@ -36,6 +36,24 @@
 using namespace boost::archive;
 using namespace boost::serialization;
 
+template <typename T>
+class UpdateTrackingDataSource : public ValueDataSource<T>
+{
+public:
+    explicit UpdateTrackingDataSource(const T& value)
+        : ValueDataSource<T>(value), update_count(0),
+          value_at_last_update(value) {}
+
+    void updated() override
+    {
+        ++update_count;
+        value_at_last_update = this->get();
+    }
+
+    std::size_t update_count;
+    T value_at_last_update;
+};
+
 struct CopyConstructibleArrayElement
 {
     explicit CopyConstructibleArrayElement(int value) noexcept
@@ -293,6 +311,42 @@ BOOST_AUTO_TEST_CASE( testCTypeStruct )
     BOOST_REQUIRE(readable);
     BOOST_CHECK_EQUAL(readable->get(), constant->get().a.a);
     BOOST_CHECK(!nested->isAssignable());
+}
+
+BOOST_AUTO_TEST_CASE( testSequenceStructMemberNotifiesParent )
+{
+    if (!Types()->type("AType")) {
+        Types()->addType(new StructTypeInfo<AType>("AType"));
+    }
+    if (!Types()->type("as")) {
+        Types()->addType(new SequenceTypeInfo<vector<AType> >("as"));
+    }
+
+    boost::intrusive_ptr<UpdateTrackingDataSource<vector<AType> > > parent =
+        new UpdateTrackingDataSource<vector<AType> >(
+            vector<AType>(1, AType(true)));
+    AssignableDataSource<AType>::shared_ptr element =
+        AssignableDataSource<AType>::narrow(parent->getMember("0").get());
+    BOOST_REQUIRE(element);
+
+    element->get();
+    BOOST_CHECK_EQUAL(parent->update_count, 0U);
+
+    AType replacement(true);
+    replacement.a = 21;
+    element->set(replacement);
+    BOOST_CHECK_EQUAL(parent->update_count, 1U);
+    BOOST_CHECK_EQUAL(parent->value_at_last_update.front().a, 21);
+
+    AssignableDataSource<int>::shared_ptr member =
+        AssignableDataSource<int>::narrow(element->getMember("a").get());
+    BOOST_REQUIRE(member);
+    parent->update_count = 0U;
+    member->set(42);
+
+    BOOST_CHECK_EQUAL(parent->update_count, 1U);
+    BOOST_CHECK_EQUAL(parent->value_at_last_update.front().a, 42);
+    BOOST_CHECK_EQUAL(parent->get().front().a, 42);
 }
 
 BOOST_AUTO_TEST_CASE( testReadOnlyArrayViewsCannotMutateSnapshots )

@@ -194,7 +194,6 @@ namespace RTT
                   typedef iret(*IType)(call_type, arg_type const&);
                   IType foo = &bf::invoke<call_type,arg_type>;
                   ret.exec( boost::bind(foo, boost::ref(ff), SequenceFactory::data(args)));
-                  SequenceFactory::update(args);
                   return true;
               }
               value_t get() const
@@ -205,11 +204,17 @@ namespace RTT
 
               void set( typename AssignableDataSource<value_t>::param_t arg) {
                   // we need to get the new reference before we set the arg.
-                  get(); ret.result() = arg;
+                  get();
+                  ret.result() = arg;
+                  updated();
               }
 
               reference_t set() {
                   get(); return ret.result();
+              }
+
+              void updated() override {
+                  SequenceFactory::update(args);
               }
 
               virtual FusedFunctorDataSource<Signature>* clone() const
