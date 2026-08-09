@@ -155,16 +155,31 @@ cmake --install build
 
 Expected: `/tmp/orocos-carray-worktree-install/include/orocos/rtt/types/StructTypeInfo.hpp` contains the null-return overload without the unsupported-index assertion.
 
-- [ ] **Step 2: Rebuild and install the temporary MetaNC runtime**
+- [ ] **Step 2: Rebuild and install the temporary MetaNC typekits**
 
 Run:
 
 ```bash
-cmake --build /tmp/metanc-carray-deployer.tcQ4VX/metanc/runtime-build \
-  --target install -j2
+gmake -B \
+  -f /tmp/metanc-carray-deployer.tcQ4VX/metanc/runtime-build/Orocos/src/rt_types/typekit/CMakeFiles/rt_types-typekit-gnulinux.dir/build.make \
+  /tmp/metanc-carray-deployer.tcQ4VX/metanc/runtime-build/Orocos/src/rt_types/typekit/CMakeFiles/rt_types-typekit-gnulinux.dir/build \
+  -j2
+gmake -B \
+  -f /tmp/metanc-carray-deployer.tcQ4VX/metanc/runtime-build/Orocos/src/rt_api_types/typekit/CMakeFiles/rt_api_types-typekit-gnulinux.dir/build.make \
+  /tmp/metanc-carray-deployer.tcQ4VX/metanc/runtime-build/Orocos/src/rt_api_types/typekit/CMakeFiles/rt_api_types-typekit-gnulinux.dir/build \
+  -j2
+cmake --install /tmp/metanc-carray-deployer.tcQ4VX/metanc/runtime-build
 ```
 
-Expected: the MetaNC typekits and components rebuild successfully against the corrected installed RTT header.
+The generated temporary build has incomplete top-level typekit target wrappers,
+and its `install` target copies existing typekits without rebuilding them. The
+direct generated rules above force both imported typekits to recompile against
+the corrected installed RTT header before installation.
+
+Expected: both typekits rebuild and install successfully. The installed
+`librt_types-typekit-gnulinux.so` and
+`librt_api_types-typekit-gnulinux.so` contain no occurrence of the obsolete
+`You're doing something new and exotic` assertion string.
 
 - [ ] **Step 3: Exercise invalid and valid expressions in one PTY session**
 
