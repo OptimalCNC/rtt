@@ -24,6 +24,7 @@
 
 #include <rtt-fwd.hpp>
 #include <internal/DataSources.hpp>
+#include <internal/NA.hpp>
 #include <types/type_discovery.hpp>
 #include <os/fosi.h>
 
@@ -381,6 +382,97 @@ BOOST_AUTO_TEST_CASE( testReadOnlyArrayViewsCannotMutateSnapshots )
 
     BOOST_CHECK_EQUAL(readable_boost_array->get().address()[3], 99);
     BOOST_CHECK_EQUAL(readable_c_array->get().address()[3], 99);
+}
+
+BOOST_AUTO_TEST_CASE( testReadOnlyCArrayElementsAreReadable )
+{
+    if (!Types()->type("cints")) {
+        Types()->addType(new CArrayTypeInfo<carray<int> >("cints"));
+    }
+    if (!Types()->type("BType")) {
+        Types()->addType(new StructTypeInfo<BType>("BType"));
+    }
+
+    DataSource<BType>::shared_ptr parent =
+        new ConstantDataSource<BType>(BType(true));
+    DataSourceBase::shared_ptr array = parent->getMember("ai");
+    BOOST_REQUIRE(array);
+
+    DataSourceBase::shared_ptr fixed_element = array->getMember("3");
+    BOOST_REQUIRE(fixed_element);
+    DataSource<int>::shared_ptr fixed_value =
+        DataSource<int>::narrow(fixed_element.get());
+    BOOST_REQUIRE(fixed_value);
+    BOOST_CHECK_EQUAL(fixed_value->get(), 99);
+    BOOST_CHECK(!fixed_element->isAssignable());
+    BOOST_CHECK(!AssignableDataSource<int>::narrow(fixed_element.get()));
+
+    AssignableDataSource<unsigned int>::shared_ptr index =
+        new ValueDataSource<unsigned int>(3);
+    DataSourceBase::shared_ptr dynamic_element = array->getMember(
+        index, DataSourceBase::shared_ptr());
+    BOOST_REQUIRE(dynamic_element);
+    DataSource<int>::shared_ptr dynamic_value =
+        DataSource<int>::narrow(dynamic_element.get());
+    BOOST_REQUIRE(dynamic_value);
+    BOOST_CHECK_EQUAL(dynamic_value->get(), 99);
+
+    index->set(0);
+    BOOST_CHECK_EQUAL(dynamic_value->get(), 3);
+
+    DataSourceBase::shared_ptr cloned(dynamic_element->clone());
+    DataSource<int>::shared_ptr cloned_value =
+        DataSource<int>::narrow(cloned.get());
+    BOOST_REQUIRE(cloned_value);
+    BOOST_CHECK_EQUAL(cloned_value->get(), 3);
+    BOOST_CHECK(!cloned->isAssignable());
+
+    index->set(3);
+    BOOST_CHECK_EQUAL(dynamic_value->get(), 99);
+    BOOST_CHECK_EQUAL(cloned_value->get(), 99);
+    index->set(5);
+    BOOST_CHECK_EQUAL(dynamic_value->get(), RTT::internal::NA<int>::na());
+
+    AssignableDataSource<BType>::shared_ptr writable_parent =
+        new ValueDataSource<BType>(BType(true));
+    DataSourceBase::shared_ptr writable_array =
+        writable_parent->getMember("ai");
+    BOOST_REQUIRE(writable_array);
+    AssignableDataSource<int>::shared_ptr writable_element =
+        AssignableDataSource<int>::narrow(
+            writable_array->getMember("3").get());
+    BOOST_REQUIRE(writable_element);
+    writable_element->set(42);
+    BOOST_CHECK_EQUAL(writable_parent->get().ai[3], 42);
+}
+
+BOOST_AUTO_TEST_CASE( testReadOnlyCArrayElementCopyUsesReplacementParent )
+{
+    AssignableDataSource<BType>::shared_ptr source =
+        new ValueDataSource<BType>(BType(true));
+    type_discovery discovery(source, false);
+    DataSourceBase::shared_ptr array =
+        discovery.discoverMember(source->set(), "ai");
+    BOOST_REQUIRE(array);
+
+    AssignableDataSource<unsigned int>::shared_ptr index =
+        new ValueDataSource<unsigned int>(3);
+    DataSourceBase::shared_ptr element = array->getMember(
+        index, DataSourceBase::shared_ptr());
+    BOOST_REQUIRE(element);
+
+    AssignableDataSource<BType>::shared_ptr replacement =
+        new ValueDataSource<BType>(BType(true));
+    replacement->set().ai[3] = 123;
+    std::map<const DataSourceBase*, DataSourceBase*> replacements;
+    replacements[source.get()] = replacement.get();
+
+    DataSourceBase::shared_ptr copied(element->copy(replacements));
+    DataSource<int>::shared_ptr copied_value =
+        DataSource<int>::narrow(copied.get());
+    BOOST_REQUIRE(copied_value);
+    BOOST_CHECK_EQUAL(copied_value->get(), 123);
+    BOOST_CHECK(!copied->isAssignable());
 }
 
 BOOST_AUTO_TEST_CASE( testReadOnlyArrayCloneKeepsCanonicalValue )

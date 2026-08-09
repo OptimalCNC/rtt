@@ -116,16 +116,22 @@ namespace RTT
                     return new ConstantDataSource<int>( data->rvalue().count() );
                 }
 
-                typename AssignableDataSource<T>::shared_ptr adata = boost::dynamic_pointer_cast< AssignableDataSource<T> >( item );
-                if ( !adata ) {
-                    return base::DataSourceBase::shared_ptr();
-                }
-
                 // contents of indx can change during program execution:
                 try {
                     unsigned int indx = boost::lexical_cast<unsigned int>(name);
+                    typename DataSource<unsigned int>::shared_ptr index =
+                        new ConstantDataSource<unsigned int>(indx);
+                    typename AssignableDataSource<T>::shared_ptr adata =
+                        boost::dynamic_pointer_cast<AssignableDataSource<T> >(item);
                     // @todo could also return a direct reference to item indx using another DS type that respects updated().
-                    return new ArrayPartDataSource<typename T::value_type>( *adata->set().address(), new ConstantDataSource<unsigned int>(indx), item, data->rvalue().count() );
+                    if (adata) {
+                        return new ArrayPartDataSource<typename T::value_type>(
+                            *adata->set().address(), index, item,
+                            data->rvalue().count());
+                    }
+                    return new ReadOnlyArrayPartDataSource<
+                        typename T::value_type, T>(
+                        data, index, data->rvalue().count());
                 } catch(...) {}
                 Logger::log().logf(Logger::Error, "CArrayTypeInfo",
                                    "No such part (or invalid index): %s",
@@ -155,17 +161,18 @@ namespace RTT
                     }
                 }
 
-                typename AssignableDataSource<T>::shared_ptr adata = boost::dynamic_pointer_cast< AssignableDataSource<T> >( item );
-                if ( !adata ) {
-                    Logger::log().logf(Logger::Error, "CArrayTypeInfo",
-                                       "need assignable data type for indexing %s",
-                                       this->getTypeName().c_str());
-                    return base::DataSourceBase::shared_ptr();
-                }
-
                 typename DataSource<unsigned int>::shared_ptr id_indx = DataSource<unsigned int>::narrow( DataSourceTypeInfo<unsigned int>::getTypeInfo()->convert(id).get() );
                 if ( id_indx ) {
-                    return new ArrayPartDataSource<typename T::value_type>( *adata->set().address(), id_indx, item, data->rvalue().count() );
+                    typename AssignableDataSource<T>::shared_ptr adata =
+                        boost::dynamic_pointer_cast<AssignableDataSource<T> >(item);
+                    if (adata) {
+                        return new ArrayPartDataSource<typename T::value_type>(
+                            *adata->set().address(), id_indx, item,
+                            data->rvalue().count());
+                    }
+                    return new ReadOnlyArrayPartDataSource<
+                        typename T::value_type, T>(
+                        data, id_indx, data->rvalue().count());
                 }
                 Logger::log().logf(Logger::Error, "CArrayTypeInfo",
                                    "Invalid index) for type %s",

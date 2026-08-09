@@ -175,6 +175,8 @@ namespace RTT {
         class ActionAliasDataSource;
         template<typename T>
         class ArrayPartDataSource;
+        template<typename T, typename ArrayT>
+        class ReadOnlyArrayPartDataSource;
         template<typename T>
         class AssignableDataSource;
         template<typename T>

@@ -158,6 +158,73 @@ namespace RTT
             }
         };
 
+        template<typename T, typename ArrayT>
+        class ReadOnlyArrayPartDataSource : public DataSource<T>
+        {
+            typename DataSource<ArrayT>::shared_ptr mparent;
+            typename DataSource<unsigned int>::shared_ptr mindex;
+            unsigned int mmax;
+
+        public:
+            typedef boost::intrusive_ptr<
+                ReadOnlyArrayPartDataSource<T, ArrayT> > shared_ptr;
+
+            ReadOnlyArrayPartDataSource(
+                typename DataSource<ArrayT>::shared_ptr parent,
+                typename DataSource<unsigned int>::shared_ptr index,
+                unsigned int max)
+                : mparent(parent), mindex(index), mmax(max) {}
+
+            typename DataSource<T>::result_t get() const
+            {
+                unsigned int i = mindex->get();
+                if (i >= mmax)
+                    return internal::NA<T>::na();
+                return mparent->get().address()[i];
+            }
+
+            typename DataSource<T>::result_t value() const
+            {
+                unsigned int i = mindex->get();
+                if (i >= mmax)
+                    return internal::NA<T>::na();
+                return mparent->value().address()[i];
+            }
+
+            typename DataSource<T>::const_reference_t rvalue() const
+            {
+                unsigned int i = mindex->get();
+                if (i >= mmax)
+                    return internal::NA<
+                        typename DataSource<T>::const_reference_t>::na();
+                return mparent->rvalue().address()[i];
+            }
+
+            ReadOnlyArrayPartDataSource<T, ArrayT>* clone() const override
+            {
+                return new ReadOnlyArrayPartDataSource<T, ArrayT>(
+                    mparent, mindex, mmax);
+            }
+
+            ReadOnlyArrayPartDataSource<T, ArrayT>* copy(
+                std::map<const base::DataSourceBase*, base::DataSourceBase*>& replace)
+                const override
+            {
+                if (replace[this] != 0) {
+                    return static_cast<ReadOnlyArrayPartDataSource<T, ArrayT>*>(
+                        replace[this]);
+                }
+                typename DataSource<ArrayT>::shared_ptr parent_copy =
+                    mparent->copy(replace);
+                typename DataSource<unsigned int>::shared_ptr index_copy =
+                    mindex->copy(replace);
+                replace[this] = new ReadOnlyArrayPartDataSource<T, ArrayT>(
+                    parent_copy, index_copy, mmax);
+                return static_cast<ReadOnlyArrayPartDataSource<T, ArrayT>*>(
+                    replace[this]);
+            }
+        };
+
     }
 }
 

@@ -19,6 +19,7 @@
 #include "unit.hpp"
 
 #include "operations_fixture.hpp"
+#include "datasource_fixture.hpp"
 #include <scripting/Scripting.hpp>
 #include <scripting/ScriptingService.hpp>
 #include <extras/SequentialActivity.hpp>
@@ -27,6 +28,8 @@
 #include <scripting/CommonParser.hpp>
 #include <scripting/ExpressionParser.hpp>
 #include <internal/GlobalService.hpp>
+#include <types/StructTypeInfo.hpp>
+#include <types/CArrayTypeInfo.hpp>
 
 
 using namespace std;
@@ -38,6 +41,12 @@ using namespace RTT::detail;
 
 // note: Does not preserve newlines. Add them explicitly with \n or add semicolons after each line.
 #define MULTILINE_STRING(...) #__VA_ARGS__
+
+class ReadOnlyCArrayOperationProvider
+{
+public:
+    BType getBatch() const { return BType(true); }
+};
 
 // Registers the fixture into the 'registry'
 BOOST_FIXTURE_TEST_SUITE(  ScriptingTestSuite,  OperationsFixture )
@@ -425,6 +434,35 @@ BOOST_AUTO_TEST_CASE(TestCallResultIndexing)
         dynamic_cast<DataSource<double>*>(result.get());
     BOOST_REQUIRE(value);
     BOOST_CHECK_EQUAL(value->get(), 2.0);
+}
+
+BOOST_AUTO_TEST_CASE(TestCallResultCArrayIndexingIsReadOnly)
+{
+    if (!Types()->type("cints")) {
+        Types()->addType(new CArrayTypeInfo<carray<int> >("cints"));
+    }
+    if (!Types()->type("BType")) {
+        Types()->addType(new StructTypeInfo<BType>("BType"));
+    }
+
+    ReadOnlyCArrayOperationProvider provider;
+    tc->provides("test")->addOperation(
+        "getBatch", &ReadOnlyCArrayOperationProvider::getBatch, &provider);
+
+    Parser parser(caller->engine());
+    DataSourceBase::shared_ptr result;
+    try {
+        result = parser.parseExpression("test.getBatch().ai[3]", tc);
+    } catch (const parse_exception& error) {
+        BOOST_FAIL(error.what());
+    }
+
+    BOOST_REQUIRE(result);
+    DataSource<int>::shared_ptr value =
+        DataSource<int>::narrow(result.get());
+    BOOST_REQUIRE(value);
+    BOOST_CHECK_EQUAL(value->get(), 99);
+    BOOST_CHECK(!result->isAssignable());
 }
 
 BOOST_AUTO_TEST_CASE(TestExpressionParserRejectsMalformedCallIndexes)
