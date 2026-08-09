@@ -448,6 +448,13 @@ BOOST_AUTO_TEST_CASE( testReadOnlyCArrayElementsAreReadable )
 
 BOOST_AUTO_TEST_CASE( testReadOnlyCArrayElementCopyUsesReplacementParent )
 {
+    if (!Types()->type("cints")) {
+        Types()->addType(new CArrayTypeInfo<carray<int> >("cints"));
+    }
+    if (!Types()->type("BType")) {
+        Types()->addType(new StructTypeInfo<BType>("BType"));
+    }
+
     AssignableDataSource<BType>::shared_ptr source =
         new ValueDataSource<BType>(BType(true));
     type_discovery discovery(source, false);
