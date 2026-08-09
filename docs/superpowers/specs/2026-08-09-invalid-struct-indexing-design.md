@@ -41,7 +41,7 @@ a C array:
 - `getBatch()[0]` must raise a fatal semantic parse error containing
   `Illegal use of []`.
 - The test process must remain alive after the rejection.
-- Existing `getBatch().ints[0]` readonly access and readonly assignment
+- Existing `getBatch().ai[3]` readonly access and readonly assignment
   rejection tests must continue to pass.
 
 The pre-fix focused test is expected to abort at the `StructTypeInfo`
