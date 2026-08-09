@@ -88,13 +88,10 @@ namespace RTT
                 return in.mnames;
             }
 
-            virtual base::DataSourceBase::shared_ptr getMember(base::DataSourceBase::shared_ptr,
-                                                             base::DataSourceBase::shared_ptr) const {
-                // user tried to pass the member name by data source, but we can't read out this datasource after getMember() returns.
-                // ie, we could only read out id as a string and then call the getMember below.
-                // type_discovery requires the name right now and does not allow to delay the name, unless we discover the whole type,
-                // keep all datasources and then use getMember using some functor data source.... Not going to do that !
-                assert(false && "You're doing something new and exotic. Contact the Orocos-dev mailing list.");
+            virtual base::DataSourceBase::shared_ptr getMember(
+                    base::DataSourceBase::shared_ptr,
+                    base::DataSourceBase::shared_ptr) const {
+                // Dynamic identifiers are supported only by sequence-like types.
                 return base::DataSourceBase::shared_ptr();
             }
 

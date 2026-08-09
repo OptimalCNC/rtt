@@ -465,6 +465,37 @@ BOOST_AUTO_TEST_CASE(TestCallResultCArrayIndexingIsReadOnly)
     BOOST_CHECK(!result->isAssignable());
 }
 
+BOOST_AUTO_TEST_CASE(TestDirectStructIndexingIsRejectedWithoutAborting)
+{
+    if (!Types()->type("cints")) {
+        Types()->addType(new CArrayTypeInfo<carray<int> >("cints"));
+    }
+    if (!Types()->type("BType")) {
+        Types()->addType(new StructTypeInfo<BType>("BType"));
+    }
+
+    ReadOnlyCArrayOperationProvider provider;
+    tc->provides("test")->addOperation(
+        "getBatch", &ReadOnlyCArrayOperationProvider::getBatch, &provider);
+
+    Parser parser(caller->engine());
+    try {
+        parser.parseExpression("test.getBatch()[0]", tc);
+        BOOST_FAIL("Direct struct indexing was accepted");
+    } catch (const parse_exception_fatal_semantic_error& error) {
+        BOOST_CHECK_NE(
+            std::string(error.what()).find("Illegal use of []"),
+            std::string::npos);
+    }
+
+    DataSourceBase::shared_ptr valid =
+        parser.parseExpression("test.getBatch().ai[3]", tc);
+    BOOST_REQUIRE(valid);
+    DataSource<int>::shared_ptr value = DataSource<int>::narrow(valid.get());
+    BOOST_REQUIRE(value);
+    BOOST_CHECK_EQUAL(value->get(), 99);
+}
+
 BOOST_AUTO_TEST_CASE(TestExpressionParserRejectsMalformedCallIndexes)
 {
     Parser parser(caller->engine());
