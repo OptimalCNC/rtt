@@ -24,9 +24,114 @@
 #include <OperationCaller.hpp>
 #include <Operation.hpp>
 #include <Service.hpp>
+#include <Activity.hpp>
+#include <ExecutionEngine.hpp>
+#include <base/DisposableInterface.hpp>
+#include <internal/MWSRQueue.hpp>
+#include <os/MutexLock.hpp>
+
+#include <atomic>
+#include <chrono>
+#include <future>
 
 #include "unit.hpp"
 #include "operations_fixture.hpp"
+
+namespace {
+    class CompletionMessage : public RTT::base::DisposableInterface
+    {
+    public:
+        CompletionMessage(std::atomic<bool>& processed,
+                          std::promise<void>& completion)
+            : processed(processed), completion(completion)
+        {
+        }
+
+        void executeAndDispose() override
+        {
+            processed.store(true, std::memory_order_release);
+            completion.set_value();
+        }
+
+        void dispose() override
+        {
+        }
+
+    private:
+        std::atomic<bool>& processed;
+        std::promise<void>& completion;
+    };
+
+    class WaitAndProcessMessagesTestEngine : public RTT::ExecutionEngine
+    {
+    public:
+        WaitAndProcessMessagesTestEngine()
+            : RTT::ExecutionEngine(0),
+              predicate_calls(0),
+              cancelled(false),
+              enqueued(false),
+              processed(false),
+              message(processed, completion)
+        {
+        }
+
+        std::future<void> completionFuture()
+        {
+            return completion.get_future();
+        }
+
+        void loop() override
+        {
+            waitAndProcessMessages(
+                boost::bind(&WaitAndProcessMessagesTestEngine::done, this));
+        }
+
+        bool breakLoop() override
+        {
+            releaseWaiter();
+            return true;
+        }
+
+        void releaseWaiter()
+        {
+            cancelled.store(true, std::memory_order_release);
+            RTT::os::MutexLock lock(msg_lock);
+            msg_cond.broadcast();
+        }
+
+        bool messageWasEnqueued() const
+        {
+            return enqueued.load(std::memory_order_acquire);
+        }
+
+        bool messageWasProcessed() const
+        {
+            return processed.load(std::memory_order_acquire);
+        }
+
+    private:
+        bool done()
+        {
+            unsigned int call = predicate_calls.fetch_add(
+                1, std::memory_order_relaxed) + 1;
+            // The second predicate call is under msg_lock after the first
+            // processMessages() pass observed an empty queue.
+            if (call == 2) {
+                enqueued.store(mqueue->enqueue(&message),
+                               std::memory_order_release);
+            }
+            return processed.load(std::memory_order_acquire) ||
+                   cancelled.load(std::memory_order_acquire);
+        }
+
+        std::atomic<unsigned int> predicate_calls;
+        std::atomic<bool> cancelled;
+        std::atomic<bool> enqueued;
+        std::atomic<bool> processed;
+        std::promise<void> completion;
+        CompletionMessage message;
+    };
+}
 
 /**
  * This test suite tests the RTT::OperationCaller object's LocalOperationCaller implementation.
@@ -101,6 +206,33 @@ BOOST_AUTO_TEST_CASE(testOwnThreadOperationCallerCall)
 
     BOOST_CHECK_THROW( m0e(), std::runtime_error);
     BOOST_REQUIRE( tc->inException() );
+}
+
+BOOST_AUTO_TEST_CASE(testWaitAndProcessMessagesDoesNotSleepWithQueuedWork)
+{
+    WaitAndProcessMessagesTestEngine engine;
+    std::future<void> completion = engine.completionFuture();
+    std::future_status status = std::future_status::timeout;
+    bool started = false;
+    bool stopped = false;
+
+    {
+        RTT::Activity waiter(
+            ORO_SCHED_OTHER, 0, 0.0, &engine, "wait-and-process-test");
+        started = waiter.start();
+        if (started) {
+            status = completion.wait_for(std::chrono::seconds(2));
+        }
+
+        engine.releaseWaiter();
+        stopped = !started || waiter.stop();
+    }
+
+    BOOST_REQUIRE(started);
+    BOOST_REQUIRE(stopped);
+    BOOST_REQUIRE(engine.messageWasEnqueued());
+    BOOST_CHECK(status == std::future_status::ready);
+    BOOST_CHECK(engine.messageWasProcessed());
 }
 
 BOOST_AUTO_TEST_CASE(testClientThreadOperationCallerSend)

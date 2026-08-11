@@ -254,7 +254,10 @@ namespace RTT
         if ( c && this->getActivity() ) {
             bool result = mqueue->enqueue( c );
             this->getActivity()->trigger();
-            msg_cond.broadcast(); // required for waitAndProcessMessages() (EE thread)
+            {
+                MutexLock lock(msg_lock);
+                msg_cond.broadcast(); // required for waitAndProcessMessages() (EE thread)
+            }
             return result;
         }
         return false;
@@ -312,10 +315,11 @@ namespace RTT
                 // only to be called from the thread executing step().
                 // We must lock because the cond variable will unlock msg_lock.
                 os::MutexLock lock(msg_lock);
-                if (!pred()) {
-                    msg_cond.wait(msg_lock); // now processMessages may run.
-                } else {
+                if (pred()) {
                     return; // do not process messages when pred() == true;
+                }
+                if (mqueue->isEmpty()) {
+                    msg_cond.wait(msg_lock); // now processMessages may run.
                 }
             }
         }
