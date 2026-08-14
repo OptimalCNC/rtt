@@ -44,10 +44,12 @@
 #include "../types/TypeInfoName.hpp"
 #include "../types/TemplateTypeInfo.hpp"
 #include "../types/SequenceTypeInfo.hpp"
+#include "../types/EnumTypeInfo.hpp"
 #include "StdTypeInfo.hpp"
 #include "../types/StructTypeInfo.hpp"
 
 #include "../rtt-fwd.hpp"
+#include "../base/TaskCore.hpp"
 #include "../FlowStatus.hpp"
 #include "../ConnPolicy.hpp"
 #include "ConnPolicyType.hpp"
@@ -70,6 +72,7 @@ namespace RTT
              ti->addType( new StdTypeInfo<FlowStatus>("FlowStatus"));
              ti->addType( new StdTypeInfo<WriteStatus>("WriteStatus"));
              ti->addType( new StdTypeInfo<SendStatus>("SendStatus"));
+             ti->addType( new EnumTypeInfo<base::TaskCore::TaskState>("TaskState"));
              ti->addType( new TemplateTypeInfo<PropertyBag, true>("PropertyBag") );
              ti->addType( new StructTypeInfo<ConnPolicy>("ConnPolicy") );
              ti->addType( new StdTypeInfo<BufferPolicy>("BufferPolicy") );
@@ -78,5 +81,4 @@ namespace RTT
          }
      }
 }
-
 

@@ -37,6 +37,7 @@
 
 #include <types/SequenceTypeInfo.hpp>
 #include <typekit/RealTimeTypekit.hpp>
+#include <base/TaskCore.hpp>
 #ifdef OS_RT_MALLOC
 #include <rtt/rt_string.hpp>
 #endif
@@ -91,7 +92,7 @@ BOOST_AUTO_TEST_CASE( testCanonicalBuiltinTypesAreRegistered )
     const std::vector<std::string> canonical_names = {
         "Bool", "Int8", "UInt8", "Int16", "UInt16", "Int32", "UInt32",
         "Int64", "UInt64", "Float32", "Float64", "Char", "String", "Void",
-        "Float64Array", "Int32Array", "StringArray"
+        "Float64Array", "Int32Array", "StringArray", "TaskState"
 #ifdef OS_RT_MALLOC
         , "RtString"
 #endif
@@ -131,6 +132,7 @@ BOOST_AUTO_TEST_CASE( testCanonicalBuiltinTypesAreRegistered )
     RTT_CHECK_CANONICAL_TYPE(std::vector<double>, "Float64Array");
     RTT_CHECK_CANONICAL_TYPE(std::vector<std::int32_t>, "Int32Array");
     RTT_CHECK_CANONICAL_TYPE(std::vector<std::string>, "StringArray");
+    RTT_CHECK_CANONICAL_TYPE(RTT::base::TaskCore::TaskState, "TaskState");
 #ifdef OS_RT_MALLOC
     RTT_CHECK_CANONICAL_TYPE(RTT::rt_string, "RtString");
 #endif
@@ -139,6 +141,13 @@ BOOST_AUTO_TEST_CASE( testCanonicalBuiltinTypesAreRegistered )
 
     static_assert(std::is_same_v<short, std::int16_t>);
     static_assert(std::is_same_v<int, std::int32_t>);
+    BOOST_CHECK_EQUAL(static_cast<int>(RTT::base::TaskCore::Init), 0);
+    BOOST_CHECK_EQUAL(static_cast<int>(RTT::base::TaskCore::PreOperational), 1);
+    BOOST_CHECK_EQUAL(static_cast<int>(RTT::base::TaskCore::FatalError), 2);
+    BOOST_CHECK_EQUAL(static_cast<int>(RTT::base::TaskCore::Exception), 3);
+    BOOST_CHECK_EQUAL(static_cast<int>(RTT::base::TaskCore::Stopped), 4);
+    BOOST_CHECK_EQUAL(static_cast<int>(RTT::base::TaskCore::Running), 5);
+    BOOST_CHECK_EQUAL(static_cast<int>(RTT::base::TaskCore::RunTimeError), 6);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

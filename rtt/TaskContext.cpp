@@ -87,6 +87,10 @@ namespace RTT
 
         this->addOperation("configure", &TaskContext::configure, this, ClientThread).doc("Configure this TaskContext (= configureHook() ).");
         this->addOperation("isConfigured", &TaskContext::isConfigured, this, ClientThread).doc("Is this TaskContext configured ?");
+        this->addOperation("getTaskState", &TaskContext::getTaskState, this, ClientThread)
+            .doc("Get the current TaskContext lifecycle state.");
+        this->addOperation("getTargetState", &TaskContext::getTargetState, this, ClientThread)
+            .doc("Get the target TaskContext lifecycle state.");
         this->addOperation("start", &TaskContext::start, this, ClientThread).doc("Start this TaskContext (= startHook() + updateHook() ).");
         this->addOperation("activate", &TaskContext::activate, this, ClientThread).doc("Activate the Execution Engine of this TaskContext.");
         this->addOperation("stop", &TaskContext::stop, this, ClientThread).doc("Stop this TaskContext (= stopHook() ).");

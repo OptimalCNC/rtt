@@ -170,6 +170,34 @@ public:
     int  updatecount;
 };
 
+class StateOperationObserver : public RTT::TaskContext
+{
+public:
+    StateOperationObserver()
+        : RTT::TaskContext("state-operation-observer", PreOperational)
+        , observed_current(Init)
+        , observed_target(Init)
+        , operations_ready(false)
+    {
+    }
+
+    bool startHook() override
+    {
+        OperationCaller<TaskState(void)> current = getOperation("getTaskState");
+        OperationCaller<TaskState(void)> target = getOperation("getTargetState");
+        operations_ready = current.ready() && target.ready();
+        if (operations_ready) {
+            observed_current = current();
+            observed_target = target();
+        }
+        return true;
+    }
+
+    TaskState observed_current;
+    TaskState observed_target;
+    bool operations_ready;
+};
+
 /**
  * Fixture.
  */
@@ -380,6 +408,45 @@ BOOST_AUTO_TEST_CASE( testRecoverOperationIsExported )
     BOOST_REQUIRE(recoverable.inRunTimeError());
     BOOST_CHECK(recover());
     BOOST_CHECK(recoverable.getTaskState() == TaskContext::Running);
+}
+
+BOOST_AUTO_TEST_CASE( testTaskStateOperationsAreExported )
+{
+    OperationInterfacePart* current_part = tc->getOperation("getTaskState");
+    OperationInterfacePart* target_part = tc->getOperation("getTargetState");
+    BOOST_REQUIRE(current_part);
+    BOOST_REQUIRE(target_part);
+    BOOST_REQUIRE(current_part->getArgumentType(0));
+    BOOST_REQUIRE(target_part->getArgumentType(0));
+    BOOST_CHECK_EQUAL(current_part->getArgumentType(0)->getTypeName(),
+                      "TaskState");
+    BOOST_CHECK_EQUAL(target_part->getArgumentType(0)->getTypeName(),
+                      "TaskState");
+
+    OperationCaller<TaskContext::TaskState(void)> current = current_part;
+    OperationCaller<TaskContext::TaskState(void)> target = target_part;
+    BOOST_REQUIRE(current.ready());
+    BOOST_REQUIRE(target.ready());
+    BOOST_CHECK_EQUAL(current(), TaskContext::Stopped);
+    BOOST_CHECK_EQUAL(target(), TaskContext::Stopped);
+    BOOST_CHECK_EQUAL(tc->getTaskState(), TaskContext::Stopped);
+
+    BOOST_REQUIRE(tc->start());
+    BOOST_CHECK_EQUAL(current(), TaskContext::Running);
+    BOOST_CHECK_EQUAL(target(), TaskContext::Running);
+    BOOST_CHECK_EQUAL(tc->getTaskState(), TaskContext::Running);
+    BOOST_REQUIRE(tc->stop());
+}
+
+BOOST_AUTO_TEST_CASE( testTaskStateOperationsPreserveTransitionTarget )
+{
+    StateOperationObserver observer;
+    BOOST_REQUIRE(observer.configure());
+    BOOST_REQUIRE(observer.start());
+    BOOST_REQUIRE(observer.operations_ready);
+    BOOST_CHECK_EQUAL(observer.observed_current, TaskContext::Stopped);
+    BOOST_CHECK_EQUAL(observer.observed_target, TaskContext::Running);
+    BOOST_REQUIRE(observer.stop());
 }
 
 /**
