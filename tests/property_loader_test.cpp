@@ -22,6 +22,8 @@
 #include "TaskContext.hpp"
 
 struct LoaderTest {
+    struct UnregisteredPropertyType {};
+
     LoaderTest() : tc("tc"), pl(&tc),
             pstring("pstring","pstringd","Hello World"),
             pchar("pchar","pchard",'H'),
@@ -31,7 +33,7 @@ struct LoaderTest {
             pullong("pullong", "pullongd", 18446744073709551615ull),
             pdouble("pdouble", "pdoubled", 1.23456),
             pbag("pbag","pbagd"),
-            pints("pints", "pintsd", vector<int>(3,4)),
+            punknown("punknown", "punknownd"),
             pdoubles("pdoubles", "pdoublesd", vector<double>(3,4.123))
     {
 
@@ -46,7 +48,7 @@ struct LoaderTest {
     Property<unsigned long long> pullong;
     Property<double> pdouble;
     Property<PropertyBag> pbag;
-    Property<std::vector<int> > pints;
+    Property<UnregisteredPropertyType> punknown;
     Property<std::vector<double> > pdoubles;
     PropertyBag bag;
 };
@@ -133,16 +135,16 @@ BOOST_AUTO_TEST_CASE( testPropSaveLoad )
 BOOST_AUTO_TEST_CASE( testPropUnknown )
 {
     std::string filename = "property_unknown.tst";
-    tc.addProperty(pints);
+    tc.addProperty(punknown);
 
-    BOOST_CHECK( pl.save(filename, true) ); // produces empty file.
-    BOOST_CHECK( !pl.configure(filename, true) ); // must fail, was not serialized !
+    BOOST_CHECK( pl.save(filename, true) ); // omits the unregistered property.
+    BOOST_CHECK( !pl.configure(filename, true) ); // required property was not serialized.
     BOOST_CHECK( pl.configure(filename, false) );
 
     // test unknown in bag:
-    tc.properties()->removeProperty( &pints );
+    tc.properties()->removeProperty( &punknown );
     tc.addProperty( "bag", bag ).doc( "bag doc" );
-    bag.addProperty(pints);
+    bag.addProperty(punknown);
 
     BOOST_CHECK( pl.save(filename, true) ); // produces file with bag.
 
