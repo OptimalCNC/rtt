@@ -26,6 +26,7 @@
 #include <extras/SimulationActivity.hpp>
 #include <extras/SimulationThread.hpp>
 #include <os/fosi.h>
+#include <typekit/RealTimeTypekit.hpp>
 
 #include <boost/function_types/function_type.hpp>
 #include <OperationCaller.hpp>
@@ -212,6 +213,7 @@ public:
 public:
     TaskStates_Test()
     {
+        RTT::types::RealTimeTypekitPlugin().loadTypes();
         tc =  new TaskContext( "root", TaskContext::Stopped );
         stc = new StatesTC();
         tc->setActivity( new SimulationActivity(0.001) );
