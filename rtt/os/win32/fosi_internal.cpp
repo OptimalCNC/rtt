@@ -53,7 +53,7 @@ using namespace std;
 namespace RTT
 { namespace os {
 
-void ErrorHandler(LPTSTR lpszFunction)
+void ErrorHandler(LPCTSTR lpszFunction)
 {
     // Retrieve the system error message for the last-error code.
 

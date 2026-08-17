@@ -124,22 +124,18 @@ static __forceinline int oro_atomic_set_mask(oro_atomic_t *a_int, int mask)
 	return _InterlockedOr((long *)a_int, mask);
 }
 
-#pragma warning(push)
-#pragma warning(disable : 4715) // Disable warning on "specified function can potentially not return a value"
-
 template<typename T> inline T oro_cmpxchg(volatile void * ptr, T old, T _new)
 {
-    switch(sizeof(T))
-    {
-    case 2:
+    if constexpr (sizeof(T) == 2) {
         return (T)(_InterlockedCompareExchange16((short *)ptr, (short)_new, (short)old));
-    case 4:
+    } else if constexpr (sizeof(T) == 4) {
         return (T)(_InterlockedCompareExchange((long *)ptr, (long)_new, (long)old));
-    case 8:
+    } else if constexpr (sizeof(T) == 8) {
         return (T)(_InterlockedCompareExchange64((__int64 *)ptr, (__int64)_new, (__int64)old));
+    } else {
+        static_assert(sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8,
+                      "oro_cmpxchg only supports 2, 4, or 8 byte values");
     }
 }
-
-#pragma warning(pop)
 
 #endif

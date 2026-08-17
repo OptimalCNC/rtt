@@ -55,8 +55,9 @@ namespace RTT
         class UnaryOperator
             : public UnaryOp
         {
-            typedef typename internal::remove_cr<typename function::argument_type>::type arg_t;
-            typedef typename internal::remove_cr<typename function::result_type>::type result_t;
+            typedef internal::unary_function_traits<function> function_traits;
+            typedef typename internal::remove_cr<typename function_traits::argument_type>::type arg_t;
+            typedef typename internal::remove_cr<typename function_traits::result_type>::type result_t;
             const char* mop;
             function fun;
         public:
@@ -84,9 +85,10 @@ namespace RTT
         class BinaryOperator
             : public BinaryOp
         {
-            typedef typename internal::remove_cr<typename function::first_argument_type>::type arg1_t;
-            typedef typename internal::remove_cr<typename function::second_argument_type>::type arg2_t;
-            typedef typename internal::remove_cr<typename function::result_type>::type result_t;
+            typedef internal::binary_function_traits<function> function_traits;
+            typedef typename internal::remove_cr<typename function_traits::first_argument_type>::type arg1_t;
+            typedef typename internal::remove_cr<typename function_traits::second_argument_type>::type arg2_t;
+            typedef typename internal::remove_cr<typename function_traits::result_type>::type result_t;
             const char* mop;
             function fun;
         public:

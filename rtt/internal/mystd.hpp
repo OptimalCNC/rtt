@@ -49,11 +49,79 @@
 #include <boost/utility.hpp>
 #include <functional>
 #include <algorithm>
+#include <iterator>
+#include <tuple>
+#include <type_traits>
 #include <vector>
 
 // here we define some generally useful template stuff that is missing
 // from the STL..
 namespace RTT { namespace internal {
+
+    template<typename Signature>
+    struct function_call_traits;
+
+    template<typename R, typename C, typename... Args>
+    struct function_call_traits<R (C::*)(Args...)>
+    {
+        typedef R result_type;
+        typedef std::tuple<Args...> arguments_type;
+    };
+
+    template<typename R, typename C, typename... Args>
+    struct function_call_traits<R (C::*)(Args...) const>
+        : function_call_traits<R (C::*)(Args...)>
+    {};
+
+    template<typename R, typename C, typename... Args>
+    struct function_call_traits<R (C::*)(Args...) noexcept>
+        : function_call_traits<R (C::*)(Args...)>
+    {};
+
+    template<typename R, typename C, typename... Args>
+    struct function_call_traits<R (C::*)(Args...) const noexcept>
+        : function_call_traits<R (C::*)(Args...)>
+    {};
+
+    template<typename Function, typename = void>
+    struct unary_function_traits
+    {
+        typedef function_call_traits<decltype(&Function::operator())> call_traits;
+        static_assert(std::tuple_size<typename call_traits::arguments_type>::value == 1,
+                      "Unary function object must take one argument");
+        typedef typename std::tuple_element<0, typename call_traits::arguments_type>::type argument_type;
+        typedef typename call_traits::result_type result_type;
+    };
+
+    template<typename Function>
+    struct unary_function_traits<Function,
+        std::void_t<typename Function::argument_type, typename Function::result_type> >
+    {
+        typedef typename Function::argument_type argument_type;
+        typedef typename Function::result_type result_type;
+    };
+
+    template<typename Function, typename = void>
+    struct binary_function_traits
+    {
+        typedef function_call_traits<decltype(&Function::operator())> call_traits;
+        static_assert(std::tuple_size<typename call_traits::arguments_type>::value == 2,
+                      "Binary function object must take two arguments");
+        typedef typename std::tuple_element<0, typename call_traits::arguments_type>::type first_argument_type;
+        typedef typename std::tuple_element<1, typename call_traits::arguments_type>::type second_argument_type;
+        typedef typename call_traits::result_type result_type;
+    };
+
+    template<typename Function>
+    struct binary_function_traits<Function,
+        std::void_t<typename Function::first_argument_type,
+                    typename Function::second_argument_type,
+                    typename Function::result_type> >
+    {
+        typedef typename Function::first_argument_type first_argument_type;
+        typedef typename Function::second_argument_type second_argument_type;
+        typedef typename Function::result_type result_type;
+    };
 
     // combines remove_reference and remove_const
     template<typename T>

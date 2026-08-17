@@ -670,11 +670,12 @@ namespace RTT
    */
   template<typename function>
   class BinaryDataSource
-    : public DataSource< typename remove_cr<typename function::result_type>::type >
+    : public DataSource< typename remove_cr<typename binary_function_traits<function>::result_type>::type >
   {
-    typedef typename remove_cr<typename function::result_type>::type value_t;
-    typedef typename remove_cr<typename function::first_argument_type>::type  first_arg_t;
-    typedef typename remove_cr<typename function::second_argument_type>::type second_arg_t;
+    typedef binary_function_traits<function> function_traits;
+    typedef typename remove_cr<typename function_traits::result_type>::type value_t;
+    typedef typename remove_cr<typename function_traits::first_argument_type>::type  first_arg_t;
+    typedef typename remove_cr<typename function_traits::second_argument_type>::type second_arg_t;
     typename DataSource<first_arg_t>::shared_ptr mdsa;
     typename DataSource<second_arg_t>::shared_ptr mdsb;
     function fun;
@@ -733,10 +734,11 @@ namespace RTT
    */
   template <typename function>
   class UnaryDataSource
-    : public DataSource<typename remove_cr<typename function::result_type>::type>
+    : public DataSource<typename remove_cr<typename unary_function_traits<function>::result_type>::type>
   {
-    typedef typename remove_cr<typename function::result_type>::type value_t;
-    typedef typename remove_cr<typename function::argument_type>::type arg_t;
+    typedef unary_function_traits<function> function_traits;
+    typedef typename remove_cr<typename function_traits::result_type>::type value_t;
+    typedef typename remove_cr<typename function_traits::argument_type>::type arg_t;
     typename DataSource<arg_t>::shared_ptr mdsa;
     function fun;
     mutable value_t mdata;

@@ -81,11 +81,11 @@ namespace RTT
         };
 
 #if defined(__cpp_noexcept_function_type) && __cpp_noexcept_function_type >= 201510L
-#define ORO_REMOVE_NOEXCEPT(QUALIFIERS)                                         \
+#define ORO_REMOVE_NOEXCEPT(...)                                                \
         template<class R, class C, class... Args>                              \
-        struct RemoveNoexcept<R (C::*)(Args...) QUALIFIERS noexcept>           \
+        struct RemoveNoexcept<R (C::*)(Args...) __VA_ARGS__ noexcept>          \
         {                                                                       \
-            typedef R (C::*type)(Args...) QUALIFIERS;                          \
+            typedef R (C::*type)(Args...) __VA_ARGS__;                         \
         };
 
         ORO_REMOVE_NOEXCEPT()
