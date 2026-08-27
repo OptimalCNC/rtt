@@ -110,6 +110,22 @@ IF (BUILD_TESTING)
     COMPILE_DEFINITIONS "${COMPILE_DEFS}")
     ADD_TEST( task-test ${RUNTIME_OUTPUT_DIRECTORY}/task-test )
 
+    IF(OROCOS_TARGET STREQUAL "xenomai")
+      ADD_EXECUTABLE(xenomai3-task-lifetime-test xenomai3_task_lifetime_test.cpp)
+      TARGET_LINK_LIBRARIES(xenomai3-task-lifetime-test
+        orocos-rtt-${OROCOS_TARGET}_dynamic
+        ${OROCOS-RTT_USER_LINK_LIBS})
+      SET_TARGET_PROPERTIES(xenomai3-task-lifetime-test PROPERTIES
+        COMPILE_DEFINITIONS "${COMPILE_DEFS}"
+        ENABLE_EXPORTS ON)
+      ADD_TEST(xenomai3-task-lifetime-test
+        ${RUNTIME_OUTPUT_DIRECTORY}/xenomai3-task-lifetime-test)
+      SET_TESTS_PROPERTIES(xenomai3-task-lifetime-test PROPERTIES
+        ENVIRONMENT
+          "LD_LIBRARY_PATH=${PROJ_BINARY_DIR}/rtt:${PROJ_BINARY_DIR}/rtt/transports/mqueue"
+        TIMEOUT 10)
+    ENDIF()
+
     IF(UNIX AND NOT OROCOS_TARGET STREQUAL "xenomai" )
       ADD_EXECUTABLE( specactivities-test test-runner.cpp
 	specialized_activities.cpp)

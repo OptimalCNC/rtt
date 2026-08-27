@@ -479,7 +479,10 @@ namespace RTT
                                    "Failed to join with thread %s",
                                    mytask->name);
             }
+#if CONFIG_XENO_VERSION_MAJOR < 3
+            // Xenomai 3 releases a joinable task's resources during join.
             rt_task_delete(&(mytask->xenotask));
+#endif
             free(mytask->name);
             mytask->name = NULL;
         }
