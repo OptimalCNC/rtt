@@ -590,11 +590,6 @@ bool ComponentLoader::isImported(string type_name)
         return true;
     if (find(loadedPackages.begin(), loadedPackages.end(), type_name) != loadedPackages.end())
         return true;
-    // hack: in current versions, ocl is loaded most of the times by default because it does not reside in a package subdir
-    // once ocl is in the 'ocl' package directory, this code becomes obsolete:
-    if ( type_name == "ocl" && TypekitRepository::hasTypekit("OCLTypekit")) {
-        return true;
-    }
     return false;
 }
 
