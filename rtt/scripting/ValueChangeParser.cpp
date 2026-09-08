@@ -38,6 +38,7 @@
 #include "parser-debug.hpp"
 #include "parse_exception.hpp"
 #include "ValueChangeParser.hpp"
+#include "ConditionInterface.hpp"
 
 #include "../Service.hpp"
 #include "../types/Types.hpp"
